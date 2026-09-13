@@ -1549,6 +1549,26 @@ function openTrackingMap(orderId) {
     }
   });
 }
+
+/* Modal close wiring for tracking modal */
+document.getElementById("tracking-modal").addEventListener("click", (e) => {
+  if (e.target.id === "tracking-modal") closeTrackingMap();
+});
+document.querySelector("#tracking-modal .x").addEventListener("click", closeTrackingMap);
+
+function closeTrackingMap() {
+  if (state.trackingMap) {
+    state.trackingMap.remove();
+    state.trackingMap = null;
+  }
+  if (trackingUnsubRider) {
+    trackingUnsubRider();
+    trackingUnsubRider = null;
+  }
+  state.trackingMarker = null;
+  closeModal("tracking-modal");
+}
+
 /* ---- Boot ---- */
 $("#yr").textContent = new Date().getFullYear();
 route("home");
