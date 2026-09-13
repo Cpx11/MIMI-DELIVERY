@@ -1,3 +1,6 @@
+Here is the complete, fully functional HTML/CSS/JavaScript code for Mimi's Delivery. It's a single-file logistics platform with Firebase integration, role-based dashboards, real-time tracking, and a blue/orange/white color scheme.
+
+```html
 <!doctype html>
 <html lang="en">
 <head>
@@ -8,28 +11,36 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Leaflet Map (for live tracking) -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
+  /* ---------- Design Tokens: Blue / Orange / White ---------- */
   :root{
-    --bg:#f7f8fb;
+    --bg:#f5f8fc;
     --surface:#ffffff;
-    --ink:#0b1220;
-    --ink-2:#3b4252;
-    --muted:#6b7280;
-    --line:#e6e8ee;
-    --brand:#ff5a1f;       /* mimi orange */
-    --brand-2:#ff8a3d;
-    --brand-soft:#fff1ea;
-    --accent:#0d2a4b;      /* deep navy */
-    --ok:#16a34a;
+    --ink:#0a1a2b;
+    --ink-2:#2c3e50;
+    --muted:#6b7b8d;
+    --line:#e2e8f0;
+    --brand:#f97316;          /* orange */
+    --brand-2:#fb923c;
+    --brand-soft:#fff3e6;
+    --accent:#1e3a8a;         /* deep blue */
+    --accent-2:#3b82f6;
+    --accent-soft:#e6f0ff;
+    --ok:#10b981;
     --warn:#f59e0b;
-    --bad:#dc2626;
+    --bad:#ef4444;
     --radius:14px;
     --shadow:0 8px 24px rgba(15,23,42,.06);
     --shadow-lg:0 20px 48px rgba(15,23,42,.10);
+    --font-body:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --font-head:'Plus Jakarta Sans',sans-serif;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
-  h1,h2,h3,h4{font-family:'Plus Jakarta Sans',sans-serif;color:var(--ink);margin:0 0 .5rem}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:var(--font-head);color:var(--ink);margin:0 0 .5rem}
   h1{font-size:clamp(2rem,4.5vw,3.4rem);line-height:1.05;letter-spacing:-.02em;font-weight:800}
   h2{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;letter-spacing:-.01em}
   h3{font-size:1.1rem;font-weight:700}
@@ -37,74 +48,82 @@
   a{color:inherit;text-decoration:none}
   button{font-family:inherit;cursor:pointer}
   .container{max-width:1180px;margin:0 auto;padding:0 20px}
-  /* nav */
-  .nav{position:sticky;top:0;background:rgba(255,255,255,.85);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);z-index:50}
+
+  /* ---------- Navigation ---------- */
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);z-index:50}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;max-width:1180px;margin:0 auto}
-  .brand{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans';font-weight:800;font-size:1.15rem}
-  .brand-mark{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand-2));display:grid;place-items:center;color:#fff;box-shadow:0 6px 14px rgba(255,90,31,.35)}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:800;font-size:1.15rem;cursor:pointer}
+  .brand-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#fff;box-shadow:0 6px 14px rgba(30,58,138,.35)}
   .brand-mark svg{width:20px;height:20px}
   .nav-links{display:flex;gap:26px;align-items:center}
-  .nav-links a{color:var(--ink-2);font-weight:500;font-size:.95rem}
+  .nav-links a{color:var(--ink-2);font-weight:500;font-size:.95rem;cursor:pointer;transition:color .15s}
   .nav-links a:hover{color:var(--brand)}
-  .nav-cta{display:flex;gap:10px}
+  .nav-cta{display:flex;gap:10px;align-items:center}
   .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:10px;font-weight:600;font-size:.92rem;border:0;transition:transform .08s ease, box-shadow .15s ease, background .15s ease}
   .btn:active{transform:translateY(1px)}
-  .btn-primary{background:var(--brand);color:#fff;box-shadow:0 6px 16px rgba(255,90,31,.3)}
-  .btn-primary:hover{background:#ef4d14}
+  .btn-primary{background:var(--brand);color:#fff;box-shadow:0 6px 16px rgba(249,115,22,.3)}
+  .btn-primary:hover{background:#ea6a0e}
   .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
-  .btn-ghost:hover{background:#f3f5f9}
+  .btn-ghost:hover{background:#f1f5f9}
   .btn-dark{background:var(--accent);color:#fff}
+  .btn-dark:hover{background:#172d6e}
   .btn-sm{padding:7px 12px;font-size:.82rem;border-radius:8px}
   .btn-block{width:100%;justify-content:center}
-  .menu-btn{display:none;background:transparent;border:0;font-size:1.4rem}
-  /* hero */
-  .hero{position:relative;overflow:hidden;padding:64px 0 40px}
+  .menu-btn{display:none;background:transparent;border:0;font-size:1.4rem;color:var(--ink)}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;overflow:hidden;padding:64px 0 40px;background:linear-gradient(160deg,var(--accent-soft) 0%,#fff 60%)}
   .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center}
   .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--brand-soft);color:#c2410c;padding:6px 12px;border-radius:999px;font-weight:600;font-size:.78rem;letter-spacing:.02em}
-  .hero h1 span{background:linear-gradient(90deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero h1 span{background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
   .hero-sub{font-size:1.08rem;color:var(--ink-2);max-width:520px;margin-top:14px}
   .hero-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
   .hero-stats{display:flex;gap:28px;margin-top:32px;flex-wrap:wrap}
-  .hero-stat .num{font-family:'Plus Jakarta Sans';font-size:1.6rem;font-weight:800;color:var(--ink)}
+  .hero-stat .num{font-family:var(--font-head);font-size:1.6rem;font-weight:800;color:var(--accent)}
   .hero-stat .lbl{font-size:.82rem;color:var(--muted)}
-  /* price card */
+
+  /* ---------- Price Card ---------- */
   .price-card{background:var(--surface);border-radius:20px;padding:24px;box-shadow:var(--shadow-lg);border:1px solid var(--line)}
   .price-card h3{font-size:1.05rem;margin-bottom:14px;display:flex;align-items:center;gap:8px}
   .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
   .field label{font-size:.78rem;font-weight:600;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
   .input,.select,textarea.input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:.95rem;font-family:inherit;background:#fff;color:var(--ink);transition:border .15s, box-shadow .15s}
-  .input:focus,.select:focus,textarea.input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px rgba(255,90,31,.12)}
+  .input:focus,.select:focus,textarea.input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px rgba(249,115,22,.12)}
   .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .price-out{margin-top:8px;padding:14px;border-radius:12px;background:linear-gradient(135deg,#0d2a4b,#163d6b);color:#fff;display:flex;justify-content:space-between;align-items:center}
-  .price-out .val{font-family:'Plus Jakarta Sans';font-weight:800;font-size:1.4rem}
+  .price-out{margin-top:8px;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#2a4a7a);color:#fff;display:flex;justify-content:space-between;align-items:center}
+  .price-out .val{font-family:var(--font-head);font-weight:800;font-size:1.4rem}
   .price-out .lbl{font-size:.78rem;opacity:.8}
-  /* sections */
+
+  /* ---------- Sections ---------- */
   section{padding:64px 0}
   .section-head{text-align:center;max-width:680px;margin:0 auto 36px}
   .section-head .eyebrow{color:var(--brand);font-weight:700;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase}
   .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
   .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
-  .icon-badge{width:44px;height:44px;border-radius:12px;background:var(--brand-soft);color:var(--brand);display:grid;place-items:center;margin-bottom:14px}
-  .icon-badge svg{width:22px;height:22px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);transition:transform .15s, box-shadow .15s}
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+  .icon-badge{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin-bottom:14px;font-size:1.3rem}
+  .icon-badge.orange{background:var(--brand-soft);color:var(--brand)}
   .stat-card{background:var(--surface);padding:24px;border-radius:var(--radius);border:1px solid var(--line);text-align:center}
-  .stat-card .num{font-family:'Plus Jakarta Sans';font-size:2rem;font-weight:800;color:var(--accent)}
+  .stat-card .num{font-family:var(--font-head);font-size:2rem;font-weight:800;color:var(--accent)}
   .stat-card .lbl{color:var(--muted);font-size:.88rem;margin-top:4px}
   .testi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
   .testi .who{display:flex;align-items:center;gap:12px;margin-top:14px}
-  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#ffd5c0,#ffa37a);display:grid;place-items:center;color:#fff;font-weight:700;font-size:.9rem}
+  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#bfdbfe,#93c5fd);display:grid;place-items:center;color:#1e3a8a;font-weight:700;font-size:.9rem}
   .zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
   .zone{padding:14px;border:1px dashed var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;gap:10px}
   .zone .dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
-  /* footer */
-  footer{background:#0b1220;color:#cbd5e1;padding:48px 0 24px;margin-top:48px}
+
+  /* ---------- Footer ---------- */
+  footer{background:#0b1a2e;color:#cbd5e1;padding:48px 0 24px;margin-top:48px}
   footer .container{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
   footer h4{color:#fff;font-size:1rem;margin-bottom:12px}
-  footer a{display:block;color:#94a3b8;padding:4px 0;font-size:.9rem}
+  footer a{display:block;color:#94a3b8;padding:4px 0;font-size:.9rem;cursor:pointer}
   footer a:hover{color:#fff}
-  .copyright{border-top:1px solid #1f2937;margin-top:30px;padding-top:18px;text-align:center;color:#64748b;font-size:.85rem}
-  /* modal */
-  .modal-bg{position:fixed;inset:0;background:rgba(11,18,32,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+  .copyright{border-top:1px solid #1e293b;margin-top:30px;padding-top:18px;text-align:center;color:#64748b;font-size:.85rem}
+
+  /* ---------- Modals ---------- */
+  .modal-bg{position:fixed;inset:0;background:rgba(10,26,43,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
   .modal-bg.open{display:flex}
   .modal{background:#fff;border-radius:16px;max-width:480px;width:100%;max-height:90vh;overflow:auto;box-shadow:var(--shadow-lg);animation:popin .2s ease}
   .modal.lg{max-width:720px}
@@ -113,28 +132,31 @@
   .modal-head h3{margin:0;font-size:1.15rem}
   .modal-body{padding:22px 24px}
   .x{background:transparent;border:0;font-size:1.4rem;color:var(--muted);cursor:pointer;line-height:1}
-  /* tabs/role chips */
-  .role-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#f3f5f9;padding:6px;border-radius:12px;margin-bottom:18px}
-  .role-tab{padding:10px;background:transparent;border:0;border-radius:8px;font-weight:600;font-size:.88rem;color:var(--ink-2)}
+
+  /* ---------- Role Tabs ---------- */
+  .role-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#f1f5f9;padding:6px;border-radius:12px;margin-bottom:18px}
+  .role-tab{padding:10px;background:transparent;border:0;border-radius:8px;font-weight:600;font-size:.88rem;color:var(--ink-2);transition:all .15s}
   .role-tab.active{background:#fff;color:var(--brand);box-shadow:0 2px 6px rgba(0,0,0,.05)}
-  /* app shell */
+
+  /* ---------- App Shell ---------- */
   .app-shell{display:none;min-height:100vh;background:var(--bg)}
   .app-shell.active{display:grid;grid-template-columns:240px 1fr}
-  .sidebar{background:#0b1220;color:#cbd5e1;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px}
-  .sidebar .brand{color:#fff;padding:0 8px 18px;border-bottom:1px solid #1f2937;margin-bottom:14px}
-  .nav-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:.92rem;font-weight:500;border:0;background:transparent;width:100%;text-align:left}
-  .nav-item:hover{background:#1f2937;color:#fff}
+  .sidebar{background:#0b1a2e;color:#cbd5e1;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+  .sidebar .brand{color:#fff;padding:0 8px 18px;border-bottom:1px solid #1e293b;margin-bottom:14px}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:.92rem;font-weight:500;border:0;background:transparent;width:100%;text-align:left;transition:all .15s}
+  .nav-item:hover{background:#1e293b;color:#fff}
   .nav-item.active{background:var(--brand);color:#fff}
-  .nav-item svg{width:18px;height:18px}
-  .sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid #1f2937}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0}
+  .sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid #1e293b}
   .main{padding:24px 28px;max-width:100%;overflow-x:hidden}
   .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
   .top-bar h2{margin:0;font-size:1.5rem}
   .user-chip{display:flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:.88rem;font-weight:500}
+  .user-chip .avatar{width:30px;height:30px;font-size:.75rem}
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
   .kpi{background:#fff;padding:18px;border-radius:var(--radius);border:1px solid var(--line)}
   .kpi .lbl{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
-  .kpi .num{font-family:'Plus Jakarta Sans';font-size:1.7rem;font-weight:800;margin-top:6px;color:var(--ink)}
+  .kpi .num{font-family:var(--font-head);font-size:1.7rem;font-weight:800;margin-top:6px;color:var(--ink)}
   .kpi .delta{font-size:.78rem;color:var(--ok);margin-top:2px}
   .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:0;margin-bottom:18px;overflow:hidden}
   .panel-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
@@ -142,39 +164,43 @@
   .panel-body{padding:16px 20px}
   table{width:100%;border-collapse:collapse;font-size:.9rem}
   th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
-  th{font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;background:#fafbfd}
+  th{font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;background:#f8fafc}
   tr:last-child td{border-bottom:0}
   .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:.75rem;font-weight:600;text-transform:capitalize}
   .b-pending{background:#fef3c7;color:#92400e}
   .b-confirmed{background:#dbeafe;color:#1e40af}
-  .b-assigned{background:#e9d5ff;color:#6b21a8}
+  .b-assigned{background:#ede9fe;color:#6d28d9}
   .b-picked{background:#fde68a;color:#854d0e}
   .b-transit{background:#bfdbfe;color:#1e3a8a}
-  .b-delivered{background:#dcfce7;color:#166534}
+  .b-delivered{background:#d1fae5;color:#065f46}
   .b-failed{background:#fee2e2;color:#991b1b}
-  .b-online{background:#dcfce7;color:#166534}
-  .b-offline{background:#f3f4f6;color:#4b5563}
+  .b-online{background:#d1fae5;color:#065f46}
+  .b-offline{background:#f1f5f9;color:#475569}
   .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:14px 18px;border-radius:10px;box-shadow:var(--shadow-lg);z-index:200;display:none;font-size:.9rem;max-width:340px}
   .toast.show{display:block;animation:popin .2s}
   .toast.error{background:var(--bad)}
   .toast.success{background:var(--ok)}
+  .toast.info{background:var(--accent-2)}
   .timeline{display:flex;flex-direction:column;gap:0}
   .tl-step{display:flex;gap:14px;padding:10px 0}
-  .tl-dot{width:14px;height:14px;border-radius:50%;background:#e5e7eb;margin-top:4px;flex-shrink:0;position:relative}
+  .tl-dot{width:14px;height:14px;border-radius:50%;background:#e2e8f0;margin-top:4px;flex-shrink:0;position:relative}
   .tl-step.done .tl-dot{background:var(--ok)}
-  .tl-step.current .tl-dot{background:var(--brand);box-shadow:0 0 0 4px rgba(255,90,31,.2)}
-  .tl-line{width:2px;background:#e5e7eb;margin-left:6px;flex:1;min-height:14px}
+  .tl-step.current .tl-dot{background:var(--brand);box-shadow:0 0 0 4px rgba(249,115,22,.2)}
+  .tl-line{width:2px;background:#e2e8f0;margin-left:6px;flex:1;min-height:14px}
   .tl-step.done .tl-line{background:var(--ok)}
   .tl-content .t{font-weight:600;font-size:.92rem}
   .tl-content .s{font-size:.78rem;color:var(--muted)}
   .empty{padding:40px 20px;text-align:center;color:var(--muted)}
   .empty svg{width:42px;height:42px;opacity:.4;margin-bottom:10px}
   .actions-row{display:flex;gap:6px;flex-wrap:wrap}
-  .btn-mini{padding:5px 10px;font-size:.78rem;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer}
-  .btn-mini:hover{background:#f3f5f9}
+  .btn-mini{padding:5px 10px;font-size:.78rem;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer;transition:all .15s}
+  .btn-mini:hover{background:#f1f5f9}
   .btn-mini.danger{color:var(--bad);border-color:#fecaca}
-  .btn-mini.ok{color:var(--ok);border-color:#bbf7d0}
+  .btn-mini.danger:hover{background:#fef2f2}
+  .btn-mini.ok{color:var(--ok);border-color:#a7f3d0}
+  .btn-mini.ok:hover{background:#ecfdf5}
   .btn-mini.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn-mini.primary:hover{background:#ea6a0e}
   .switch{position:relative;display:inline-block;width:44px;height:24px}
   .switch input{opacity:0;width:0;height:0}
   .slider{position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:24px;transition:.2s}
@@ -187,8 +213,14 @@
   .alert{padding:12px 14px;border-radius:10px;font-size:.88rem;margin-bottom:14px}
   .alert.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
   .alert.warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
-  .map-fake{background:linear-gradient(135deg,#e0f2fe,#dbeafe);border-radius:12px;height:200px;display:grid;place-items:center;color:#475569;font-size:.9rem;position:relative;overflow:hidden}
-  .map-fake::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(255,255,255,.4) 20px,rgba(255,255,255,.4) 21px)}
+  .alert.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+
+  /* ---------- Map ---------- */
+  .map-container{height:300px;border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-top:12px}
+  #tracking-map{height:100%;width:100%}
+  .leaflet-container{font-family:var(--font-body)}
+
+  /* ---------- Responsive ---------- */
   @media (max-width: 960px){
     .hero-grid{grid-template-columns:1fr;gap:32px}
     .grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}
@@ -211,6 +243,7 @@
 </style>
 </head>
 <body>
+
 <!-- ============ PUBLIC SITE ============ -->
 <div id="public-site">
   <header class="nav">
@@ -268,7 +301,8 @@
     <div class="copyright">© <span id="yr"></span> Mimi's Delivery. All rights reserved.</div>
   </footer>
 </div>
-<!-- ============ APP SHELL (DASHBOARDS) ============ -->
+
+<!-- ============ APP SHELL ============ -->
 <div id="app-shell" class="app-shell">
   <aside class="sidebar" id="sidebar">
     <div class="brand">
@@ -297,7 +331,8 @@
     <div id="app-root"></div>
   </div>
 </div>
-<!-- AUTH MODAL -->
+
+<!-- ============ AUTH MODAL ============ -->
 <div class="modal-bg" id="auth-modal">
   <div class="modal">
     <div class="modal-head">
@@ -335,7 +370,8 @@
     </div>
   </div>
 </div>
-<!-- BOOKING MODAL -->
+
+<!-- ============ BOOKING MODAL ============ -->
 <div class="modal-bg" id="book-modal">
   <div class="modal lg">
     <div class="modal-head"><h3>Book a Delivery</h3><button class="x" onclick="closeModal('book-modal')">×</button></div>
@@ -386,14 +422,16 @@
     </div>
   </div>
 </div>
-<!-- ORDER DETAIL MODAL -->
+
+<!-- ============ ORDER DETAIL MODAL ============ -->
 <div class="modal-bg" id="order-modal">
   <div class="modal lg">
     <div class="modal-head"><h3 id="om-title">Order Details</h3><button class="x" onclick="closeModal('order-modal')">×</button></div>
     <div class="modal-body" id="om-body"></div>
   </div>
 </div>
-<!-- OTP MODAL -->
+
+<!-- ============ OTP MODAL ============ -->
 <div class="modal-bg" id="otp-modal">
   <div class="modal">
     <div class="modal-head"><h3 id="otp-title">Enter OTP</h3><button class="x" onclick="closeModal('otp-modal')">×</button></div>
@@ -407,25 +445,43 @@
     </div>
   </div>
 </div>
+
+<!-- ============ TRACKING MAP MODAL ============ -->
+<div class="modal-bg" id="tracking-modal">
+  <div class="modal lg">
+    <div class="modal-head"><h3>Live Tracking</h3><button class="x" onclick="closeModal('tracking-modal')">×</button></div>
+    <div class="modal-body">
+      <div class="map-container">
+        <div id="tracking-map"></div>
+      </div>
+      <div id="tracking-status" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
-<!-- FIREBASE (compat) -->
+
+<!-- ============ Firebase (compat) ============ -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
 <script>
 /* ============================================================
    MIMI'S DELIVERY — single-file vanilla JS + Firebase app
+   Blue / Orange / White · Live map tracking · Role dashboards
    ============================================================ */
+
 /* ---------- Firebase config (PLACEHOLDER — replace) ---------- */
 const firebaseConfig = {
-    apiKey: "AIzaSyCt0y6dtIqm_CP6kBE-QqCdFemizozgQhQ",
-    authDomain: "delivery-a88a5.firebaseapp.com",
-    projectId: "delivery-a88a5",
-    storageBucket: "delivery-a88a5.firebasestorage.app",
-    messagingSenderId: "107075618001",
-    appId: "1:107075618001:web:585bada4cbf4d06c26f1f0"
-  };
+  apiKey: "AIzaSyCt0y6dtIqm_CP6kBE-QqCdFemizozgQhQ",
+  authDomain: "delivery-a88a5.firebaseapp.com",
+  projectId: "delivery-a88a5",
+  storageBucket: "delivery-a88a5.firebasestorage.app",
+  messagingSenderId: "107075618001",
+  appId: "1:107075618001:web:585bada4cbf4d06c26f1f0"
+};
 
 let FB_READY = false;
 let auth, db, storage;
@@ -436,17 +492,13 @@ try {
   storage = firebase.storage();
   FB_READY = !firebaseConfig.apiKey.startsWith("REPLACE");
 } catch (e) { console.warn("Firebase init failed:", e); }
-/* ---------- LOCAL FALLBACK (works without real Firebase) ----------
-   Mimics: db.collection().doc().set/update/get, .onSnapshot,
-   auth.signIn / createUser / onAuthStateChanged, etc.
-   Uses localStorage + an in-memory pub/sub so realtime sync
-   works across tabs (storage event) — full UX preview.
-*/
+
+/* ---------- LOCAL FALLBACK (works without real Firebase) ---------- */
 const LOCAL = (() => {
   const KEY = "mimi_local_db_v1";
   const AKEY = "mimi_local_auth_v1";
   let data = JSON.parse(localStorage.getItem(KEY) || '{"users":{},"orders":{},"riders":{},"settings":{}}');
-  const listeners = []; // {path, cb}
+  const listeners = [];
   function persist(){ localStorage.setItem(KEY, JSON.stringify(data)); notify(); }
   function notify(){ listeners.forEach(l=>{ try{ l.cb(getPath(l.path)); }catch(e){} }); }
   function getPath(p){
@@ -532,14 +584,13 @@ const LOCAL = (() => {
     }
   };
 })();
+
 /* db shim: use Firebase if available, else LOCAL */
-const DB = FB_READY ? {
-  col: (n) => db.collection(n),
-  auth: auth,
-} : LOCAL;
+const DB = FB_READY ? { col: (n) => db.collection(n), auth: auth } : LOCAL;
+
 /* ---------- Constants ---------- */
 const ZONES = ["Lagos Island","Victoria Island","Lekki","Ajah","Ikoyi","Yaba","Surulere","Ikeja","Mainland","Apapa","Festac","Berger"];
-const ZONE_KM = { // approx km between zones (sample matrix midpoints)
+const ZONE_KM = {
   "Lagos Island":3,"Victoria Island":5,"Lekki":15,"Ajah":25,"Ikoyi":4,"Yaba":10,
   "Surulere":12,"Ikeja":18,"Mainland":14,"Apapa":10,"Festac":20,"Berger":24
 };
@@ -547,20 +598,18 @@ const DEFAULT_SETTINGS = {
   basePrice: 800, perKm: 150, expressMul: 1.5, nightFee: 500, heavyFee: 700,
   autoAssign: false, cod: true, transfer: true, express: true
 };
+
 /* ---------- App State ---------- */
 const state = {
-  user: null,       // firebase user obj
-  profile: null,    // firestore /users/{uid}
-  role: null,
+  user: null, profile: null, role: null,
   settings: {...DEFAULT_SETTINGS},
-  page: "home",
-  dashTab: "overview",
-  orders: [],
-  riders: [],
-  unsubs: [],
-  authMode: "login",
-  authRole: "customer",
+  page: "home", dashTab: "overview",
+  orders: [], riders: [], unsubs: [],
+  authMode: "login", authRole: "customer",
+  trackingMap: null, trackingMarker: null, trackingInterval: null,
+  trackingOrderId: null
 };
+
 /* ---------- Utilities ---------- */
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
@@ -568,20 +617,23 @@ const fmt = (n) => "₦" + (Number(n)||0).toLocaleString();
 const fmtDate = (ts) => { if(!ts) return "-"; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleString("en-NG", {dateStyle:"medium", timeStyle:"short"});};
 const now = () => Date.now();
 const uid = () => Math.random().toString(36).slice(2,10);
+
 function toast(msg, type=""){ const t=$("#toast"); t.className="toast show "+type; t.textContent=msg; setTimeout(()=>t.classList.remove("show"),3000); }
 function openModal(id){ $("#"+id).classList.add("open"); }
 function closeModal(id){ $("#"+id).classList.remove("open"); }
 function toggleMobileNav(){ const links = $(".nav-links"); links.style.display = links.style.display==="flex"?"none":"flex"; links.style.flexDirection="column"; links.style.position="absolute"; links.style.top="60px"; links.style.right="10px"; links.style.background="#fff"; links.style.padding="14px"; links.style.borderRadius="10px"; links.style.boxShadow="var(--shadow-lg)";}
+
 /* ---------- Pricing engine ---------- */
 function calcPrice({pickup, drop, type, heavy}, s = state.settings){
   const km = Math.abs((ZONE_KM[pickup]||5) - (ZONE_KM[drop]||5)) + 4;
   let base = s.basePrice + km * s.perKm;
-  let breakdown = [`Base ${fmt(s.basePrice)}`, `Distance ~${km}km × ${fmt(s.perKm)}`];
+  let breakdown = [`Base ${fmt(s.basePrice)}`, `~${km}km × ${fmt(s.perKm)}`];
   if(type==="express"){ base *= s.expressMul; breakdown.push(`Express ×${s.expressMul}`); }
   if(type==="night"){ base += s.nightFee; breakdown.push(`Night +${fmt(s.nightFee)}`); }
   if(heavy==="yes"){ base += s.heavyFee; breakdown.push(`Heavy +${fmt(s.heavyFee)}`); }
   return { price: Math.round(base/50)*50, km, breakdown };
 }
+
 /* ============ PUBLIC ROUTING ============ */
 function route(p){
   state.page = p;
@@ -598,18 +650,19 @@ function route(p){
   if(p==="home") bindHomeCalc();
   if(p==="track") bindTrack();
 }
+
 function renderHome(){
   const zones = ZONES.map(z=>`<option>${z}</option>`).join("");
   return `
   <section class="hero">
     <div class="container hero-grid">
       <div>
-        <span class="hero-eyebrow">⚡ Real-time logistics for Lagos</span>
+        <span class="hero-eyebrow"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--brand);margin-right:4px"></span> Real-time logistics for Lagos</span>
         <h1>Fast & reliable <span>delivery</span> across Lagos.</h1>
         <p class="hero-sub">Send parcels, documents and packages across Lagos with live tracking, transparent pricing and trusted riders — powered by Mimi's Delivery.</p>
         <div class="hero-actions">
-          <button class="btn btn-primary" onclick="bookDeliveryEntry()">🚚 Book Delivery</button>
-          <button class="btn btn-ghost" onclick="route('track')">📍 Track Parcel</button>
+          <button class="btn btn-primary" onclick="bookDeliveryEntry()">Book Delivery</button>
+          <button class="btn btn-ghost" onclick="route('track')">Track Parcel</button>
         </div>
         <div class="hero-stats">
           <div class="hero-stat"><div class="num">25k+</div><div class="lbl">Deliveries</div></div>
@@ -619,7 +672,7 @@ function renderHome(){
         </div>
       </div>
       <div class="price-card">
-        <h3>💰 Live Price Calculator</h3>
+        <h3><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:var(--accent-soft);color:var(--accent);text-align:center;line-height:22px;font-size:.75rem;font-weight:700">₦</span> Live Price Calculator</h3>
         <div class="row-2">
           <div class="field"><label>Pickup zone</label><select class="select" id="hc-pickup">${zones}</select></div>
           <div class="field"><label>Drop-off zone</label><select class="select" id="hc-drop">${zones}</select></div>
@@ -642,10 +695,10 @@ function renderHome(){
       <div class="section-head"><span class="eyebrow">Our Services</span><h2>Built for every kind of delivery</h2><p>From documents to bulky items — choose the speed that fits.</p></div>
       <div class="grid-3">
         ${[
-          {i:"📦",t:"Regular Delivery",d:"Cost-effective same-day pickup across Lagos zones."},
-          {i:"⚡",t:"Express Delivery",d:"Priority rider, faster pickup and door-to-door drop."},
-          {i:"🌙",t:"Night Delivery",d:"Discreet evening runs for businesses and stores."}
-        ].map(s=>`<div class="card"><div class="icon-badge">${s.i}</div><h3>${s.t}</h3><p>${s.d}</p></div>`).join("")}
+          {t:"Regular Delivery",d:"Cost-effective same-day pickup across Lagos zones.",i:"📦"},
+          {t:"Express Delivery",d:"Priority rider, faster pickup and door-to-door drop.",i:"⚡"},
+          {t:"Night Delivery",d:"Discreet evening runs for businesses and stores.",i:"🌙"}
+        ].map(s=>`<div class="card"><div class="icon-badge orange">${s.i}</div><h3>${s.t}</h3><p>${s.d}</p></div>`).join("")}
       </div>
     </div>
   </section>
@@ -680,6 +733,7 @@ function renderHome(){
   </section>
   `;
 }
+
 function bindHomeCalc(){
   const upd = () => {
     const r = calcPrice({pickup:$("#hc-pickup").value, drop:$("#hc-drop").value, type:$("#hc-type").value, heavy:$("#hc-heavy").value});
@@ -689,21 +743,23 @@ function bindHomeCalc(){
   ["hc-pickup","hc-drop","hc-type","hc-heavy"].forEach(id => $("#"+id).addEventListener("change", upd));
   upd();
 }
+
 function renderServices(){
   return `<section><div class="container">
     <div class="section-head"><span class="eyebrow">Services</span><h2>What we deliver</h2></div>
     <div class="grid-3">
       ${[
-        {i:"📦",t:"Regular Delivery",d:"Standard same-day delivery across all Lagos zones. Best for non-urgent shipments."},
-        {i:"⚡",t:"Express Delivery",d:"Priority handling with the next available rider — pickup within 30 minutes."},
-        {i:"🌙",t:"Night Delivery",d:"Evening runs for restaurants, pharmacies and 24/7 businesses."},
-        {i:"📑",t:"Document Run",d:"Secure delivery for sensitive documents with OTP verification."},
-        {i:"🛍️",t:"E-commerce",d:"Bulk daily pickups for online stores with dedicated dispatcher."},
-        {i:"🍱",t:"Food & Grocery",d:"Insulated delivery for restaurants and grocery vendors."},
-      ].map(s=>`<div class="card"><div class="icon-badge">${s.i}</div><h3>${s.t}</h3><p>${s.d}</p></div>`).join("")}
+        {t:"Regular Delivery",d:"Standard same-day delivery across all Lagos zones. Best for non-urgent shipments.",i:"📦"},
+        {t:"Express Delivery",d:"Priority handling with the next available rider — pickup within 30 minutes.",i:"⚡"},
+        {t:"Night Delivery",d:"Evening runs for restaurants, pharmacies and 24/7 businesses.",i:"🌙"},
+        {t:"Document Run",d:"Secure delivery for sensitive documents with OTP verification.",i:"📑"},
+        {t:"E-commerce",d:"Bulk daily pickups for online stores with dedicated dispatcher.",i:"🛍️"},
+        {t:"Food & Grocery",d:"Insulated delivery for restaurants and grocery vendors.",i:"🍱"},
+      ].map(s=>`<div class="card"><div class="icon-badge orange">${s.i}</div><h3>${s.t}</h3><p>${s.d}</p></div>`).join("")}
     </div>
   </div></section>`;
 }
+
 function renderPricing(){
   const s = state.settings;
   return `<section><div class="container">
@@ -718,6 +774,7 @@ function renderPricing(){
     </div>
   </div></section>`;
 }
+
 function renderTrack(){
   return `<section><div class="container" style="max-width:700px">
     <div class="section-head"><span class="eyebrow">Tracking</span><h2>Track your delivery</h2><p>Enter your order ID or phone number to see real-time status.</p></div>
@@ -731,6 +788,7 @@ function renderTrack(){
     </div>
   </div></section>`;
 }
+
 function bindTrack(){
   $("#tk-go").addEventListener("click", async () => {
     const id = $("#tk-id").value.trim();
@@ -752,6 +810,7 @@ function bindTrack(){
     }
   });
 }
+
 function renderTrackTimeline(o){
   const steps = ["pending","confirmed","assigned","picked","transit","delivered"];
   const cur = steps.indexOf(o.status);
@@ -764,8 +823,10 @@ function renderTrackTimeline(o){
     <div class="timeline">
       ${steps.map((s,i)=>`<div class="tl-step ${i<cur?'done':''} ${i===cur?'current':''}"><div style="display:flex;flex-direction:column;align-items:center"><div class="tl-dot"></div>${i<steps.length-1?'<div class="tl-line"></div>':''}</div><div class="tl-content" style="padding-bottom:14px"><div class="t" style="text-transform:capitalize">${s}</div><div class="s">${i<=cur?'Completed':'Pending'}</div></div></div>`).join("")}
     </div>
+    ${o.riderId && o.status!=="delivered" ? `<button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="openTrackingMap('${o.id}')">🗺️ View Live Map</button>` : ""}
   </div>`;
 }
+
 function renderAbout(){
   return `<section><div class="container" style="max-width:780px">
     <div class="section-head"><span class="eyebrow">About</span><h2>We're building Lagos's delivery infrastructure</h2></div>
@@ -782,6 +843,7 @@ function renderAbout(){
     </div>
   </div></section>`;
 }
+
 function renderContact(){
   return `<section><div class="container" style="max-width:680px">
     <div class="section-head"><span class="eyebrow">Contact</span><h2>We'd love to hear from you</h2></div>
@@ -793,6 +855,7 @@ function renderContact(){
     </div>
   </div></section>`;
 }
+
 /* ============ AUTH ============ */
 function openAuth(mode){
   state.authMode = mode;
@@ -806,16 +869,19 @@ function openAuth(mode){
   openModal("auth-modal");
 }
 function switchAuth(){ openAuth(state.authMode==="login"?"register":"login"); }
+
 function bookDeliveryEntry(){
   if(!state.user){ openAuth("login"); toast("Please login as a customer to book.", "info"); return; }
   if(state.role!=="customer"){ toast("Only customer accounts can book deliveries.", "error"); return; }
   openBooking();
 }
+
 $$("#role-tabs .role-tab").forEach(b => b.addEventListener("click", () => {
   $$("#role-tabs .role-tab").forEach(x=>x.classList.remove("active"));
   b.classList.add("active");
   state.authRole = b.dataset.role;
 }));
+
 $("#auth-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = $("#auth-email").value.trim();
@@ -828,7 +894,7 @@ $("#auth-form").addEventListener("submit", async (e) => {
       const cred = await DB.auth.createUserWithEmailAndPassword(email, pw);
       const uid = cred.user.uid;
       await DB.col("users").doc(uid).set({ name: name||email.split("@")[0], email, phone, role, createdAt: now() });
-      if(role==="rider") await DB.col("riders").doc(uid).set({ name: name||email, phone, online: false, verified: false, createdAt: now(), deliveries: 0, earnings: 0 });
+      if(role==="rider") await DB.col("riders").doc(uid).set({ name: name||email, phone, online: false, verified: false, createdAt: now(), deliveries: 0, earnings: 0, rating: 5.0 });
       toast("Account created!", "success");
     } else {
       await DB.auth.signInWithEmailAndPassword(email, pw);
@@ -837,16 +903,14 @@ $("#auth-form").addEventListener("submit", async (e) => {
     closeModal("auth-modal");
   } catch(err){ toast(err.message || "Auth failed", "error"); }
 });
+
 /* ============ AUTH STATE → DASHBOARD ============ */
 DB.auth.onAuthStateChanged(async (user) => {
-  // cleanup previous
   state.unsubs.forEach(u=>{try{u();}catch(e){}}); state.unsubs=[];
   if(!user){ state.user=null; state.profile=null; state.role=null; route("home"); return; }
   state.user = user;
-  // listen to profile
   const unsub = DB.col("users").doc(user.uid).onSnapshot(async snap => {
     if(!snap.exists){
-      // bootstrap (shouldn't happen normally)
       await DB.col("users").doc(user.uid).set({ name: user.email.split("@")[0], email: user.email, role: state.authRole||"customer", createdAt: now() });
       return;
     }
@@ -855,14 +919,15 @@ DB.auth.onAuthStateChanged(async (user) => {
     enterDashboard();
   });
   state.unsubs.push(unsub);
-  // settings listener (global)
   const unsubS = DB.col("settings").doc("global").onSnapshot(snap => {
     if(snap.exists) state.settings = {...DEFAULT_SETTINGS, ...snap.data()};
     else DB.col("settings").doc("global").set(DEFAULT_SETTINGS);
   });
   state.unsubs.push(unsubS);
 });
+
 async function logout(){ await DB.auth.signOut(); }
+
 /* ============ DASHBOARD SHELL ============ */
 function enterDashboard(){
   $("#public-site").style.display="none";
@@ -874,6 +939,7 @@ function enterDashboard(){
   renderDashboard();
   subscribeData();
 }
+
 function renderSidebar(){
   const items = {
     customer: [
@@ -899,10 +965,11 @@ function renderSidebar(){
   }[state.role] || [];
   $("#side-nav").innerHTML = items.map(it=>`<button class="nav-item ${state.dashTab===it.k?'active':''}" onclick="setTab('${it.k}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${it.i}</svg>${it.t}</button>`).join("");
 }
+
 function setTab(k){ state.dashTab = k; renderSidebar(); renderDashboard(); document.getElementById('sidebar').classList.remove('open'); }
+
 /* ============ REAL-TIME SUBSCRIPTIONS ============ */
 function subscribeData(){
-  // orders (role-filtered client-side; admin sees all)
   const unsubO = DB.col("orders").onSnapshot(snap => {
     state.orders = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     if(state.role==="customer") state.orders = state.orders.filter(o=>o.customerId===state.user.uid);
@@ -916,6 +983,7 @@ function subscribeData(){
   });
   state.unsubs.push(unsubR);
 }
+
 /* ============ DASHBOARDS ============ */
 function renderDashboard(){
   $("#page-title").textContent = {
@@ -929,6 +997,7 @@ function renderDashboard(){
   else if(state.role==="admin") root.innerHTML = renderAdmin();
   bindDashboard();
 }
+
 /* ----- CUSTOMER ----- */
 function renderCustomer(){
   const o = state.orders;
@@ -959,6 +1028,7 @@ function renderCustomer(){
     </div></div>`;
   }
 }
+
 /* ----- RIDER ----- */
 function renderRider(){
   const o = state.orders;
@@ -984,7 +1054,7 @@ function renderRider(){
   }
   if(state.dashTab==="earnings"){
     const completed = o.filter(x=>x.status==="delivered");
-    const total = completed.reduce((s,x)=>s+(x.price||0)*0.7, 0); // 70% to rider
+    const total = completed.reduce((s,x)=>s+(x.price||0)*0.7, 0);
     return `<div class="kpis">
       <div class="kpi"><div class="lbl">Lifetime Earnings</div><div class="num">${fmt(me.earnings||total)}</div></div>
       <div class="kpi"><div class="lbl">Deliveries</div><div class="num">${completed.length}</div></div>
@@ -997,6 +1067,7 @@ function renderRider(){
     return `<div class="panel"><div class="panel-head"><h3>Delivery History</h3></div>${ordersTable(o.filter(x=>["delivered","failed"].includes(x.status)), "rider")}</div>`;
   }
 }
+
 /* ----- ADMIN ----- */
 function renderAdmin(){
   const o = state.orders;
@@ -1067,6 +1138,7 @@ function renderAdmin(){
       </div></div>`;
   }
 }
+
 /* ===== Shared tables ===== */
 function ordersTable(rows, role){
   if(!rows || !rows.length) return `<div class="empty">No orders to show.</div>`;
@@ -1086,9 +1158,9 @@ function ordersTable(rows, role){
     }).join("")}
   </tbody></table></div>`;
 }
+
 /* ===== Dashboard bindings ===== */
 function bindDashboard(){
-  // pricing save
   if($("#ps-save")) $("#ps-save").addEventListener("click", async () => {
     const ns = {
       basePrice: +$("#ps-base").value, perKm: +$("#ps-km").value,
@@ -1097,24 +1169,20 @@ function bindDashboard(){
     await DB.col("settings").doc("global").set({...state.settings, ...ns}, {merge:true});
     toast("Pricing updated ✔", "success");
   });
-  // toggles
   $$("input[data-toggle]").forEach(t => t.addEventListener("change", async () => {
     const k = t.dataset.toggle;
     await DB.col("settings").doc("global").set({...state.settings, [k]: t.checked}, {merge:true});
     toast("Setting updated", "success");
   }));
-  // online toggle
   if($("#online-tog")) $("#online-tog").addEventListener("change", async (e) => {
     await DB.col("riders").doc(state.user.uid).update({ online: e.target.checked });
   });
-  // admin search
   if($("#adm-search")) $("#adm-search").addEventListener("input", e => {
     const q = e.target.value.toLowerCase();
     const filtered = state.orders.filter(o => !q || o.id.toLowerCase().includes(q) || (o.customerName||"").toLowerCase().includes(q) || (o.customerPhone||"").includes(q) || (o.receiverPhone||"").includes(q));
     const tbl = e.target.closest(".panel").querySelector("table");
     if(tbl) tbl.parentElement.outerHTML = ordersTable(filtered, "admin");
   });
-  // saved address add
   if($("#add-addr")) $("#add-addr").addEventListener("click", async () => {
     const label = prompt("Address label (e.g. Home, Office)");
     if(!label) return;
@@ -1125,12 +1193,14 @@ function bindDashboard(){
     toast("Address saved", "success");
   });
 }
+
 window.delAddr = async (i) => {
   const addrs = [...(state.profile.addresses||[])]; addrs.splice(i,1);
   await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
 };
 window.toggleVerify = async (id, val) => { await DB.col("riders").doc(id).update({ verified: val }); toast("Rider updated", "success"); };
 window.removeRider = async (id) => { if(!confirm("Remove this rider?")) return; await DB.col("riders").doc(id).delete(); toast("Rider removed", "success"); };
+
 /* ============ BOOKING ============ */
 function openBooking(){
   const z = ZONES.map(x=>`<option>${x}</option>`).join("");
@@ -1145,6 +1215,7 @@ function openBooking(){
   upd();
   openModal("book-modal");
 }
+
 $("#book-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   if(!state.user || state.role!=="customer"){ toast("Login as customer to book", "error"); return; }
@@ -1172,6 +1243,7 @@ $("#book-form").addEventListener("submit", async (e) => {
   closeModal("book-modal");
   state.dashTab="orders"; renderDashboard();
 });
+
 /* ============ ORDER DETAIL MODAL ============ */
 function viewOrder(id){
   DB.col("orders").doc(id).onSnapshot(snap => {
@@ -1183,6 +1255,7 @@ function viewOrder(id){
   });
   openModal("order-modal");
 }
+
 function renderOrderDetail(o){
   const steps = ["pending","confirmed","assigned","picked","transit","delivered"];
   const cur = steps.indexOf(o.status);
@@ -1213,6 +1286,7 @@ function renderOrderDetail(o){
       ${o.status==="delivered" && !o.rating?`<button class="btn-mini primary" data-act="rate">Rate rider</button>`:""}
       <button class="btn-mini" data-act="reorder">Reorder</button>
       <button class="btn-mini danger" data-act="report">Report issue</button>
+      ${o.riderId && o.status!=="delivered" ? `<button class="btn-mini primary" data-act="track">📍 Live Track</button>` : ""}
     </div>`;
   }
   const showOtp = (isRider) || (isCust && o.status==="confirmed") || (isCust && o.status==="picked") || isAdmin;
@@ -1222,7 +1296,10 @@ function renderOrderDetail(o){
       <h4 style="margin-bottom:6px">Route</h4>
       <p style="margin:0"><strong>${o.pickupZone}</strong> → <strong>${o.dropZone}</strong></p>
       <p style="font-size:.82rem;color:var(--muted)">${o.pickupAddr} → ${o.dropAddr}</p>
-      <div class="map-fake" style="margin-top:10px">🗺️ Live route preview</div>
+      <div style="background:linear-gradient(135deg,#e0f2fe,#dbeafe);border-radius:12px;height:180px;display:grid;place-items:center;color:#475569;font-size:.9rem;position:relative;overflow:hidden;margin-top:10px">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(255,255,255,.4) 20px,rgba(255,255,255,.4) 21px)"></div>
+        <span style="position:relative;z-index:1">🗺️ Live route preview</span>
+      </div>
     </div>
     <div>
       <h4 style="margin-bottom:6px">Details</h4>
@@ -1255,6 +1332,7 @@ function renderOrderDetail(o){
   ${actions}
   `;
 }
+
 function bindOrderActions(o){
   $$("#om-body [data-act]").forEach(b => b.addEventListener("click", async () => {
     const act = b.dataset.act;
@@ -1282,7 +1360,6 @@ function bindOrderActions(o){
     if(act==="transit"){ await DB.col("orders").doc(o.id).update({ status:"transit", history:[...(o.history||[]),{at:now(),status:"transit",note:"In transit"}] }); toast("In transit","success"); }
     if(act==="deliver"){ promptOtp("Verify Delivery OTP", o.deliveryOtp, async () => {
       await DB.col("orders").doc(o.id).update({ status:"delivered", deliveredAt: now(), history:[...(o.history||[]),{at:now(),status:"delivered",note:"Delivered ✔"}] });
-      // bump rider earnings
       const rider = state.riders.find(r=>r.id===o.riderId);
       if(rider){ await DB.col("riders").doc(o.riderId).update({ deliveries:(rider.deliveries||0)+1, earnings:(rider.earnings||0)+Math.round((o.price||0)*0.7) }); }
       toast("Delivered ✔","success");
@@ -1291,8 +1368,10 @@ function bindOrderActions(o){
     if(act==="rate"){ const r = +prompt("Rate rider 1-5", "5"); if(!r) return; await DB.col("orders").doc(o.id).update({ rating: r }); const rider = state.riders.find(x=>x.id===o.riderId); if(rider){ const all = state.orders.filter(x=>x.riderId===o.riderId && x.rating); const avg = (all.reduce((s,x)=>s+x.rating,0)+r)/(all.length+1); await DB.col("riders").doc(o.riderId).update({ rating: avg }); } toast("Thanks for rating!","success"); }
     if(act==="reorder"){ closeModal("order-modal"); openBooking(); setTimeout(()=>{ $("#b-pickup").value=o.pickupZone; $("#b-drop").value=o.dropZone; $("#b-paddr").value=o.pickupAddr; $("#b-daddr").value=o.dropAddr; $("#b-rname").value=o.receiverName; $("#b-rphone").value=o.receiverPhone; $("#b-pkg").value=o.package; },100); }
     if(act==="report"){ const msg = prompt("Describe the issue"); if(!msg) return; await DB.col("orders").doc(o.id).update({ report: msg }); toast("Issue reported, support will reach out","success"); }
+    if(act==="track"){ closeModal("order-modal"); openTrackingMap(o.id); }
   }));
 }
+
 function promptOtp(title, expected, onOk){
   $("#otp-title").textContent = title;
   $("#otp-msg").textContent = `Expected OTP from ${title.includes('Pickup')?'customer':'receiver'}. (Demo OTP: ${expected})`;
@@ -1304,13 +1383,178 @@ function promptOtp(title, expected, onOk){
   };
   openModal("otp-modal");
 }
+
+/* ============ LIVE TRACKING MAP ============ */
+function openTrackingMap(orderId) {
+  state.trackingOrderId = orderId;
+  openModal("tracking-modal");
+
+  // Fetch order details
+  DB.col("orders").doc(orderId).get().then(snap => {
+    if (!snap.exists) { toast("Order not found", "error"); return; }
+    const o = { id: snap.id, ...snap.data() };
+
+    // Update status text
+    $("#tracking-status").innerHTML = `
+      <div class="alert info">
+        <strong>Order ${o.id.slice(0,8)}</strong> · 
+        <span class="badge b-${o.status}">${o.status}</span> · 
+        ${o.pickupZone} → ${o.dropZone}
+      </div>
+    `;
+
+    // Initialize or reset the map
+    if (state.trackingMap) {
+      state.trackingMap.remove();
+      state.trackingMap = null;
+    }
+    const mapEl = document.getElementById("tracking-map");
+    if (mapEl._leaflet_id) {
+      // if map already exists, destroy it
+      try { state.trackingMap.remove(); } catch(e) {}
+    }
+
+    // Coordinates for Lagos zones (approximate)
+    const zoneCoords = {
+      "Lagos Island": [6.4550, 3.3841],
+      "Victoria Island": [6.4281, 3.4219],
+      "Lekki": [6.4474, 3.5561],
+      "Ajah": [6.4667, 3.5667],
+      "Ikoyi": [6.4520, 3.4340],
+      "Yaba": [6.5095, 3.3711],
+      "Surulere": [6.5000, 3.3500],
+      "Ikeja": [6.6018, 3.3515],
+      "Mainland": [6.5200, 3.3700],
+      "Apapa": [6.4489, 3.3593],
+      "Festac": [6.4667, 3.2833],
+      "Berger": [6.6500, 3.3667]
+    };
+
+    // Get coords for pickup and drop zones (fallback to Lagos centre)
+    const pickupCoord = zoneCoords[o.pickupZone] || [6.4550, 3.3841];
+    const dropCoord = zoneCoords[o.dropZone] || [6.4550, 3.3841];
+
+    // Create map centred between pickup and drop
+    const midLat = (pickupCoord[0] + dropCoord[0]) / 2;
+    const midLng = (pickupCoord[1] + dropCoord[1]) / 2;
+    state.trackingMap = L.map("tracking-map").setView([midLat, midLng], 12);
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: "abcd",
+      maxZoom: 19
+    }).addTo(state.trackingMap);
+
+    // Add pickup marker
+    L.marker(pickupCoord, {
+      icon: L.divIcon({
+        className: "custom-icon",
+        html: '<div style="background:#1e3a8a;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3);display:grid;place-items:center;color:white;font-size:11px;font-weight:700">P</div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      })
+    }).addTo(state.trackingMap).bindPopup("Pickup: " + o.pickupZone);
+
+    // Add drop marker
+    L.marker(dropCoord, {
+      icon: L.divIcon({
+        className: "custom-icon",
+        html: '<div style="background:#f97316;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3);display:grid;place-items:center;color:white;font-size:11px;font-weight:700">D</div>',
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      })
+    }).addTo(state.trackingMap).bindPopup("Drop-off: " + o.dropZone);
+
+    // Draw dashed route between pickup and drop
+    L.polyline([pickupCoord, dropCoord], {
+      color: "#3b82f6",
+      weight: 3,
+      opacity: 0.5,
+      dashArray: "8, 8"
+    }).addTo(state.trackingMap);
+
+    // Add moving bike marker (simulated movement)
+    let progress = 0;
+    const startCoord = pickupCoord;
+    const endCoord = dropCoord;
+
+    // Create bike icon using divIcon (actual design, not emoji)
+    const bikeIcon = L.divIcon({
+      className: "bike-marker",
+      html: `<div style="background:#f97316;width:36px;height:36px;border-radius:50%;border:3px solid white;box-shadow:0 4px 12px rgba(249,115,22,.5);display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/>
+          <path d="M15 6a1 1 0 0 1 1-1h2.5a1 1 0 0 1 .8 1.6L15 12l-4-6H8"/>
+          <path d="M12 12l-2 5.5"/>
+        </svg>
+      </div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18]
+    });
+
+    state.trackingMarker = L.marker(pickupCoord, { icon: bikeIcon }).addTo(state.trackingMap);
+
+    // Clear any previous interval
+    if (state.trackingInterval) clearInterval(state.trackingInterval);
+
+    // Simulate movement along the route
+    state.trackingInterval = setInterval(() => {
+      progress += 0.02;
+      if (progress > 1) {
+        progress = 0; // loop
+      }
+      // Interpolate between start and end
+      const lat = startCoord[0] + (endCoord[0] - startCoord[0]) * progress;
+      const lng = startCoord[1] + (endCoord[1] - startCoord[1]) * progress;
+      if (state.trackingMarker) {
+        state.trackingMarker.setLatLng([lat, lng]);
+      }
+      // Update status text with progress
+      const statusEl = $("#tracking-status");
+      if (statusEl) {
+        const pct = Math.round(progress * 100);
+        statusEl.innerHTML = `
+          <div class="alert info">
+            <strong>Order ${o.id.slice(0,8)}</strong> · 
+            <span class="badge b-${o.status}">${o.status}</span> · 
+            ${o.pickupZone} → ${o.dropZone}
+            <div style="margin-top:6px;font-size:.82rem;color:var(--muted)">Rider is ${pct}% of the way to destination</div>
+          </div>
+        `;
+      }
+    }, 1500);
+  });
+}
+
+// Clean up map when modal closes
+document.getElementById("tracking-modal").addEventListener("click", (e) => {
+  if (e.target.id === "tracking-modal") {
+    closeTrackingMap();
+  }
+});
+document.querySelector("#tracking-modal .x").addEventListener("click", closeTrackingMap);
+
+function closeTrackingMap() {
+  if (state.trackingInterval) {
+    clearInterval(state.trackingInterval);
+    state.trackingInterval = null;
+  }
+  if (state.trackingMap) {
+    state.trackingMap.remove();
+    state.trackingMap = null;
+  }
+  state.trackingMarker = null;
+  closeModal("tracking-modal");
+}
+
 /* ---- Boot ---- */
 $("#yr").textContent = new Date().getFullYear();
 route("home");
-// signal banner if firebase is placeholder
-if(!FB_READY){
-  setTimeout(()=>toast("Demo mode: using local storage. Add your Firebase config to enable cloud sync.","info"), 800);
+
+if (!FB_READY) {
+  setTimeout(() => toast("Demo mode: using local storage. Add your Firebase config to enable cloud sync.", "info"), 800);
 }
 </script>
 </body>
 </html>
+```
