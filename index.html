@@ -466,10 +466,43 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 <script>
+
 /* ============================================================
    MIMI'S DELIVERY — single-file vanilla JS + Firebase app
    Blue / Orange / White · Live map tracking · Role dashboards
    ============================================================ */
+
+// Add near the top of the script
+let gpsWatchId = null;
+
+function startRiderGps() {
+  if (!navigator.geolocation) { toast("Geolocation not supported", "error"); return; }
+  if (gpsWatchId !== null) return; // already running
+
+  gpsWatchId = navigator.geolocation.watchPosition(
+    async (pos) => {
+      const { latitude: lat, longitude: lng, heading, speed, accuracy } = pos.coords;
+      try {
+        await DB.col("riders").doc(state.user.uid).set({
+          lat, lng,
+          heading: heading || 0,
+          speed: speed || 0,
+          accuracy: accuracy || 0,
+          lastSeen: Date.now()
+        }, { merge: true });
+      } catch (e) { console.warn("GPS write failed", e); }
+    },
+    (err) => console.warn("GPS error", err),
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+  );
+}
+
+function stopRiderGps() {
+  if (gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
+  }
+}
 
 /* ---------- Firebase config (PLACEHOLDER — replace) ---------- */
 const firebaseConfig = {
@@ -1172,9 +1205,17 @@ function bindDashboard(){
     await DB.col("settings").doc("global").set({...state.settings, [k]: t.checked}, {merge:true});
     toast("Setting updated", "success");
   }));
-  if($("#online-tog")) $("#online-tog").addEventListener("change", async (e) => {
-    await DB.col("riders").doc(state.user.uid).update({ online: e.target.checked });
-  });
+  if ($("#online-tog")) $("#online-tog").addEventListener("change", async (e) => {
+  const on = e.target.checked;
+  await DB.col("riders").doc(state.user.uid).update({ online: on });
+  if (on) {
+    startRiderGps();
+    toast("Online — broadcasting your live location", "success");
+  } else {
+    stopRiderGps();
+    toast("Offline — GPS stopped", "info");
+  }
+});
   if($("#adm-search")) $("#adm-search").addEventListener("input", e => {
     const q = e.target.value.toLowerCase();
     const filtered = state.orders.filter(o => !q || o.id.toLowerCase().includes(q) || (o.customerName||"").toLowerCase().includes(q) || (o.customerPhone||"").includes(q) || (o.receiverPhone||"").includes(q));
