@@ -1394,7 +1394,38 @@ function promptOtp(title, expected, onOk){
 }
 
 /* ============ LIVE TRACKING MAP ============ */
+/* ============ LIVE TRACKING MAP ============ */
+let gpsWatchId = null;
 let trackingUnsubRider = null;
+
+function startRiderGps() {
+  if (!navigator.geolocation) { toast("Geolocation not supported", "error"); return; }
+  if (gpsWatchId !== null) return;
+
+  gpsWatchId = navigator.geolocation.watchPosition(
+    async (pos) => {
+      const { latitude: lat, longitude: lng, heading, speed, accuracy } = pos.coords;
+      try {
+        await DB.col("riders").doc(state.user.uid).set({
+          lat, lng,
+          heading: heading || 0,
+          speed: speed || 0,
+          accuracy: accuracy || 0,
+          lastSeen: Date.now()
+        }, { merge: true });
+      } catch (e) { console.warn("GPS write failed", e); }
+    },
+    (err) => console.warn("GPS error", err),
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+  );
+}
+
+function stopRiderGps() {
+  if (gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
+  }
+}
 
 function openTrackingMap(orderId) {
   state.trackingOrderId = orderId;
