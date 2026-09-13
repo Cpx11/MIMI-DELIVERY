@@ -1424,168 +1424,131 @@ function promptOtp(title, expected, onOk){
 }
 
 /* ============ LIVE TRACKING MAP ============ */
+let trackingUnsubRider = null;
+
 function openTrackingMap(orderId) {
   state.trackingOrderId = orderId;
   openModal("tracking-modal");
 
-  // Fetch order details
-  DB.col("orders").doc(orderId).get().then(snap => {
+  DB.col("orders").doc(orderId).get().then(async (snap) => {
     if (!snap.exists) { toast("Order not found", "error"); return; }
     const o = { id: snap.id, ...snap.data() };
 
-    // Update status text
-    $("#tracking-status").innerHTML = `
-      <div class="alert info">
-        <strong>Order ${o.id.slice(0,8)}</strong> · 
-        <span class="badge b-${o.status}">${o.status}</span> · 
-        ${o.pickupZone} → ${o.dropZone}
-      </div>
-    `;
+    // Destroy any previous map instance
+    if (state.trackingMap) { state.trackingMap.remove(); state.trackingMap = null; }
+    if (trackingUnsubRider) { trackingUnsubRider(); trackingUnsubRider = null; }
 
-    // Initialize or reset the map
-    if (state.trackingMap) {
-      state.trackingMap.remove();
-      state.trackingMap = null;
-    }
-    const mapEl = document.getElementById("tracking-map");
-    if (mapEl._leaflet_id) {
-      // if map already exists, destroy it
-      try { state.trackingMap.remove(); } catch(e) {}
-    }
-
-    // Coordinates for Lagos zones (approximate)
+    // --- zone fallback coords ---
     const zoneCoords = {
-      "Lagos Island": [6.4550, 3.3841],
-      "Victoria Island": [6.4281, 3.4219],
-      "Lekki": [6.4474, 3.5561],
-      "Ajah": [6.4667, 3.5667],
-      "Ikoyi": [6.4520, 3.4340],
-      "Yaba": [6.5095, 3.3711],
-      "Surulere": [6.5000, 3.3500],
-      "Ikeja": [6.6018, 3.3515],
-      "Mainland": [6.5200, 3.3700],
-      "Apapa": [6.4489, 3.3593],
-      "Festac": [6.4667, 3.2833],
+      "Lagos Island": [6.4550, 3.3841], "Victoria Island": [6.4281, 3.4219],
+      "Lekki": [6.4474, 3.5561], "Ajah": [6.4667, 3.5667], "Ikoyi": [6.4520, 3.4340],
+      "Yaba": [6.5095, 3.3711], "Surulere": [6.5000, 3.3500], "Ikeja": [6.6018, 3.3515],
+      "Mainland": [6.5200, 3.3700], "Apapa": [6.4489, 3.3593], "Festac": [6.4667, 3.2833],
       "Berger": [6.6500, 3.3667]
     };
-
-    // Get coords for pickup and drop zones (fallback to Lagos centre)
     const pickupCoord = zoneCoords[o.pickupZone] || [6.4550, 3.3841];
-    const dropCoord = zoneCoords[o.dropZone] || [6.4550, 3.3841];
+    const dropCoord   = zoneCoords[o.dropZone]   || [6.4550, 3.3841];
 
-    // Create map centred between pickup and drop
+    // --- init map ---
     const midLat = (pickupCoord[0] + dropCoord[0]) / 2;
     const midLng = (pickupCoord[1] + dropCoord[1]) / 2;
     state.trackingMap = L.map("tracking-map").setView([midLat, midLng], 12);
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      subdomains: "abcd",
-      maxZoom: 19
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
     }).addTo(state.trackingMap);
 
-    // Add pickup marker
-    L.marker(pickupCoord, {
-      icon: L.divIcon({
-        className: "custom-icon",
-        html: '<div style="background:#1e3a8a;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3);display:grid;place-items:center;color:white;font-size:11px;font-weight:700">P</div>',
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
+    // Pickup + Drop markers
+    L.marker(pickupCoord, { icon: L.divIcon({ className:"", iconSize:[24,24], iconAnchor:[12,12],
+      html:'<div style="background:#1e3a8a;width:24px;height:24px;border-radius:50%;border:3px solid white;display:grid;place-items:center;color:white;font-size:11px;font-weight:700">P</div>'
+    })}).addTo(state.trackingMap).bindPopup("Pickup: " + o.pickupZone);
+
+    L.marker(dropCoord, { icon: L.divIcon({ className:"", iconSize:[24,24], iconAnchor:[12,12],
+      html:'<div style="background:#f97316;width:24px;height:24px;border-radius:50%;border:3px solid white;display:grid;place-items:center;color:white;font-size:11px;font-weight:700">D</div>'
+    })}).addTo(state.trackingMap).bindPopup("Drop-off: " + o.dropZone);
+
+    // Real road route via OSRM (no key needed)
+    fetch(`https://router.project-osrm.org/route/v1/driving/${pickupCoord[1]},${pickupCoord[0]};${dropCoord[1]},${dropCoord[0]}?overview=full&geometries=geojson`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.routes && data.routes[0]) {
+          const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+          L.polyline(coords, { color:"#3b82f6", weight:4, opacity:.7, dashArray:"6,6" }).addTo(state.trackingMap);
+          state.trackingMap.fitBounds(L.latLngBounds(coords), { padding:[40,40] });
+        }
       })
-    }).addTo(state.trackingMap).bindPopup("Pickup: " + o.pickupZone);
+      .catch(() => {
+        L.polyline([pickupCoord, dropCoord], { color:"#3b82f6", weight:3, dashArray:"6,6" }).addTo(state.trackingMap);
+      });
 
-    // Add drop marker
-    L.marker(dropCoord, {
-      icon: L.divIcon({
-        className: "custom-icon",
-        html: '<div style="background:#f97316;width:24px;height:24px;border-radius:50%;border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3);display:grid;place-items:center;color:white;font-size:11px;font-weight:700">D</div>',
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      })
-    }).addTo(state.trackingMap).bindPopup("Drop-off: " + o.dropZone);
-
-    // Draw dashed route between pickup and drop
-    L.polyline([pickupCoord, dropCoord], {
-      color: "#3b82f6",
-      weight: 3,
-      opacity: 0.5,
-      dashArray: "8, 8"
-    }).addTo(state.trackingMap);
-
-    // Add moving bike marker (simulated movement)
-    let progress = 0;
-    const startCoord = pickupCoord;
-    const endCoord = dropCoord;
-
-    // Create bike icon using divIcon (actual design, not emoji)
+    // --- Bike marker (only moves when GPS updates come in) ---
     const bikeIcon = L.divIcon({
-      className: "bike-marker",
+      className: "bike-marker", iconSize:[36,36], iconAnchor:[18,18],
       html: `<div style="background:#f97316;width:36px;height:36px;border-radius:50%;border:3px solid white;box-shadow:0 4px 12px rgba(249,115,22,.5);display:grid;place-items:center">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/>
           <path d="M15 6a1 1 0 0 1 1-1h2.5a1 1 0 0 1 .8 1.6L15 12l-4-6H8"/>
           <path d="M12 12l-2 5.5"/>
         </svg>
-      </div>`,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18]
+      </div>`
     });
-
     state.trackingMarker = L.marker(pickupCoord, { icon: bikeIcon }).addTo(state.trackingMap);
 
-    // Clear any previous interval
-    if (state.trackingInterval) clearInterval(state.trackingInterval);
+    // --- Realtime listener to rider's GPS ---
+    if (!o.riderId) {
+      $("#tracking-status").innerHTML = `<div class="alert warn">No rider assigned yet. Waiting…</div>`;
+      return;
+    }
 
-    // Simulate movement along the route
-    state.trackingInterval = setInterval(() => {
-      progress += 0.02;
-      if (progress > 1) {
-        progress = 0; // loop
-      }
-      // Interpolate between start and end
-      const lat = startCoord[0] + (endCoord[0] - startCoord[0]) * progress;
-      const lng = startCoord[1] + (endCoord[1] - startCoord[1]) * progress;
-      if (state.trackingMarker) {
-        state.trackingMarker.setLatLng([lat, lng]);
-      }
-      // Update status text with progress
-      const statusEl = $("#tracking-status");
-      if (statusEl) {
-        const pct = Math.round(progress * 100);
-        statusEl.innerHTML = `
+    const ridersRef = DB.col("riders").doc(o.riderId);
+
+    if (FB_READY) {
+      trackingUnsubRider = ridersRef.onSnapshot(snap => {
+        if (!snap.exists) return;
+        const r = snap.data();
+        if (!r.lat || !r.lng) {
+          $("#tracking-status").innerHTML = `<div class="alert warn">Rider hasn't started sharing GPS yet.</div>`;
+          return;
+        }
+        const age = Date.now() - (r.lastSeen || 0);
+        const ageStr = age < 60000 ? `${Math.round(age/1000)}s ago`
+                     : `${Math.round(age/60000)} min ago`;
+        state.trackingMarker.setLatLng([r.lat, r.lng]);
+
+        // Rotate the bike icon to heading
+        const el = state.trackingMarker.getElement();
+        if (el && r.heading) {
+          const inner = el.querySelector("div");
+          if (inner) inner.style.transform = `rotate(${r.heading}deg)`;
+        }
+
+        $("#tracking-status").innerHTML = `
           <div class="alert info">
-            <strong>Order ${o.id.slice(0,8)}</strong> · 
-            <span class="badge b-${o.status}">${o.status}</span> · 
+            <strong>Order ${o.id.slice(0,8)}</strong> ·
+            <span class="badge b-${o.status}">${o.status}</span> ·
             ${o.pickupZone} → ${o.dropZone}
-            <div style="margin-top:6px;font-size:.82rem;color:var(--muted)">Rider is ${pct}% of the way to destination</div>
-          </div>
-        `;
-      }
-    }, 1500);
+            <div style="margin-top:6px;font-size:.82rem;color:var(--muted)">
+              Rider last seen <strong>${ageStr}</strong>
+              ${r.speed ? ` · Speed: ${(r.speed*3.6).toFixed(1)} km/h` : ""}
+              ${age > 60000 ? ' · <span style="color:#b45309">⚠ Signal may be stale</span>' : ""}
+            </div>
+          </div>`;
+      });
+    } else {
+      // LOCAL mode fallback: poll localStorage every 3s
+      setInterval(() => {
+        const snap = LOCAL.col("riders").doc(o.riderId);
+        snap.get().then(s => {
+          if (!s.exists) return;
+          const r = s.data();
+          if (r.lat && r.lng) {
+            state.trackingMarker.setLatLng([r.lat, r.lng]);
+          }
+        });
+      }, 3000);
+    }
   });
 }
-
-// Clean up map when modal closes
-document.getElementById("tracking-modal").addEventListener("click", (e) => {
-  if (e.target.id === "tracking-modal") {
-    closeTrackingMap();
-  }
-});
-document.querySelector("#tracking-modal .x").addEventListener("click", closeTrackingMap);
-
-function closeTrackingMap() {
-  if (state.trackingInterval) {
-    clearInterval(state.trackingInterval);
-    state.trackingInterval = null;
-  }
-  if (state.trackingMap) {
-    state.trackingMap.remove();
-    state.trackingMap = null;
-  }
-  state.trackingMarker = null;
-  closeModal("tracking-modal");
-}
-
 /* ---- Boot ---- */
 $("#yr").textContent = new Date().getFullYear();
 route("home");
