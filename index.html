@@ -1081,11 +1081,41 @@ function bindRoleTab(b){
 $$("#role-tabs .role-tab").forEach(bindRoleTab);
 
 /* ---- Rider photo upload helper ---- */
+/* ---- Rider photo: compress to a small data URL (no Storage, no CORS) ---- */
 async function uploadRiderPhoto(uid, file){
-  if(!FB_READY || !storage) throw new Error("Storage not available");
-  const ref = storage.ref().child("riderPhotos/"+uid+".jpg");
-  await ref.put(file);
-  return await ref.getDownloadURL();
+  // Validate size before doing any work
+  if(!file) throw new Error("No photo selected");
+  if(file.size > 8 * 1024 * 1024) throw new Error("Photo must be under 8MB");
+
+  // Read the file
+  const dataUrl = await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(new Error("Could not read photo file"));
+    r.readAsDataURL(file);
+  });
+
+  // Downscale + compress on a canvas
+  const img = await new Promise((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error("Could not decode photo"));
+    i.src = dataUrl;
+  });
+
+  const MAX = 400;
+  let { width: w, height: h } = img;
+  if(w > h){ h = Math.round(h * MAX / w); w = MAX; }
+  else     { w = Math.round(w * MAX / h); h = MAX; }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, w, h);
+
+  // ~50KB target
+  const compressed = canvas.toDataURL("image/jpeg", 0.7);
+  return compressed;  // "data:image/jpeg;base64,..."
 }
 
 $("#auth-form").addEventListener("submit", async (e) => {
