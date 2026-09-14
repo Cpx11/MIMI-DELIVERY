@@ -2005,7 +2005,7 @@ function renderOrderDetail(o){
   } else if(isCust || isRecv){
     actions = `<div class="actions-row" style="margin-top:14px">
       ${isCust && o.status==="delivered" && !o.rating?`<button class="btn-mini primary" data-act="rate">Rate rider</button>`:""}
-      ${isCust?`<button class="btn-mini" data-act="reorder">Reorder</button>`:""}
+      ${(isCust||isRecv)?`<button class="btn-mini" data-act="reorder">${isRecv?'Send back':'Reorder'}</button>`:""}
       <button class="btn-mini danger" data-act="report">Report issue</button>
       ${o.riderId && o.status!=="delivered" ? `<button class="btn-mini primary" data-act="track">📍 Live Track</button>` : ""}
       ${o.status==="delivered"?`<button class="btn-mini primary" data-act="receipt">📄 Receipt</button>`:""}
