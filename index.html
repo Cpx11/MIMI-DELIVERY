@@ -10,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root{
     --bg:#f5f8fc;
@@ -82,6 +84,7 @@
   .input,.select,textarea.input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:.95rem;font-family:inherit;background:#fff;color:var(--ink);transition:border .15s, box-shadow .15s}
   .input:focus,.select:focus,textarea.input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px rgba(249,115,22,.12)}
   .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
   .price-out{margin-top:8px;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#2a4a7a);color:#fff;display:flex;justify-content:space-between;align-items:center}
   .price-out .val{font-family:var(--font-head);font-weight:800;font-size:1.4rem}
   .price-out .lbl{font-size:.78rem;opacity:.8}
@@ -100,7 +103,8 @@
   .stat-card .lbl{color:var(--muted);font-size:.88rem;margin-top:4px}
   .testi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
   .testi .who{display:flex;align-items:center;gap:12px;margin-top:14px}
-  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#bfdbfe,#93c5fd);display:grid;place-items:center;color:#1e3a8a;font-weight:700;font-size:.9rem}
+  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#bfdbfe,#93c5fd);display:grid;place-items:center;color:#1e3a8a;font-weight:700;font-size:.9rem;overflow:hidden;flex-shrink:0}
+  .avatar img{width:100%;height:100%;object-fit:cover}
   .zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
   .zone{padding:14px;border:1px dashed var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;gap:10px}
   .zone .dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
@@ -116,6 +120,7 @@
   .modal-bg.open{display:flex}
   .modal{background:#fff;border-radius:16px;max-width:480px;width:100%;max-height:90vh;overflow:auto;box-shadow:var(--shadow-lg);animation:popin .2s ease}
   .modal.lg{max-width:720px}
+  .modal.xl{max-width:900px}
   @keyframes popin{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
   .modal-head{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
   .modal-head h3{margin:0;font-size:1.15rem}
@@ -214,6 +219,28 @@
   .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(10,26,43,.5);z-index:55}
   .sidebar-backdrop.open{display:block}
 
+  /* Tabs inside panels */
+  .subtabs{display:inline-flex;gap:6px;background:#f1f5f9;padding:5px;border-radius:10px}
+  .subtab{padding:7px 16px;border:0;background:transparent;border-radius:7px;font-weight:600;font-size:.85rem;color:var(--ink-2)}
+  .subtab.active{background:#fff;color:var(--brand);box-shadow:0 2px 6px rgba(0,0,0,.05)}
+
+  /* Rider profile card */
+  .rider-card{display:flex;gap:14px;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+  .rider-card .rphoto{width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.1);background:#e2e8f0}
+  .rider-card .rmeta{font-size:.85rem;color:var(--ink-2);line-height:1.45}
+  .rider-card .rname{font-weight:700;color:var(--ink);font-size:.95rem}
+
+  /* Photo preview thumb in admin */
+  .thumb{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.1);background:#e2e8f0}
+  .thumb-empty{width:44px;height:44px;border-radius:50%;background:#f1f5f9;color:var(--muted);display:grid;place-items:center;font-size:.7rem;text-align:center;line-height:1}
+
+  /* Receipt viewer */
+  .receipt-shell{background:#fff;padding:24px;border-radius:12px;border:1px solid var(--line)}
+
+  /* Share link box */
+  .share-box{display:flex;gap:8px;align-items:center;background:#f8fafc;border:1px dashed var(--line);border-radius:10px;padding:10px;margin-top:8px}
+  .share-box input{flex:1;border:0;background:transparent;font-family:monospace;font-size:.82rem;color:var(--ink-2);outline:none}
+
   @media (max-width: 960px){
     .hero-grid{grid-template-columns:1fr;gap:32px}
     .grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}
@@ -230,6 +257,7 @@
     .grid-3,.grid-4{grid-template-columns:1fr}
     footer .container{grid-template-columns:1fr}
     .row-2{grid-template-columns:1fr}
+    .row-3{grid-template-columns:1fr}
     .main{padding:18px 16px}
     table{font-size:.82rem}
     th,td{padding:9px 8px}
@@ -238,6 +266,7 @@
 </head>
 <body>
 
+<!-- ============ PUBLIC SITE ============ -->
 <div id="public-site">
   <header class="nav">
     <div class="nav-inner">
@@ -295,6 +324,7 @@
   </footer>
 </div>
 
+<!-- ============ APP SHELL ============ -->
 <div id="app-shell" class="app-shell">
   <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
   <aside class="sidebar" id="sidebar">
@@ -326,6 +356,7 @@
   </div>
 </div>
 
+<!-- ============ AUTH MODAL ============ -->
 <div class="modal-bg" id="auth-modal">
   <div class="modal">
     <div class="modal-head">
@@ -354,6 +385,48 @@
           <label>Password</label>
           <input class="input" id="auth-password" type="password" placeholder="••••••••" required>
         </div>
+
+        <!-- Rider-only registration fields (shown when role=rider and register mode) -->
+        <div id="rider-fields" style="display:none">
+          <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+          <div class="alert info">Rider verification — all fields required. Admin will review before you can go Online.</div>
+
+          <div class="field">
+            <label>Face Picture (selfie)</label>
+            <input class="input" id="r-photo" type="file" accept="image/*" capture="user">
+          </div>
+
+          <div class="row-2">
+            <div class="field"><label>Vehicle Type</label>
+              <select class="select" id="r-vtype">
+                <option value="">— Select —</option>
+                <option>Motorcycle</option>
+                <option>Bicycle</option>
+                <option>Car</option>
+                <option>Van</option>
+                <option>Tricycle</option>
+              </select>
+            </div>
+            <div class="field"><label>Plate Number</label><input class="input" id="r-plate" placeholder="KJA-234-XY" style="text-transform:uppercase"></div>
+          </div>
+          <div class="row-3">
+            <div class="field"><label>Make</label><input class="input" id="r-make" placeholder="Bajaj"></div>
+            <div class="field"><label>Model</label><input class="input" id="r-model" placeholder="Boxer 100"></div>
+            <div class="field"><label>Year</label><input class="input" id="r-year" type="number" placeholder="2022"></div>
+          </div>
+          <div class="row-2">
+            <div class="field"><label>Color</label><input class="input" id="r-color" placeholder="Blue"></div>
+            <div class="field"><label>License / Rider ID</label><input class="input" id="r-license" placeholder="DL-1234567"></div>
+          </div>
+          <div class="field"><label>Main Zone</label>
+            <select class="select" id="r-zone"></select>
+          </div>
+          <div class="row-2">
+            <div class="field"><label>Emergency Contact Name</label><input class="input" id="r-ecname" placeholder="Full name"></div>
+            <div class="field"><label>Emergency Phone</label><input class="input" id="r-ecphone" placeholder="+234..."></div>
+          </div>
+        </div>
+
         <button class="btn btn-primary btn-block" id="auth-submit" type="submit">Login</button>
         <p class="helper" style="text-align:center;margin-top:12px" id="auth-switch">
           New here? <a style="color:var(--brand);cursor:pointer;font-weight:600" onclick="switchAuth()">Create an account</a>
@@ -366,6 +439,7 @@
   </div>
 </div>
 
+<!-- ============ EDIT PROFILE MODAL ============ -->
 <div class="modal-bg" id="edit-profile-modal">
   <div class="modal">
     <div class="modal-head"><h3>Edit Profile</h3><button class="x" onclick="closeModal('edit-profile-modal')">×</button></div>
@@ -391,16 +465,26 @@
           </div>
           <div id="ep-addresses-list"></div>
         </div>
+        <div id="ep-receivers-block">
+          <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <strong style="font-size:.9rem">Saved Receivers</strong>
+            <button type="button" class="btn-mini primary" id="ep-add-recv">+ Add</button>
+          </div>
+          <div id="ep-receivers-list"></div>
+        </div>
         <button class="btn btn-primary btn-block" type="submit" style="margin-top:14px">Save Changes</button>
       </form>
     </div>
   </div>
 </div>
 
+<!-- ============ BOOKING MODAL ============ -->
 <div class="modal-bg" id="book-modal">
   <div class="modal lg">
     <div class="modal-head"><h3>Book a Delivery</h3><button class="x" onclick="closeModal('book-modal')">×</button></div>
     <div class="modal-body">
+      <div id="book-prefill-banner" style="display:none" class="alert info"></div>
       <form id="book-form">
         <div class="row-2">
           <div class="field"><label>Pickup Zone</label>
@@ -411,13 +495,26 @@
           </div>
         </div>
         <div class="row-2">
-          <div class="field"><label>Pickup Address</label><input class="input" id="b-paddr" placeholder="Street address" required></div>
-          <div class="field"><label>Drop-off Address</label><input class="input" id="b-daddr" placeholder="Street address" required></div>
+          <div class="field">
+            <label>Pickup Address <span id="b-paddr-saved" style="color:var(--brand);cursor:pointer;font-weight:700;text-transform:none">· pick from saved</span></label>
+            <input class="input" id="b-paddr" placeholder="Street address" required>
+          </div>
+          <div class="field">
+            <label>Drop-off Address <span id="b-daddr-saved" style="color:var(--brand);cursor:pointer;font-weight:700;text-transform:none">· pick from saved</span></label>
+            <input class="input" id="b-daddr" placeholder="Street address" required>
+          </div>
         </div>
         <div class="row-2">
-          <div class="field"><label>Receiver Name</label><input class="input" id="b-rname" required></div>
+          <div class="field">
+            <label>Receiver Name <span id="b-rname-saved" style="color:var(--brand);cursor:pointer;font-weight:700;text-transform:none">· pick from saved</span></label>
+            <input class="input" id="b-rname" required>
+          </div>
           <div class="field"><label>Receiver Phone</label><input class="input" id="b-rphone" required></div>
         </div>
+        <div id="b-receiver-uid-note" style="display:none" class="alert info"></div>
+        <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--ink-2);margin-bottom:10px">
+          <input type="checkbox" id="b-save-recv"> Save this receiver for next time
+        </label>
         <div class="field"><label>Package Details</label><textarea class="input" id="b-pkg" rows="2" placeholder="What are we delivering?" required></textarea></div>
         <div class="field"><label>Delivery Notes (optional)</label><input class="input" id="b-notes" placeholder="Fragile, call before arrival..."></div>
         <div class="row-2">
@@ -448,6 +545,7 @@
   </div>
 </div>
 
+<!-- ============ ORDER DETAIL MODAL ============ -->
 <div class="modal-bg" id="order-modal">
   <div class="modal lg">
     <div class="modal-head"><h3 id="om-title">Order Details</h3><button class="x" onclick="closeModal('order-modal')">×</button></div>
@@ -455,6 +553,7 @@
   </div>
 </div>
 
+<!-- ============ OTP MODAL ============ -->
 <div class="modal-bg" id="otp-modal">
   <div class="modal">
     <div class="modal-head"><h3 id="otp-title">Enter OTP</h3><button class="x" onclick="closeModal('otp-modal')">×</button></div>
@@ -469,6 +568,7 @@
   </div>
 </div>
 
+<!-- ============ TRACKING MAP MODAL ============ -->
 <div class="modal-bg" id="tracking-modal">
   <div class="modal lg">
     <div class="modal-head"><h3>Live Tracking</h3><button class="x" onclick="closeModal('tracking-modal')">×</button></div>
@@ -481,8 +581,26 @@
   </div>
 </div>
 
+<!-- ============ RECEIPT VIEWER MODAL ============ -->
+<div class="modal-bg" id="receipt-modal">
+  <div class="modal xl">
+    <div class="modal-head">
+      <h3>Delivery Receipt</h3>
+      <button class="x" onclick="closeModal('receipt-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="receipt-content"></div>
+      <div class="actions-row" style="margin-top:14px">
+        <button class="btn btn-primary" id="receipt-download">📄 Download PDF</button>
+        <button class="btn btn-ghost" onclick="closeModal('receipt-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
+<!-- ============ Firebase (compat) ============ -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -623,6 +741,9 @@ const state = {
   orders: [], riders: [], unsubs: [],
   authMode: "login", authRole: "customer",
   adminTabRevealed: false,
+  customerSubtab: "sent",       // "sent" | "received"
+  pendingInviteReceiverId: null, // set when ?to= is opened but user not logged in
+  prefillReceiver: null,         // { uid, name, phone, address }
   trackingMap: null, trackingMarker: null, trackingInterval: null,
   trackingOrderId: null
 };
@@ -850,6 +971,7 @@ function renderTrackTimeline(o){
       ${steps.map((s,i)=>`<div class="tl-step ${i<cur?'done':''} ${i===cur?'current':''}"><div style="display:flex;flex-direction:column;align-items:center"><div class="tl-dot"></div>${i<steps.length-1?'<div class="tl-line"></div>':''}</div><div class="tl-content" style="padding-bottom:14px"><div class="t" style="text-transform:capitalize">${s}</div><div class="s">${i<=cur?'Completed':'Pending'}</div></div></div>`).join("")}
     </div>
     ${o.riderId && o.status!=="delivered" ? `<button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="openTrackingMap('${o.id}')">🗺️ View Live Map</button>` : ""}
+    ${o.status==="delivered" ? `<button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="viewReceipt('${o.id}')">📄 View Receipt</button>` : ""}
   </div>`;
 }
 
@@ -883,8 +1005,15 @@ function renderContact(){
 }
 
 /* ============ AUTH ============ */
+function populateRiderZoneSelect(){
+  const sel = $("#r-zone");
+  if(!sel) return;
+  sel.innerHTML = `<option value="">— Select main zone —</option>` + ZONES.map(z=>`<option>${z}</option>`).join("");
+}
+
 function openAuth(mode){
   state.authMode = mode;
+  populateRiderZoneSelect();
   $("#auth-title").textContent = mode==="login" ? "Welcome back" : "Create account";
   $("#auth-submit").textContent = mode==="login" ? "Login" : "Create account";
   $("#auth-switch").innerHTML = mode==="login"
@@ -892,6 +1021,7 @@ function openAuth(mode){
     : `Have an account? <a style="color:var(--brand);cursor:pointer;font-weight:600" onclick="switchAuth()">Login</a>`;
   $("#name-field").style.display = mode==="register" ? "flex" : "none";
   $("#phone-field").style.display = mode==="register" ? "flex" : "none";
+  updateRiderFieldsVisibility();
   // Hide admin tab on public modal unless already revealed via ?admin or the dot
   if(!state.adminTabRevealed && !isAdminUrl()){
     const tabs = $("#role-tabs");
@@ -915,6 +1045,12 @@ function openAuth(mode){
 }
 function switchAuth(){ openAuth(state.authMode==="login"?"register":"login"); }
 
+function updateRiderFieldsVisibility(){
+  const show = state.authRole==="rider" && state.authMode==="register";
+  const box = $("#rider-fields");
+  if(box) box.style.display = show ? "block" : "none";
+}
+
 function isAdminUrl(){
   return new URLSearchParams(location.search).has("admin");
 }
@@ -926,7 +1062,6 @@ function revealAdminTab(){
   if(adminTab) adminTab.style.display = "";
   toast("Admin tab unlocked", "info");
 }
-// If URL contains ?admin, auto-reveal
 if(isAdminUrl()) state.adminTabRevealed = true;
 
 function bookDeliveryEntry(){
@@ -940,9 +1075,18 @@ function bindRoleTab(b){
     $$("#role-tabs .role-tab").forEach(x=>x.classList.remove("active"));
     b.classList.add("active");
     state.authRole = b.dataset.role;
+    updateRiderFieldsVisibility();
   });
 }
 $$("#role-tabs .role-tab").forEach(bindRoleTab);
+
+/* ---- Rider photo upload helper ---- */
+async function uploadRiderPhoto(uid, file){
+  if(!FB_READY || !storage) throw new Error("Storage not available");
+  const ref = storage.ref().child("riderPhotos/"+uid+".jpg");
+  await ref.put(file);
+  return await ref.getDownloadURL();
+}
 
 $("#auth-form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -951,17 +1095,60 @@ $("#auth-form").addEventListener("submit", async (e) => {
   const name = $("#auth-name").value.trim();
   const phone = $("#auth-phone").value.trim();
   const role = state.authRole;
-  // Prevent public admin registration unless tab was revealed
   if(role==="admin" && !state.adminTabRevealed && !isAdminUrl()){
     toast("Admin registration is restricted.", "error");
     return;
   }
+
+  // Rider registration: collect + validate extra fields
+  let riderData = null;
+  if(state.authMode==="register" && role==="rider"){
+    const photoFile = $("#r-photo").files[0];
+    const vtype = $("#r-vtype").value;
+    const plate = $("#r-plate").value.trim().toUpperCase();
+    const make = $("#r-make").value.trim();
+    const model = $("#r-model").value.trim();
+    const year = $("#r-year").value.trim();
+    const color = $("#r-color").value.trim();
+    const license = $("#r-license").value.trim();
+    const zone = $("#r-zone").value;
+    const ecname = $("#r-ecname").value.trim();
+    const ecphone = $("#r-ecphone").value.trim();
+    if(!photoFile){ toast("Please upload a face picture","error"); return; }
+    if(!vtype || !plate || !make || !model || !year || !color || !license || !zone || !ecname || !ecphone){
+      toast("Please fill all rider verification fields","error"); return;
+    }
+    riderData = { vtype, plate, make, model, year, color, license, zone, ecname, ecphone, photoFile };
+  }
+
   try {
     if(state.authMode==="register"){
       const cred = await DB.auth.createUserWithEmailAndPassword(email, pw);
       const uid = cred.user.uid;
       await DB.col("users").doc(uid).set({ name: name||email.split("@")[0], email, phone, role, createdAt: now() });
-      if(role==="rider") await DB.col("riders").doc(uid).set({ name: name||email, phone, online: false, verified: false, createdAt: now(), deliveries: 0, earnings: 0, rating: 5.0 });
+      if(role==="rider"){
+        let photoUrl = "";
+        if(riderData && FB_READY){
+          try { photoUrl = await uploadRiderPhoto(uid, riderData.photoFile); }
+          catch(err){ console.warn("Photo upload failed", err); toast("Photo upload failed, saving profile without it","error"); }
+        }
+        await DB.col("riders").doc(uid).set({
+          name: name||email, phone, online:false, verified:false, createdAt: now(),
+          deliveries: 0, earnings: 0, rating: 5.0,
+          photoUrl,
+          vehicleType: riderData?.vtype || "",
+          plateNumber: riderData?.plate || "",
+          vehicleMake: riderData?.make || "",
+          vehicleModel: riderData?.model || "",
+          vehicleYear: riderData?.year || "",
+          vehicleColor: riderData?.color || "",
+          licenseId: riderData?.license || "",
+          mainZone: riderData?.zone || "",
+          emergencyContact: riderData?.ecname || "",
+          emergencyPhone: riderData?.ecphone || "",
+          submittedAt: now()
+        });
+      }
       toast("Account created!", "success");
     } else {
       await DB.auth.signInWithEmailAndPassword(email, pw);
@@ -984,6 +1171,30 @@ DB.auth.onAuthStateChanged(async (user) => {
     state.profile = snap.data();
     state.role = state.profile.role;
     enterDashboard();
+
+    // If there's a pending invite link (?to=UID) and user is a customer, open booking prefilled.
+    if(state.pendingInviteReceiverId && state.role === "customer"){
+      const inviteId = state.pendingInviteReceiverId;
+      state.pendingInviteReceiverId = null;
+      try {
+        const rSnap = await DB.col("users").doc(inviteId).get();
+        if(rSnap.exists){
+          const rp = rSnap.data();
+          if(rp.role === "customer"){
+            state.prefillReceiver = {
+              uid: inviteId,
+              name: rp.name || "",
+              phone: rp.phone || "",
+              address: (rp.addresses && rp.addresses[0] && rp.addresses[0].address) || ""
+            };
+            state.dashTab = "book";
+            renderSidebar(); renderDashboard();
+            setTimeout(()=>openBooking(), 300);
+            toast(`Sending to ${state.prefillReceiver.name || "receiver"}`, "success");
+          }
+        }
+      } catch(e){ console.warn("Invite lookup failed", e); }
+    }
   });
   state.unsubs.push(unsub);
   const unsubS = DB.col("settings").doc("global").onSnapshot(snap => {
@@ -1012,8 +1223,9 @@ function renderSidebar(){
     customer: [
       {k:"overview", t:"Overview", i:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/>'},
       {k:"book", t:"Book Delivery", i:'<path d="M12 5v14M5 12h14"/>'},
-      {k:"orders", t:"My Orders", i:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/>'},
-      {k:"addresses", t:"Saved Addresses", i:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/>'},
+      {k:"orders", t:"My Shipments", i:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/>'},
+      {k:"share", t:"Share & Receive", i:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/>'},
+      {k:"addresses", t:"Addresses & Receivers", i:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/>'},
     ],
     rider: [
       {k:"overview", t:"Overview", i:'<path d="M3 12l9-9 9 9"/>'},
@@ -1039,8 +1251,8 @@ function setTab(k){ state.dashTab = k; renderSidebar(); renderDashboard(); close
 function subscribeData(){
   const unsubO = DB.col("orders").onSnapshot(snap => {
     state.orders = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    if(state.role==="customer") state.orders = state.orders.filter(o=>o.customerId===state.user.uid);
     if(state.role==="rider") state.orders = state.orders.filter(o=>o.riderId===state.user.uid);
+    // Customers see all orders where they are sender OR receiver — filtered in the view below.
     renderDashboard(true);
   });
   state.unsubs.push(unsubO);
@@ -1054,7 +1266,7 @@ function subscribeData(){
 /* ============ DASHBOARDS ============ */
 function renderDashboard(){
   $("#page-title").textContent = {
-    overview:"Dashboard", book:"Book Delivery", orders:"Orders", addresses:"Saved Addresses",
+    overview:"Dashboard", book:"Book Delivery", orders:"My Shipments", share:"Share & Receive", addresses:"Addresses & Receivers",
     jobs:"My Jobs", earnings:"Earnings", history:"Delivery History",
     queue:"Unconfirmed Queue", riders:"Riders", pricing:"Pricing", settings:"System Settings"
   }[state.dashTab] || "Dashboard";
@@ -1066,35 +1278,121 @@ function renderDashboard(){
 }
 
 /* ----- CUSTOMER ----- */
+function sentOrders(){ return state.orders.filter(o=>o.customerId===state.user.uid); }
+function receivedOrders(){ return state.orders.filter(o=>o.receiverId===state.user.uid); }
+
 function renderCustomer(){
-  const o = state.orders;
   if(state.dashTab==="overview"){
-    const active = o.filter(x=>!["delivered","failed"].includes(x.status)).length;
-    const delivered = o.filter(x=>x.status==="delivered").length;
-    const spent = o.filter(x=>x.status==="delivered").reduce((s,x)=>s+(x.price||0),0);
+    const sent = sentOrders();
+    const received = receivedOrders();
+    const activeSent = sent.filter(x=>!["delivered","failed"].includes(x.status)).length;
+    const activeRecv = received.filter(x=>!["delivered","failed"].includes(x.status)).length;
+    const delivered = sent.concat(received).filter(x=>x.status==="delivered").length;
+    const spent = sent.filter(x=>x.status==="delivered").reduce((s,x)=>s+(x.price||0),0);
     return `
     <div class="kpis">
-      <div class="kpi"><div class="lbl">Total Orders</div><div class="num">${o.length}</div></div>
-      <div class="kpi"><div class="lbl">Active</div><div class="num">${active}</div></div>
+      <div class="kpi"><div class="lbl">Sent</div><div class="num">${sent.length}</div></div>
+      <div class="kpi"><div class="lbl">Received</div><div class="num">${received.length}</div></div>
+      <div class="kpi"><div class="lbl">Active</div><div class="num">${activeSent+activeRecv}</div></div>
       <div class="kpi"><div class="lbl">Delivered</div><div class="num">${delivered}</div></div>
-      <div class="kpi"><div class="lbl">Total Spent</div><div class="num">${fmt(spent)}</div></div>
     </div>
     <div class="panel">
-      <div class="panel-head"><h3>Recent Orders</h3><button class="btn btn-primary btn-sm" onclick="openBooking()">+ New Delivery</button></div>
-      ${ordersTable(o.slice(0,6), "customer")}
+      <div class="panel-head"><h3>Quick actions</h3></div>
+      <div class="panel-body">
+        <div class="actions-row">
+          <button class="btn btn-primary btn-sm" onclick="openBooking()">+ New Delivery</button>
+          <button class="btn btn-ghost btn-sm" onclick="shareMyProfile()">🔗 Share my profile link</button>
+          <button class="btn btn-ghost btn-sm" onclick="setTab('share')">Open Share & Receive</button>
+        </div>
+        <div class="share-box" style="margin-top:14px">
+          <input id="share-profile-input" readonly value="${receiverProfileLink(state.user.uid)}">
+          <button class="btn-mini primary" onclick="copyShareLink()">Copy</button>
+        </div>
+        <p class="helper" style="margin-top:6px">Send this link to someone so they can deliver to you without typing your details.</p>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Recent Activity</h3>
+        <div class="subtabs">
+          <button class="subtab ${state.customerSubtab==='sent'?'active':''}" onclick="setCustomerSubtab('sent')">Sent</button>
+          <button class="subtab ${state.customerSubtab==='received'?'active':''}" onclick="setCustomerSubtab('received')">Received</button>
+        </div>
+      </div>
+      ${ordersTable(state.customerSubtab==='sent'?sentOrders().slice(0,6):receivedOrders().slice(0,6), "customer")}
     </div>`;
   }
   if(state.dashTab==="book"){ openBooking(); return `<div class="empty">Opening booking…</div>`; }
   if(state.dashTab==="orders"){
-    return `<div class="panel"><div class="panel-head"><h3>All Orders</h3><button class="btn btn-primary btn-sm" onclick="openBooking()">+ New Delivery</button></div>${ordersTable(o, "customer")}</div>`;
+    return `<div class="panel">
+      <div class="panel-head">
+        <h3>My Shipments</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div class="subtabs">
+            <button class="subtab ${state.customerSubtab==='sent'?'active':''}" onclick="setCustomerSubtab('sent')">Sent</button>
+            <button class="subtab ${state.customerSubtab==='received'?'active':''}" onclick="setCustomerSubtab('received')">Received</button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openBooking()">+ New Delivery</button>
+        </div>
+      </div>
+      ${ordersTable(state.customerSubtab==='sent'?sentOrders():receivedOrders(), "customer")}
+    </div>`;
+  }
+  if(state.dashTab==="share"){
+    return `<div class="panel">
+      <div class="panel-head"><h3>Share & Receive</h3></div>
+      <div class="panel-body">
+        <p style="margin-bottom:10px">Share your profile link with anyone who wants to send you a package. When they open it, they'll be taken straight to a pre-filled booking form.</p>
+        <div class="share-box">
+          <input id="share-profile-input" readonly value="${receiverProfileLink(state.user.uid)}">
+          <button class="btn-mini primary" onclick="copyShareLink()">Copy</button>
+        </div>
+        <div class="actions-row" style="margin-top:14px">
+          <button class="btn btn-primary btn-sm" onclick="shareMyProfile()">🔗 Copy link</button>
+          <button class="btn btn-ghost btn-sm" onclick="sendShareViaWhatsApp()">💬 Share via WhatsApp</button>
+        </div>
+        <p class="helper" style="margin-top:12px">Anyone with your link can send you a delivery. Only share it with people you trust.</p>
+
+        <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+        <h3 style="margin-bottom:10px">You're receiving ${receivedOrders().length} shipment(s)</h3>
+        ${ordersTable(receivedOrders(), "customer")}
+      </div>
+    </div>`;
   }
   if(state.dashTab==="addresses"){
     const saved = (state.profile.addresses)||[];
-    return `<div class="panel"><div class="panel-head"><h3>Saved Addresses</h3><button class="btn btn-primary btn-sm" id="add-addr">+ Add Address</button></div><div class="panel-body">
-      ${saved.length? saved.map((a,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between"><div><strong>${a.label}</strong><div style="font-size:.85rem;color:var(--muted)">${a.address}</div></div><button class="btn-mini danger" onclick="delAddr(${i})">Remove</button></div>`).join("") : '<div class="empty">No saved addresses yet.</div>'}
-    </div></div>`;
+    const recvs = (state.profile.savedReceivers)||[];
+    return `<div class="panel">
+      <div class="panel-head"><h3>Saved Addresses</h3><button class="btn btn-primary btn-sm" id="add-addr">+ Add Address</button></div>
+      <div class="panel-body">
+        ${saved.length? saved.map((a,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <div>
+            <strong>${a.label}</strong> ${a.isDefault?'<span class="badge b-delivered" style="margin-left:6px">Default</span>':''}
+            <div style="font-size:.85rem;color:var(--muted)">${a.address}${a.zone?' · '+a.zone:''}</div>
+          </div>
+          <div class="actions-row">
+            ${!a.isDefault?`<button class="btn-mini primary" onclick="setDefaultAddr(${i})">Set default</button>`:''}
+            <button class="btn-mini danger" onclick="delAddr(${i})">Remove</button>
+          </div>
+        </div>`).join("") : '<div class="empty">No saved addresses yet.</div>'}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Saved Receivers</h3><button class="btn btn-primary btn-sm" id="add-recv">+ Add Receiver</button></div>
+      <div class="panel-body">
+        ${recvs.length? recvs.map((r,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <div>
+            <strong>${r.label||r.name}</strong>
+            <div style="font-size:.85rem;color:var(--muted)">${r.name} · ${r.phone} · ${r.address}${r.zone?' · '+r.zone:''}</div>
+          </div>
+          <button class="btn-mini danger" onclick="delReceiver(${i})">Remove</button>
+        </div>`).join("") : '<div class="empty">No saved receivers yet.</div>'}
+      </div>
+    </div>`;
   }
 }
+
+function setCustomerSubtab(k){ state.customerSubtab = k; renderDashboard(); }
 
 /* ----- RIDER ----- */
 function renderRider(){
@@ -1103,16 +1401,39 @@ function renderRider(){
   if(state.dashTab==="overview"){
     const active = o.filter(x=>!["delivered","failed"].includes(x.status)).length;
     const completed = o.filter(x=>x.status==="delivered").length;
+    const photoHtml = me.photoUrl
+      ? `<img src="${me.photoUrl}" alt="me" style="width:56px;height:56px;border-radius:50%;object-fit:cover">`
+      : `<div class="avatar" style="width:56px;height:56px;font-size:1rem">${(me.name||"R")[0].toUpperCase()}</div>`;
     return `
-    <div class="alert info" style="display:flex;justify-content:space-between;align-items:center">
-      <div><strong>Status:</strong> You are currently <span class="badge ${me.online?'b-online':'b-offline'}">${me.online?'Online':'Offline'}</span></div>
-      <label class="switch"><input type="checkbox" id="online-tog" ${me.online?'checked':''}><span class="slider"></span></label>
+    <div class="alert info" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:12px">
+        ${photoHtml}
+        <div>
+          <strong>${me.name||"Rider"}</strong>
+          <div style="font-size:.8rem;color:var(--muted)">
+            ${me.verified ? 'Verified ✓' : '⚠ Awaiting admin approval'}
+            ${me.mainZone ? ' · '+me.mainZone : ''}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div><strong>Status:</strong> <span class="badge ${me.online?'b-online':'b-offline'}">${me.online?'Online':'Offline'}</span></div>
+        <label class="switch"><input type="checkbox" id="online-tog" ${me.online?'checked':''}><span class="slider"></span></label>
+      </div>
     </div>
     <div class="kpis">
       <div class="kpi"><div class="lbl">Active Jobs</div><div class="num">${active}</div></div>
       <div class="kpi"><div class="lbl">Completed</div><div class="num">${completed}</div></div>
       <div class="kpi"><div class="lbl">Earnings</div><div class="num">${fmt(me.earnings||0)}</div></div>
       <div class="kpi"><div class="lbl">Rating</div><div class="num">${(me.rating||4.8).toFixed(1)}★</div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><h3>Vehicle & Verification</h3></div>
+      <div class="panel-body" style="font-size:.9rem">
+        <p style="margin:2px 0"><strong>Vehicle:</strong> ${me.vehicleType||"—"} ${me.vehicleMake?`· ${me.vehicleMake} ${me.vehicleModel||""} (${me.vehicleYear||""})`:""} ${me.vehicleColor?'· '+me.vehicleColor:""}</p>
+        <p style="margin:2px 0"><strong>Plate:</strong> ${me.plateNumber||"—"}</p>
+        <p style="margin:2px 0"><strong>License ID:</strong> ${me.licenseId||"—"}</p>
+        <p style="margin:2px 0"><strong>Emergency Contact:</strong> ${me.emergencyContact||"—"} ${me.emergencyPhone?'('+me.emergencyPhone+')':''}</p>
+      </div>
     </div>
     <div class="panel"><div class="panel-head"><h3>Current Jobs</h3></div>${ordersTable(o.filter(x=>!["delivered","failed"].includes(x.status)), "rider")}</div>`;
   }
@@ -1166,17 +1487,26 @@ function renderAdmin(){
   }
   if(state.dashTab==="riders"){
     return `<div class="panel"><div class="panel-head"><h3>Rider Management</h3></div>
-      <table><thead><tr><th>Name</th><th>Phone</th><th>Status</th><th>Verified</th><th>Deliveries</th><th>Actions</th></tr></thead>
+      <div style="overflow:auto">
+      <table><thead><tr>
+        <th>Photo</th><th>Name / Phone</th><th>Vehicle</th><th>Plate</th><th>Zone</th><th>Status</th><th>Verified</th><th>Deliveries</th><th>Actions</th>
+      </tr></thead>
       <tbody>${state.riders.map(r=>`<tr>
-        <td>${r.name||"—"}</td><td>${r.phone||"—"}</td>
+        <td>${r.photoUrl ? `<img class="thumb" src="${r.photoUrl}" onclick="previewImage('${r.photoUrl}')" style="cursor:pointer">` : `<div class="thumb-empty">No<br>photo</div>`}</td>
+        <td><strong>${r.name||"—"}</strong><div style="font-size:.78rem;color:var(--muted)">${r.phone||"—"}</div></td>
+        <td style="font-size:.82rem">${r.vehicleType||"—"} ${r.vehicleMake?`<div style="color:var(--muted)">${r.vehicleMake} ${r.vehicleModel||""} ${r.vehicleYear?'('+r.vehicleYear+')':""} ${r.vehicleColor?'· '+r.vehicleColor:""}</div>`:""}</td>
+        <td style="font-size:.82rem">${r.plateNumber||"—"}</td>
+        <td style="font-size:.82rem">${r.mainZone||"—"}</td>
         <td><span class="badge ${r.online?'b-online':'b-offline'}">${r.online?'Online':'Offline'}</span></td>
         <td>${r.verified?'✅ Yes':'⚠️ No'}</td>
         <td>${r.deliveries||0}</td>
         <td><div class="actions-row">
-          <button class="btn-mini ${r.verified?'':'ok'}" onclick="toggleVerify('${r.id}',${!r.verified})">${r.verified?'Unverify':'Verify'}</button>
+          ${!r.verified?`<button class="btn-mini ok" onclick="approveRider('${r.id}',true)">Approve</button>`:`<button class="btn-mini" onclick="approveRider('${r.id}',false)">Reject</button>`}
+          <button class="btn-mini" onclick="viewRider('${r.id}')">View</button>
           <button class="btn-mini danger" onclick="removeRider('${r.id}')">Remove</button>
-        </div></td></tr>`).join("") || `<tr><td colspan="6" class="empty">No riders yet.</td></tr>`}
-      </tbody></table></div>`;
+        </div></td></tr>`).join("") || `<tr><td colspan="9" class="empty">No riders yet.</td></tr>`}
+      </tbody></table></div>
+    </div>`;
   }
   if(state.dashTab==="pricing"){
     const s = state.settings;
@@ -1218,7 +1548,7 @@ function ordersTable(rows, role){
     ${rows.map(o=>{
       const route = `${o.pickupZone||"—"} → ${o.dropZone||"—"}`;
       const badge = `<span class="badge b-${o.status}">${o.status}</span>`;
-      const acts = `<button class="btn-mini" onclick="viewOrder('${o.id}')">View</button>`;
+      const acts = `<button class="btn-mini" onclick="viewOrder('${o.id}')">View</button>${o.status==="delivered"?`<button class="btn-mini" onclick="viewReceipt('${o.id}')" style="margin-left:4px">📄</button>`:""}`;
       if(role==="admin") return `<tr><td><strong>${o.id.slice(0,8)}</strong></td><td>${o.customerName||"—"}<div style="font-size:.78rem;color:var(--muted)">${o.customerPhone||""}</div></td><td>${route}</td><td>${o.type}</td><td>${fmt(o.price)}</td><td>${badge}</td><td style="font-size:.82rem">${fmtDate(o.createdAt)}</td><td>${acts}</td></tr>`;
       if(role==="rider") return `<tr><td><strong>${o.id.slice(0,8)}</strong></td><td>${route}</td><td>${o.payment||"-"}</td><td>${fmt(o.price)}</td><td>${badge}</td><td>${acts}</td></tr>`;
       return `<tr><td><strong>${o.id.slice(0,8)}</strong></td><td>${route}</td><td>${o.type}</td><td>${fmt(o.price)}</td><td>${badge}</td><td style="font-size:.82rem">${fmtDate(o.createdAt)}</td><td>${acts}</td></tr>`;
@@ -1243,6 +1573,12 @@ function bindDashboard(){
   }));
   if ($("#online-tog")) $("#online-tog").addEventListener("change", async (e) => {
     const on = e.target.checked;
+    const me = state.riders.find(r=>r.id===state.user.uid) || {};
+    if(on && !me.verified){
+      e.target.checked = false;
+      toast("Awaiting admin approval before going online.", "error");
+      return;
+    }
     await DB.col("riders").doc(state.user.uid).update({ online: on });
     if (on) {
       startRiderGps();
@@ -1263,18 +1599,87 @@ function bindDashboard(){
     if(!label) return;
     const address = prompt("Full address");
     if(!address) return;
-    const addrs = [...(state.profile.addresses||[]), {label, address}];
+    const zone = prompt("Zone (e.g. Lekki, Yaba)") || "";
+    const addrs = [...(state.profile.addresses||[]), {label, address, zone, isDefault: (state.profile.addresses||[]).length===0}];
     await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
     toast("Address saved", "success");
+  });
+  if($("#add-recv")) $("#add-recv").addEventListener("click", async () => {
+    const label = prompt("Label (e.g. Office - Chidi)");
+    if(!label) return;
+    const name = prompt("Receiver full name"); if(!name) return;
+    const phone = prompt("Receiver phone"); if(!phone) return;
+    const address = prompt("Receiver address"); if(!address) return;
+    const zone = prompt("Zone (optional)") || "";
+    const recvs = [...(state.profile.savedReceivers||[]), {label, name, phone, address, zone}];
+    await DB.col("users").doc(state.user.uid).update({ savedReceivers: recvs });
+    toast("Receiver saved", "success");
   });
 }
 
 window.delAddr = async (i) => {
   const addrs = [...(state.profile.addresses||[])]; addrs.splice(i,1);
+  // ensure one is default if list non-empty
+  if(addrs.length && !addrs.some(a=>a.isDefault)) addrs[0].isDefault = true;
   await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
 };
-window.toggleVerify = async (id, val) => { await DB.col("riders").doc(id).update({ verified: val }); toast("Rider updated", "success"); };
+window.setDefaultAddr = async (i) => {
+  const addrs = [...(state.profile.addresses||[])];
+  addrs.forEach((a,j)=>{ a.isDefault = (j===i); });
+  await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
+  toast("Default address updated", "success");
+};
+window.delReceiver = async (i) => {
+  const recvs = [...(state.profile.savedReceivers||[])]; recvs.splice(i,1);
+  await DB.col("users").doc(state.user.uid).update({ savedReceivers: recvs });
+  toast("Receiver removed", "success");
+};
+window.toggleVerify = async (id, val) => { await DB.col("riders").doc(id).update({ verified: val, approvedAt: val?now():null, approvedBy: state.user.uid }); toast("Rider updated", "success"); };
+window.approveRider = async (id, val) => {
+  await DB.col("riders").doc(id).update({ verified: val, approvedAt: val?now():null, approvedBy: state.user.uid });
+  toast(val?"Rider approved ✔":"Rider rejected", val?"success":"info");
+};
 window.removeRider = async (id) => { if(!confirm("Remove this rider?")) return; await DB.col("riders").doc(id).delete(); toast("Rider removed", "success"); };
+window.previewImage = (url) => { window.open(url, "_blank"); };
+window.viewRider = (id) => {
+  const r = state.riders.find(x=>x.id===id);
+  if(!r) return;
+  const lines = [
+    `Name: ${r.name||"-"}`,
+    `Phone: ${r.phone||"-"}`,
+    `Vehicle: ${r.vehicleType||"-"} ${r.vehicleMake||""} ${r.vehicleModel||""} (${r.vehicleYear||"-"}) ${r.vehicleColor||""}`,
+    `Plate: ${r.plateNumber||"-"}`,
+    `License: ${r.licenseId||"-"}`,
+    `Zone: ${r.mainZone||"-"}`,
+    `Emergency: ${r.emergencyContact||"-"} ${r.emergencyPhone?"("+r.emergencyPhone+")":""}`,
+    `Verified: ${r.verified?"Yes":"No"}`,
+    `Deliveries: ${r.deliveries||0}`,
+    `Rating: ${(r.rating||4.8).toFixed(1)}★`
+  ].join("\n");
+  alert(lines);
+};
+
+/* ============ SHARE PROFILE LINK ============ */
+function receiverProfileLink(uid){
+  const base = location.origin + location.pathname;
+  return `${base}?to=${uid}`;
+}
+window.shareMyProfile = async () => {
+  const link = receiverProfileLink(state.user.uid);
+  try { await navigator.clipboard.writeText(link); toast("Link copied to clipboard ✔", "success"); }
+  catch(e){ prompt("Copy this link", link); }
+};
+window.copyShareLink = async () => {
+  const el = $("#share-profile-input");
+  if(!el) return;
+  try { await navigator.clipboard.writeText(el.value); toast("Link copied ✔", "success"); }
+  catch(e){ el.select(); document.execCommand("copy"); toast("Link copied ✔", "success"); }
+};
+window.sendShareViaWhatsApp = () => {
+  const link = receiverProfileLink(state.user.uid);
+  const text = encodeURIComponent(`Send me a delivery on Mimi's Delivery: ${link}`);
+  window.open(`https://wa.me/?text=${text}`, "_blank");
+};
 
 /* ============ EDIT PROFILE ============ */
 function openEditProfile(){
@@ -1282,13 +1687,16 @@ function openEditProfile(){
   $("#ep-name").value = state.profile.name || "";
   $("#ep-phone").value = state.profile.phone || "";
   $("#ep-email").value = state.profile.email || state.user.email || "";
-  // Show saved addresses block only for customers
   const addrBlock = $("#ep-addresses-block");
+  const recvBlock = $("#ep-receivers-block");
   if(state.role === "customer"){
     addrBlock.style.display = "block";
+    recvBlock.style.display = "block";
     renderEpAddresses();
+    renderEpReceivers();
   } else {
     addrBlock.style.display = "none";
+    recvBlock.style.display = "none";
   }
   openModal("edit-profile-modal");
 }
@@ -1301,12 +1709,33 @@ function renderEpAddresses(){
     return;
   }
   list.innerHTML = addrs.map((a,i)=>`
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);gap:8px">
       <div>
-        <strong style="font-size:.9rem">${a.label}</strong>
-        <div style="font-size:.82rem;color:var(--muted)">${a.address}</div>
+        <strong style="font-size:.9rem">${a.label}</strong>${a.isDefault?' <span class="badge b-delivered" style="margin-left:4px">Default</span>':''}
+        <div style="font-size:.82rem;color:var(--muted)">${a.address}${a.zone?' · '+a.zone:''}</div>
       </div>
-      <button type="button" class="btn-mini danger" onclick="removeEpAddress(${i})">Remove</button>
+      <div class="actions-row">
+        ${!a.isDefault?`<button type="button" class="btn-mini primary" onclick="setDefaultAddr(${i})">Default</button>`:''}
+        <button type="button" class="btn-mini danger" onclick="removeEpAddress(${i})">Remove</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderEpReceivers(){
+  const list = $("#ep-receivers-list");
+  const recvs = state.profile.savedReceivers || [];
+  if(!recvs.length){
+    list.innerHTML = '<div style="font-size:.85rem;color:var(--muted);padding:8px 0">No saved receivers yet.</div>';
+    return;
+  }
+  list.innerHTML = recvs.map((r,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);gap:8px">
+      <div>
+        <strong style="font-size:.9rem">${r.label||r.name}</strong>
+        <div style="font-size:.82rem;color:var(--muted)">${r.name} · ${r.phone} · ${r.address}</div>
+      </div>
+      <button type="button" class="btn-mini danger" onclick="removeEpReceiver(${i})">Remove</button>
     </div>
   `).join("");
 }
@@ -1314,23 +1743,44 @@ function renderEpAddresses(){
 window.removeEpAddress = async (i) => {
   const addrs = [...(state.profile.addresses||[])];
   addrs.splice(i,1);
+  if(addrs.length && !addrs.some(a=>a.isDefault)) addrs[0].isDefault = true;
   await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
-  // optimistically update local so re-render works even before snapshot
   state.profile.addresses = addrs;
   renderEpAddresses();
   toast("Address removed", "success");
+};
+window.removeEpReceiver = async (i) => {
+  const recvs = [...(state.profile.savedReceivers||[])];
+  recvs.splice(i,1);
+  await DB.col("users").doc(state.user.uid).update({ savedReceivers: recvs });
+  state.profile.savedReceivers = recvs;
+  renderEpReceivers();
+  toast("Receiver removed", "success");
 };
 
 $("#ep-add-addr") && $("#ep-add-addr").addEventListener("click", async () => {
   const label = prompt("Address label (e.g. Home, Office)");
   if(!label) return;
-  const address = prompt("Full address");
-  if(!address) return;
-  const addrs = [...(state.profile.addresses||[]), {label, address}];
+  const address = prompt("Full address"); if(!address) return;
+  const zone = prompt("Zone (optional)") || "";
+  const addrs = [...(state.profile.addresses||[]), {label, address, zone, isDefault: (state.profile.addresses||[]).length===0}];
   await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
   state.profile.addresses = addrs;
   renderEpAddresses();
   toast("Address added", "success");
+});
+
+$("#ep-add-recv") && $("#ep-add-recv").addEventListener("click", async () => {
+  const label = prompt("Label (e.g. Office - Chidi)"); if(!label) return;
+  const name = prompt("Receiver full name"); if(!name) return;
+  const phone = prompt("Receiver phone"); if(!phone) return;
+  const address = prompt("Receiver address"); if(!address) return;
+  const zone = prompt("Zone (optional)") || "";
+  const recvs = [...(state.profile.savedReceivers||[]), {label, name, phone, address, zone}];
+  await DB.col("users").doc(state.user.uid).update({ savedReceivers: recvs });
+  state.profile.savedReceivers = recvs;
+  renderEpReceivers();
+  toast("Receiver added", "success");
 });
 
 $("#edit-profile-form").addEventListener("submit", async (e) => {
@@ -1341,10 +1791,8 @@ $("#edit-profile-form").addEventListener("submit", async (e) => {
   try {
     await DB.col("users").doc(state.user.uid).update({ name, phone });
     if(state.role === "rider"){
-      // keep rider doc in sync
       await DB.col("riders").doc(state.user.uid).set({ name, phone }, { merge: true });
     }
-    // Update header immediately (optimistic)
     state.profile.name = name;
     state.profile.phone = phone;
     $("#user-name").textContent = name;
@@ -1361,6 +1809,31 @@ function openBooking(){
   const z = ZONES.map(x=>`<option>${x}</option>`).join("");
   $("#b-pickup").innerHTML = z; $("#b-drop").innerHTML = z;
   $("#b-drop").value = ZONES[2];
+
+  // Auto-fill pickup from default saved address
+  const addrs = state.profile?.addresses || [];
+  const def = addrs.find(a=>a.isDefault) || (addrs.length===1?addrs[0]:null);
+  if(def){
+    if(def.zone) $("#b-pickup").value = def.zone;
+    $("#b-paddr").value = def.address || "";
+  } else if(addrs.length===0){
+    $("#b-paddr").value = "";
+  }
+
+  // Prefill receiver from ?to= invitation
+  const pr = state.prefillReceiver;
+  const note = $("#b-receiver-uid-note");
+  if(pr){
+    $("#b-rname").value = pr.name || "";
+    $("#b-rphone").value = pr.phone || "";
+    if(pr.address) $("#b-daddr").value = pr.address;
+    note.style.display = "block";
+    note.innerHTML = `This delivery is going to <strong>${pr.name||"a Mimi's customer"}</strong> (link invite).`;
+  } else {
+    note.style.display = "none";
+    note.innerHTML = "";
+  }
+
   const upd = () => {
     const r = calcPrice({pickup:$("#b-pickup").value, drop:$("#b-drop").value, type:$("#b-type").value, heavy:$("#b-heavy").value});
     $("#b-price").textContent = fmt(r.price);
@@ -1368,7 +1841,61 @@ function openBooking(){
   };
   ["b-pickup","b-drop","b-type","b-heavy"].forEach(id=>$("#"+id).onchange=upd);
   upd();
+
+  // Wire pick-from-saved buttons
+  const savedAddrBtn = $("#b-paddr-saved");
+  const savedRecvBtn = $("#b-rname-saved");
+  savedAddrBtn.onclick = pickSavedAddressForPickup;
+  savedRecvBtn.onclick = pickSavedReceiver;
+
   openModal("book-modal");
+}
+
+function pickSavedAddressForPickup(){
+  const addrs = state.profile?.addresses || [];
+  if(!addrs.length){ toast("No saved addresses yet. Add one in Addresses & Receivers.","info"); return; }
+  showPicker("Pick a saved pickup", addrs.map(a=>({label:a.label, sub:`${a.address}${a.zone?' · '+a.zone:''}`})), (i)=>{
+    const a = addrs[i];
+    if(a.zone) $("#b-pickup").value = a.zone;
+    $("#b-paddr").value = a.address || "";
+  });
+}
+
+function pickSavedReceiver(){
+  const recvs = state.profile?.savedReceivers || [];
+  if(!recvs.length){ toast("No saved receivers yet. Add one in Addresses & Receivers.","info"); return; }
+  showPicker("Pick a saved receiver", recvs.map(r=>({label:r.label||r.name, sub:`${r.name} · ${r.phone} · ${r.address}`})), (i)=>{
+    const r = recvs[i];
+    $("#b-rname").value = r.name || "";
+    $("#b-rphone").value = r.phone || "";
+    if(r.address) $("#b-daddr").value = r.address;
+    if(r.zone) $("#b-drop").value = r.zone;
+    toast("Receiver filled","success");
+  });
+}
+
+/* Lightweight picker using a transient modal */
+function showPicker(title, items, onPick){
+  const existing = document.getElementById("picker-modal");
+  if(existing) existing.remove();
+  const bg = document.createElement("div");
+  bg.className = "modal-bg open"; bg.id = "picker-modal";
+  bg.innerHTML = `
+    <div class="modal">
+      <div class="modal-head"><h3>${title}</h3><button class="x" onclick="document.getElementById('picker-modal').remove()">×</button></div>
+      <div class="modal-body">
+        ${items.map((it,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer" data-i="${i}">
+          <strong style="font-size:.92rem">${it.label}</strong>
+          <div style="font-size:.82rem;color:var(--muted)">${it.sub||""}</div>
+        </div>`).join("")}
+      </div>
+    </div>`;
+  document.body.appendChild(bg);
+  bg.querySelectorAll("[data-i]").forEach(el => el.onclick = () => {
+    onPick(+el.dataset.i);
+    bg.remove();
+  });
+  bg.addEventListener("click", e => { if(e.target===bg) bg.remove(); });
 }
 
 $("#book-form").addEventListener("submit", async (e) => {
@@ -1376,10 +1903,13 @@ $("#book-form").addEventListener("submit", async (e) => {
   if(!state.user || state.role!=="customer"){ toast("Login as customer to book", "error"); return; }
   const pickup = $("#b-pickup").value, drop = $("#b-drop").value;
   const r = calcPrice({pickup, drop, type:$("#b-type").value, heavy:$("#b-heavy").value});
+  const pr = state.prefillReceiver || {};
+  const saveRecv = $("#b-save-recv").checked;
   const order = {
     customerId: state.user.uid,
     customerName: state.profile.name || state.profile.email,
     customerPhone: state.profile.phone || "",
+    receiverId: pr.uid || null,
     pickupZone: pickup, dropZone: drop,
     pickupAddr: $("#b-paddr").value, dropAddr: $("#b-daddr").value,
     receiverName: $("#b-rname").value, receiverPhone: $("#b-rphone").value,
@@ -1394,29 +1924,39 @@ $("#book-form").addEventListener("submit", async (e) => {
     history: [{at: now(), status:"pending", note:"Order created"}]
   };
   const ref = await DB.col("orders").add(order);
-  // Notify customer + receiver of their OTPs (SMS hook — plug in Twilio/Termii/etc. later)
   sendOtpSms({ ...order, id: ref.id });
+
+  // Optionally save receiver
+  if(saveRecv){
+    const recvs = [...(state.profile.savedReceivers||[])];
+    const exists = recvs.find(x => x.phone === order.receiverPhone);
+    if(!exists){
+      recvs.push({
+        label: order.receiverName || "Saved",
+        name: order.receiverName,
+        phone: order.receiverPhone,
+        address: order.dropAddr,
+        zone: order.dropZone,
+        receiverId: order.receiverId || undefined
+      });
+      await DB.col("users").doc(state.user.uid).update({ savedReceivers: recvs });
+      state.profile.savedReceivers = recvs;
+    }
+  }
+
   toast("Order placed ✔  ID: "+ref.id.slice(0,8), "success");
   closeModal("book-modal");
+  state.prefillReceiver = null;
   state.dashTab="orders"; renderDashboard();
 });
 
-/* Placeholder SMS hook — replace the body with a real provider call later.
-   Intended flow:
-     - Send `pickupOtp` to `order.customerPhone` (sender reads it to rider at pickup).
-     - Send `deliveryOtp` to `order.receiverPhone` (receiver reads it to rider at delivery).
-   The rider must NEVER be told these codes by the system. */
+/* Placeholder SMS hook */
 function sendOtpSms(order){
   try {
-    console.log("[SMS hook] Would send to customer", order.customerPhone,
-                "pickup OTP:", order.pickupOtp);
-    console.log("[SMS hook] Would send to receiver", order.receiverPhone,
-                "delivery OTP:", order.deliveryOtp);
-    // TODO: plug in your SMS provider here, e.g.:
-    // await fetch("/api/send-otp", { method:"POST", headers:{ "Content-Type":"application/json" },
-    //   body: JSON.stringify({ customerPhone: order.customerPhone, receiverPhone: order.receiverPhone,
-    //                          pickupOtp: order.pickupOtp, deliveryOtp: order.deliveryOtp,
-    //                          orderId: order.id }) });
+    const trackingUrl = `${location.origin}${location.pathname}?receipt=${order.id}`;
+    console.log("[SMS hook] → customer", order.customerPhone, "pickup OTP:", order.pickupOtp);
+    console.log("[SMS hook] → receiver", order.receiverPhone, "delivery OTP:", order.deliveryOtp, "tracking:", trackingUrl);
+    // TODO: plug in SMS provider
   } catch(e){ console.warn("SMS hook failed", e); }
 }
 
@@ -1438,7 +1978,10 @@ function renderOrderDetail(o){
   const isAdmin = state.role==="admin";
   const isRider = state.role==="rider" && o.riderId===state.user.uid;
   const isCust = state.role==="customer" && o.customerId===state.user.uid;
+  const isRecv = state.role==="customer" && o.receiverId===state.user.uid && !isCust;
   const ridersList = state.riders.filter(r=>r.verified !== false);
+  const rider = o.riderId ? state.riders.find(r=>r.id===o.riderId) : null;
+
   let actions = "";
   if(isAdmin){
     actions = `
@@ -1447,6 +1990,7 @@ function renderOrderDetail(o){
         ${o.status!=="delivered" && o.status!=="failed" ? `<select class="select" id="assign-rider" style="max-width:200px"><option value="">— Assign rider —</option>${ridersList.map(r=>`<option value="${r.id}" ${o.riderId===r.id?'selected':''}>${r.name||r.id}</option>`).join("")}</select><button class="btn-mini primary" data-act="assign">Assign</button>`:""}
         <a class="btn-mini" href="tel:${o.customerPhone}">📞 Call customer</a>
         <button class="btn-mini" data-act="paid">Mark Paid</button>
+        ${o.status==="delivered"?`<button class="btn-mini primary" data-act="receipt">📄 Receipt</button>`:""}
       </div>`;
   } else if(isRider){
     actions = `<div class="actions-row" style="margin-top:14px">
@@ -1456,17 +2000,40 @@ function renderOrderDetail(o){
       ${o.status==="transit"?`<button class="btn-mini ok" data-act="deliver">Verify Delivery (OTP)</button>`:""}
       ${!["delivered","failed"].includes(o.status)?`<button class="btn-mini danger" data-act="fail">Mark Failed</button>`:""}
       <a class="btn-mini" target="_blank" href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(o.pickupAddr)}&destination=${encodeURIComponent(o.dropAddr)}">🗺️ Navigate</a>
+      ${o.status==="delivered"?`<button class="btn-mini primary" data-act="receipt">📄 Receipt</button>`:""}
     </div>`;
-  } else if(isCust){
+  } else if(isCust || isRecv){
     actions = `<div class="actions-row" style="margin-top:14px">
-      ${o.status==="delivered" && !o.rating?`<button class="btn-mini primary" data-act="rate">Rate rider</button>`:""}
-      <button class="btn-mini" data-act="reorder">Reorder</button>
+      ${isCust && o.status==="delivered" && !o.rating?`<button class="btn-mini primary" data-act="rate">Rate rider</button>`:""}
+      ${isCust?`<button class="btn-mini" data-act="reorder">Reorder</button>`:""}
       <button class="btn-mini danger" data-act="report">Report issue</button>
       ${o.riderId && o.status!=="delivered" ? `<button class="btn-mini primary" data-act="track">📍 Live Track</button>` : ""}
+      ${o.status==="delivered"?`<button class="btn-mini primary" data-act="receipt">📄 Receipt</button>`:""}
     </div>`;
   }
-  /* SECURITY: rider must NOT see either OTP. Only customer + admin see codes for support. */
+
   const showOtp = isAdmin || (isCust && (o.status==="confirmed" || o.status==="picked"));
+
+  // Rider card
+  let riderCard = "";
+  if(rider){
+    riderCard = `
+      <h4 style="margin:12px 0 6px">Rider</h4>
+      <div class="rider-card">
+        ${rider.photoUrl ? `<img class="rphoto" src="${rider.photoUrl}" alt="">` : `<div class="avatar rphoto" style="display:grid;place-items:center">${(rider.name||"R")[0].toUpperCase()}</div>`}
+        <div class="rmeta">
+          <div class="rname">${rider.name||o.riderName||"Rider"}</div>
+          <div>${rider.vehicleType||""} ${rider.vehicleMake?`· ${rider.vehicleMake} ${rider.vehicleModel||""}`:""}</div>
+          <div>${rider.plateNumber?`Plate: ${rider.plateNumber}`:""} ${rider.mainZone?`· ${rider.mainZone}`:""}</div>
+          <div>${(rider.rating||4.8).toFixed(1)}★ · ${rider.deliveries||0} deliveries</div>
+        </div>
+      </div>`;
+  } else if(o.riderName){
+    riderCard = `<h4 style="margin:12px 0 6px">Rider</h4><p style="margin:2px 0;font-size:.9rem">${o.riderName}</p>`;
+  } else {
+    riderCard = `<h4 style="margin:12px 0 6px">Rider</h4><p style="margin:2px 0;font-size:.9rem"><span style="color:var(--muted)">Unassigned</span></p>`;
+  }
+
   return `
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
     <div>
@@ -1491,12 +2058,11 @@ function renderOrderDetail(o){
   <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
     <div>
-      <h4 style="margin-bottom:6px">Customer</h4>
+      <h4 style="margin-bottom:6px">Sender</h4>
       <p style="margin:2px 0;font-size:.9rem">${o.customerName||"—"}<br><span style="color:var(--muted)">${o.customerPhone||"—"}</span></p>
       <h4 style="margin:12px 0 6px">Receiver</h4>
       <p style="margin:2px 0;font-size:.9rem">${o.receiverName}<br><span style="color:var(--muted)">${o.receiverPhone}</span></p>
-      <h4 style="margin:12px 0 6px">Rider</h4>
-      <p style="margin:2px 0;font-size:.9rem">${o.riderName || '<span style="color:var(--muted)">Unassigned</span>'}</p>
+      ${riderCard}
       ${showOtp?`<div class="alert info" style="margin-top:10px"><strong>Pickup OTP:</strong> ${o.pickupOtp} · <strong>Delivery OTP:</strong> ${o.deliveryOtp}</div>`:""}
     </div>
     <div>
@@ -1533,37 +2099,28 @@ function bindOrderActions(o){
     if(act==="paid"){ await DB.col("orders").doc(o.id).update({ paid:true }); toast("Marked paid","success"); }
     if(act==="accept"){ await DB.col("orders").doc(o.id).update({ status:"confirmed", history:[...(o.history||[]),{at:now(),status:"confirmed",note:"Rider accepted"}] }); toast("Job accepted","success"); }
     if(act==="decline"){ await DB.col("orders").doc(o.id).update({ riderId:null, riderName:null, status:"pending", history:[...(o.history||[]),{at:now(),status:"pending",note:"Rider declined"}] }); toast("Declined","success"); }
-    if(act==="pickup"){
-      // Pass the ORDER ID so promptOtp can verify against Firestore, not the local copy
-      promptOtp("Verify Pickup OTP", o.id, async () => {
-        await DB.col("orders").doc(o.id).update({ status:"picked", history:[...(o.history||[]),{at:now(),status:"picked",note:"Picked up"}] });
-        toast("Pickup verified","success");
-      });
-    }
+    if(act==="pickup"){ promptOtp("Verify Pickup OTP", o.id, async () => { await DB.col("orders").doc(o.id).update({ status:"picked", history:[...(o.history||[]),{at:now(),status:"picked",note:"Picked up"}] }); toast("Pickup verified","success"); }); }
     if(act==="transit"){ await DB.col("orders").doc(o.id).update({ status:"transit", history:[...(o.history||[]),{at:now(),status:"transit",note:"In transit"}] }); toast("In transit","success"); }
-    if(act==="deliver"){
-      // Pass the ORDER ID so promptOtp can verify against Firestore, not the local copy
-      promptOtp("Verify Delivery OTP", o.id, async () => {
-        await DB.col("orders").doc(o.id).update({ status:"delivered", deliveredAt: now(), history:[...(o.history||[]),{at:now(),status:"delivered",note:"Delivered ✔"}] });
-        const rider = state.riders.find(r=>r.id===o.riderId);
-        if(rider){ await DB.col("riders").doc(o.riderId).update({ deliveries:(rider.deliveries||0)+1, earnings:(rider.earnings||0)+Math.round((o.price||0)*0.7) }); }
-        toast("Delivered ✔","success");
-      });
-    }
+    if(act==="deliver"){ promptOtp("Verify Delivery OTP", o.id, async () => {
+      const updatePayload = { status:"delivered", deliveredAt: now(), history:[...(o.history||[]),{at:now(),status:"delivered",note:"Delivered ✔"}] };
+      await DB.col("orders").doc(o.id).update(updatePayload);
+      const rider = state.riders.find(r=>r.id===o.riderId);
+      if(rider){ await DB.col("riders").doc(o.riderId).update({ deliveries:(rider.deliveries||0)+1, earnings:(rider.earnings||0)+Math.round((o.price||0)*0.7) }); }
+      toast("Delivered ✔","success");
+      // Auto-generate + upload receipt
+      setTimeout(()=>{ generateAndSaveReceipt(o.id); }, 500);
+    }); }
     if(act==="fail"){ const reason = prompt("Reason for failure?"); if(!reason) return; await DB.col("orders").doc(o.id).update({ status:"failed", failReason: reason, history:[...(o.history||[]),{at:now(),status:"failed",note:reason}] }); toast("Marked failed","success"); }
     if(act==="rate"){ const r = +prompt("Rate rider 1-5", "5"); if(!r) return; await DB.col("orders").doc(o.id).update({ rating: r }); const rider = state.riders.find(x=>x.id===o.riderId); if(rider){ const all = state.orders.filter(x=>x.riderId===o.riderId && x.rating); const avg = (all.reduce((s,x)=>s+x.rating,0)+r)/(all.length+1); await DB.col("riders").doc(o.riderId).update({ rating: avg }); } toast("Thanks for rating!","success"); }
     if(act==="reorder"){ closeModal("order-modal"); openBooking(); setTimeout(()=>{ $("#b-pickup").value=o.pickupZone; $("#b-drop").value=o.dropZone; $("#b-paddr").value=o.pickupAddr; $("#b-daddr").value=o.dropAddr; $("#b-rname").value=o.receiverName; $("#b-rphone").value=o.receiverPhone; $("#b-pkg").value=o.package; },100); }
     if(act==="report"){ const msg = prompt("Describe the issue"); if(!msg) return; await DB.col("orders").doc(o.id).update({ report: msg }); toast("Issue reported, support will reach out","success"); }
     if(act==="track"){ closeModal("order-modal"); openTrackingMap(o.id); }
+    if(act==="receipt"){ closeModal("order-modal"); viewReceipt(o.id); }
   }));
 }
 
 /* ============================================================================
    OTP VERIFICATION
-   - Second arg is now the ORDER ID (not the expected code).
-   - The expected code is fetched fresh from Firestore at verify time.
-   - The rider never sees the code, neither in the order modal nor here.
-   - Only the customer (pickup) / receiver (delivery, via SMS hook) knows it.
    ============================================================================ */
 function promptOtp(title, orderId, onOk){
   $("#otp-title").textContent = title;
@@ -1756,9 +2313,657 @@ function closeTrackingMap() {
   closeModal("tracking-modal");
 }
 
+/* ============================================================================
+   RECEIPTS — PDF, QR, public viewer, auto-save
+   ============================================================================ */
+function buildReceiptLayout(o, rider){
+  const steps = ["pending","confirmed","assigned","picked","transit","delivered"];
+  const history = o.history || [];
+  const rows = steps.map(s=>{
+    const ev = history.find(h=>h.status===s) || history.filter(h=>h.status===s).pop();
+    const at = ev?.at;
+    return { label: s.charAt(0).toUpperCase()+s.slice(1), at };
+  });
+  // fill in known timestamps
+  if(!rows.find(r=>r.label==="Pending")?.at && o.createdAt) rows[0].at = o.createdAt;
+  if(!rows.find(r=>r.label==="Delivered")?.at && o.deliveredAt) rows[5].at = o.deliveredAt;
+
+  const withDuration = rows.map((r, i) => {
+    const prev = i>0 ? rows[i-1].at : null;
+    const dur = (prev && r.at) ? Math.round((r.at - prev)/60000) : null;
+    return { ...r, duration: dur };
+  });
+
+  return {
+    orderId: o.id,
+    issuedAt: o.receiptIssuedAt || Date.now(),
+    createdAt: o.createdAt,
+    sender: {
+      name: o.customerName || "-",
+      phone: o.customerPhone || "-",
+      email: o.customerEmail || ""
+    },
+    receiver: {
+      name: o.receiverName || "-",
+      phone: o.receiverPhone || "-",
+      address: o.dropAddr || "-"
+    },
+    rider: rider ? {
+      name: rider.name || o.riderName || "-",
+      phone: rider.phone || "-",
+      photoUrl: rider.photoUrl || "",
+      vehicle: `${rider.vehicleType||""} ${rider.vehicleMake||""} ${rider.vehicleModel||""} ${rider.vehicleYear?"("+rider.vehicleYear+")":""} ${rider.vehicleColor||""}`.trim() || "-",
+      plate: rider.plateNumber || "-",
+      zone: rider.mainZone || "-",
+      rating: (rider.rating||4.8).toFixed(1)
+    } : (o.riderName ? { name:o.riderName, phone:"-", photoUrl:"", vehicle:"-", plate:"-", zone:"-", rating:"-" } : null),
+    route: {
+      pickupZone: o.pickupZone || "-",
+      dropZone: o.dropZone || "-",
+      pickupAddr: o.pickupAddr || "-",
+      dropAddr: o.dropAddr || "-",
+      distance: o.distance || 0
+    },
+    pkg: {
+      description: o.package || "-",
+      type: o.type || "regular",
+      heavy: o.heavy === "yes" ? "Yes" : "No",
+      notes: o.notes || ""
+    },
+    payment: {
+      price: o.price || 0,
+      method: o.payment || "cod",
+      paid: !!o.paid
+    },
+    timeline: withDuration,
+    trackingUrl: `${location.origin}${location.pathname}?receipt=${o.id}`
+  };
+}
+
+async function loadImageAsDataURL(url){
+  if(!url) return null;
+  try {
+    const res = await fetch(url, { mode:"cors" });
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch(e){ console.warn("Image fetch failed", e); return null; }
+}
+
+async function buildReceiptPDF(orderId){
+  const snap = await DB.col("orders").doc(orderId).get();
+  if(!snap.exists) throw new Error("Order not found");
+  const o = { id: snap.id, ...snap.data() };
+  const rider = o.riderId ? state.riders.find(r=>r.id===o.riderId) : null;
+  const L = buildReceiptLayout(o, rider);
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:"pt", format:"a4" });
+  const W = doc.internal.pageSize.getWidth();
+  const M = 40;
+  let y = 0;
+
+  // ==== Header bar ====
+  doc.setFillColor(30, 58, 138);            // accent deep blue
+  doc.rect(0, 0, W, 90, "F");
+  doc.setFillColor(249, 115, 22);           // brand orange stripe
+  doc.rect(0, 90, W, 5, "F");
+
+  // Brand mark square
+  doc.setFillColor(255,255,255);
+  doc.roundedRect(M, 24, 42, 42, 8, 8, "F");
+  doc.setFillColor(30,58,138);
+  doc.roundedRect(M+4, 28, 34, 34, 6, 6, "F");
+  doc.setTextColor(255,255,255);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(18);
+  doc.text("M", M+21, 50, { align:"center" });
+
+  // Brand text
+  doc.setFontSize(20);
+  doc.text("MIMI'S DELIVERY", M+56, 46);
+  doc.setFontSize(9);
+  doc.setFont("helvetica","normal");
+  doc.text("Fast & Reliable Delivery across Lagos", M+56, 62);
+
+  // Contact on right
+  doc.setFontSize(8);
+  doc.text("hello@mimisdelivery.ng", W-M, 30, { align:"right" });
+  doc.text("+234 800 000 0000", W-M, 42, { align:"right" });
+  doc.text("mimisdelivery.ng · Lagos, Nigeria", W-M, 54, { align:"right" });
+
+  y = 130;
+
+  // ==== Title ====
+  doc.setTextColor(10,26,43);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(22);
+  doc.text("DELIVERY RECEIPT", M, y);
+  doc.setFontSize(11);
+  doc.setFont("helvetica","normal");
+  doc.setTextColor(107,123,141);
+  doc.text("Order #" + L.orderId.slice(0,10).toUpperCase(), M, y+18);
+  doc.text("Issued: " + new Date(L.issuedAt).toLocaleString("en-NG"), W-M, y+18, { align:"right" });
+
+  y += 40;
+
+  // ==== Two-column: Sender + Receiver ====
+  const colW = (W - M*2 - 20) / 2;
+  const boxH = 90;
+
+  doc.setFillColor(248,250,252);
+  doc.roundedRect(M, y, colW, boxH, 8, 8, "F");
+  doc.roundedRect(M+colW+20, y, colW, boxH, 8, 8, "F");
+
+  doc.setTextColor(107,123,141);
+  doc.setFontSize(9);
+  doc.text("SENDER", M+12, y+18);
+  doc.text("RECEIVER", M+colW+32, y+18);
+
+  doc.setTextColor(10,26,43);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(11);
+  doc.text(L.sender.name, M+12, y+36);
+  doc.text(L.receiver.name, M+colW+32, y+36);
+
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(9);
+  doc.setTextColor(44,62,80);
+  doc.text(L.sender.phone, M+12, y+52);
+  doc.text(L.receiver.phone, M+colW+32, y+52);
+  if(L.sender.email) doc.text(L.sender.email, M+12, y+66);
+  doc.text(doc.splitTextToSize(L.receiver.address, colW-24), M+colW+32, y+66);
+
+  y += boxH + 20;
+
+  // ==== Rider block ====
+  if(L.rider){
+    const rBoxH = 100;
+    doc.setFillColor(255,243,230);          // brand-soft
+    doc.roundedRect(M, y, W-M*2, rBoxH, 8, 8, "F");
+
+    // Rider photo (circular mask)
+    let photoData = L.rider.photoUrl ? await loadImageAsDataURL(L.rider.photoUrl) : null;
+    if(photoData){
+      try {
+        doc.saveGraphicsState();
+        // circular clip
+        doc.circle(M+50, y+50, 30, null);
+        doc.clip();
+        doc.discardPath();
+        doc.addImage(photoData, "JPEG", M+20, y+20, 60, 60);
+        doc.restoreGraphicsState();
+      } catch(e){ console.warn("Photo draw failed", e); }
+      // ring
+      doc.setDrawColor(255,255,255);
+      doc.setLineWidth(2);
+      doc.circle(M+50, y+50, 30);
+    } else {
+      doc.setFillColor(226,232,240);
+      doc.circle(M+50, y+50, 30, "F");
+      doc.setTextColor(107,123,141);
+      doc.setFontSize(20);
+      doc.setFont("helvetica","bold");
+      doc.text((L.rider.name||"R")[0].toUpperCase(), M+50, y+57, { align:"center" });
+    }
+
+    doc.setTextColor(194,65,12);
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(9);
+    doc.text("YOUR RIDER", M+100, y+22);
+
+    doc.setTextColor(10,26,43);
+    doc.setFontSize(13);
+    doc.text(L.rider.name, M+100, y+42);
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(9);
+    doc.setTextColor(44,62,80);
+    doc.text(`Phone: ${L.rider.phone}`, M+100, y+58);
+    doc.text(`Vehicle: ${L.rider.vehicle}`, M+100, y+72);
+    doc.text(`Plate: ${L.rider.plate}  ·  Zone: ${L.rider.zone}`, M+100, y+86);
+
+    doc.text(`Rating: ${L.rider.rating} ★`, W-M-12, y+86, { align:"right" });
+
+    y += rBoxH + 20;
+  }
+
+  // ==== Route ====
+  doc.setFillColor(248,250,252);
+  doc.roundedRect(M, y, W-M*2, 80, 8, 8, "F");
+  doc.setTextColor(107,123,141);
+  doc.setFontSize(9);
+  doc.setFont("helvetica","bold");
+  doc.text("ROUTE", M+12, y+18);
+
+  doc.setTextColor(10,26,43);
+  doc.setFontSize(11);
+  doc.text(`${L.route.pickupZone}  →  ${L.route.dropZone}`, M+12, y+36);
+
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(9);
+  doc.setTextColor(44,62,80);
+  doc.text(doc.splitTextToSize(`From: ${L.route.pickupAddr}`, (W-M*2)/2 - 20), M+12, y+52);
+  doc.text(doc.splitTextToSize(`To: ${L.route.dropAddr}`, (W-M*2)/2 - 20), M+12+(W-M*2)/2, y+52);
+  doc.text(`Approx distance: ~${L.route.distance} km`, M+12, y+74);
+
+  y += 100;
+
+  // ==== Package + Payment side by side ====
+  const halfW = (W - M*2 - 20) / 2;
+  doc.setFillColor(248,250,252);
+  doc.roundedRect(M, y, halfW, 90, 8, 8, "F");
+  doc.roundedRect(M+halfW+20, y, halfW, 90, 8, 8, "F");
+
+  doc.setTextColor(107,123,141);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(9);
+  doc.text("PACKAGE", M+12, y+18);
+  doc.text("PAYMENT", M+halfW+32, y+18);
+
+  doc.setTextColor(10,26,43);
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(10);
+  doc.text(doc.splitTextToSize(L.pkg.description, halfW-24), M+12, y+36);
+  doc.setFontSize(9);
+  doc.setTextColor(44,62,80);
+  doc.text(`Type: ${L.pkg.type}  ·  Heavy: ${L.pkg.heavy}`, M+12, y+62);
+  if(L.pkg.notes) doc.text(doc.splitTextToSize("Notes: " + L.pkg.notes, halfW-24), M+12, y+76);
+
+  doc.setTextColor(10,26,43);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(14);
+  doc.text("TOTAL: " + "N" + L.payment.price.toLocaleString(), M+halfW+32, y+40);
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(9);
+  doc.setTextColor(44,62,80);
+  doc.text(`Method: ${L.payment.method.toUpperCase()}`, M+halfW+32, y+58);
+  doc.setTextColor(L.payment.paid ? 16 : 153, L.payment.paid ? 185 : 27, L.payment.paid ? 129 : 27);
+  doc.text(L.payment.paid ? "PAID" : "UNPAID", M+halfW+32, y+74);
+
+  y += 110;
+
+  // ==== Timeline ====
+  doc.setTextColor(10,26,43);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(11);
+  doc.text("DELIVERY TIMELINE", M, y);
+  y += 14;
+
+  doc.setDrawColor(226,232,240);
+  doc.line(M, y, W-M, y);
+  y += 12;
+
+  doc.setFontSize(9);
+  L.timeline.forEach((row, i) => {
+    doc.setFont("helvetica","bold");
+    doc.setTextColor(30,58,138);
+    doc.text(`${i+1}.`, M, y+10);
+    doc.setTextColor(10,26,43);
+    doc.text(row.label, M+20, y+10);
+
+    doc.setFont("helvetica","normal");
+    doc.setTextColor(44,62,80);
+    if(row.at){
+      doc.text(new Date(row.at).toLocaleString("en-NG"), W-M-100, y+10, { align:"right" });
+    } else {
+      doc.setTextColor(148,163,184);
+      doc.text("—", W-M-100, y+10, { align:"right" });
+    }
+    if(row.duration != null){
+      doc.setTextColor(107,123,141);
+      doc.text(`+${row.duration} min`, W-M, y+10, { align:"right" });
+    }
+    y += 16;
+  });
+
+  y += 10;
+
+  // ==== QR ====
+  const qrUrl = L.trackingUrl;
+  let qrDataUrl = "";
+  try {
+    qrDataUrl = await generateQRDataURL(qrUrl);
+  } catch(e){ console.warn("QR failed", e); }
+
+  if(qrDataUrl){
+    doc.addImage(qrDataUrl, "PNG", W-M-100, y, 90, 90);
+    doc.setFontSize(7);
+    doc.setTextColor(107,123,141);
+    doc.text("Scan to view receipt online", W-M-55, y+100, { align:"center" });
+  }
+
+  // Verification footer left side
+  doc.setFontSize(8);
+  doc.setTextColor(107,123,141);
+  const footerX = M;
+  const footerY = y + 20;
+  doc.text("Electronically generated receipt.", footerX, footerY);
+  doc.text("Pickup and delivery verified via one-time codes.", footerX, footerY+12);
+  doc.text("No signature required.", footerX, footerY+24);
+  doc.text("Ref: " + L.orderId.toUpperCase().slice(0,14) + "-" + L.createdAt, footerX, footerY+42);
+
+  // Bottom copyright
+  const bottomY = doc.internal.pageSize.getHeight() - 26;
+  doc.setDrawColor(226,232,240);
+  doc.line(M, bottomY-10, W-M, bottomY-10);
+  doc.setFontSize(8);
+  doc.setTextColor(107,123,141);
+  doc.text(`© ${new Date().getFullYear()} Mimi's Delivery · Lagos, Nigeria`, M, bottomY);
+  doc.text(`Order ${L.orderId}`, W-M, bottomY, { align:"right" });
+
+  return doc;
+}
+
+/* Generate a QR code as a data URL using qrcodejs */
+function generateQRDataURL(text){
+  return new Promise((resolve, reject)=>{
+    try {
+      const tmp = document.createElement("div");
+      tmp.style.position = "absolute";
+      tmp.style.left = "-9999px";
+      document.body.appendChild(tmp);
+      new QRCode(tmp, { text, width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
+      // qrcodejs renders into a canvas or img
+      setTimeout(()=>{
+        try {
+          const canvas = tmp.querySelector("canvas");
+          const img = tmp.querySelector("img");
+          if(canvas){ const d = canvas.toDataURL("image/png"); tmp.remove(); resolve(d); }
+          else if(img && img.src){ const s = img.src; tmp.remove(); resolve(s); }
+          else { tmp.remove(); reject("no QR element"); }
+        } catch(e){ tmp.remove(); reject(e); }
+      }, 60);
+    } catch(e){ reject(e); }
+  });
+}
+
+/* Auto-save receipt to Storage and stamp order */
+async function generateAndSaveReceipt(orderId){
+  try {
+    const doc = await buildReceiptPDF(orderId);
+    const blob = doc.output("blob");
+    let url = "";
+    if(FB_READY && storage){
+      try {
+        const ref = storage.ref().child("receipts/"+orderId+".pdf");
+        await ref.put(blob);
+        url = await ref.getDownloadURL();
+      } catch(e){ console.warn("Receipt upload failed", e); }
+    }
+    await DB.col("orders").doc(orderId).set({ receiptUrl:url, receiptIssuedAt: now() }, { merge:true });
+    console.log("[Receipt] saved for", orderId, url || "(local only)");
+  } catch(e){ console.warn("Receipt generation failed", e); }
+}
+
+/* Download / view */
+async function downloadReceiptPDF(orderId){
+  try {
+    const doc = await buildReceiptPDF(orderId);
+    doc.save("MimiReceipt_" + orderId.slice(0,8) + ".pdf");
+    toast("Receipt downloaded ✔","success");
+  } catch(e){ console.warn(e); toast("Could not generate receipt","error"); }
+}
+
+async function viewReceipt(orderId){
+  openModal("receipt-modal");
+  const body = $("#receipt-content");
+  body.innerHTML = '<div class="empty">Loading receipt…</div>';
+  try {
+    const snap = await DB.col("orders").doc(orderId).get();
+    if(!snap.exists){ body.innerHTML = '<div class="alert warn">Order not found.</div>'; return; }
+    const o = { id: snap.id, ...snap.data() };
+    const rider = o.riderId ? state.riders.find(r=>r.id===o.riderId) : null;
+    const L = buildReceiptLayout(o, rider);
+
+    body.innerHTML = `
+      <div class="receipt-shell">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--accent);padding-bottom:14px;margin-bottom:16px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="brand-mark" style="width:44px;height:44px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7h13v10H3z"/></svg></div>
+            <div>
+              <div style="font-family:var(--font-head);font-weight:800;font-size:1.15rem">MIMI'S DELIVERY</div>
+              <div style="font-size:.78rem;color:var(--muted)">Fast & Reliable Delivery across Lagos</div>
+            </div>
+          </div>
+          <div style="text-align:right;font-size:.78rem;color:var(--muted)">
+            hello@mimisdelivery.ng<br>+234 800 000 0000<br>mimisdelivery.ng
+          </div>
+        </div>
+        <h2 style="margin:0 0 4px">DELIVERY RECEIPT</h2>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:14px">
+          Order <strong>#${L.orderId.slice(0,10).toUpperCase()}</strong> · Issued ${new Date(L.issuedAt).toLocaleString("en-NG")}
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em">SENDER</div>
+            <div style="font-weight:700;margin-top:4px">${L.sender.name}</div>
+            <div style="font-size:.85rem">${L.sender.phone}</div>
+            <div style="font-size:.8rem;color:var(--muted)">${L.sender.email||""}</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em">RECEIVER</div>
+            <div style="font-weight:700;margin-top:4px">${L.receiver.name}</div>
+            <div style="font-size:.85rem">${L.receiver.phone}</div>
+            <div style="font-size:.8rem;color:var(--muted)">${L.receiver.address}</div>
+          </div>
+        </div>
+
+        ${L.rider ? `
+        <div style="background:var(--brand-soft);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;gap:14px;align-items:center">
+          ${L.rider.photoUrl ? `<img src="${L.rider.photoUrl}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #fff">` : `<div class="avatar" style="width:56px;height:56px;display:grid;place-items:center;font-size:1.1rem">${(L.rider.name||"R")[0].toUpperCase()}</div>`}
+          <div style="flex:1">
+            <div style="font-size:.72rem;color:#c2410c;font-weight:700;letter-spacing:.06em">YOUR RIDER</div>
+            <div style="font-weight:700">${L.rider.name}</div>
+            <div style="font-size:.85rem">${L.rider.vehicle} ${L.rider.plate && L.rider.plate!=='-'?'· '+L.rider.plate:''}</div>
+            <div style="font-size:.82rem;color:var(--muted)">${L.rider.phone} · ${L.rider.zone} · ${L.rider.rating}★</div>
+          </div>
+        </div>` : ""}
+
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:14px">
+          <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em">ROUTE</div>
+          <div style="font-weight:700;margin:4px 0">${L.route.pickupZone} → ${L.route.dropZone}</div>
+          <div style="font-size:.85rem">${L.route.pickupAddr} → ${L.route.dropAddr}</div>
+          <div style="font-size:.82rem;color:var(--muted)">Approx distance: ~${L.route.distance} km</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em">PACKAGE</div>
+            <div style="margin-top:4px">${L.pkg.description}</div>
+            <div style="font-size:.82rem;color:var(--muted)">Type: ${L.pkg.type} · Heavy: ${L.pkg.heavy}</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em">PAYMENT</div>
+            <div style="font-family:var(--font-head);font-weight:800;font-size:1.3rem;margin-top:4px">₦${L.payment.price.toLocaleString()}</div>
+            <div style="font-size:.82rem;color:var(--muted)">Method: ${L.payment.method.toUpperCase()} · ${L.payment.paid?'PAID':'UNPAID'}</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em;margin-bottom:6px">DELIVERY TIMELINE</div>
+          <div style="font-size:.85rem">
+            ${L.timeline.map((row,i)=>`
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0">
+                <span>${i+1}. ${row.label}</span>
+                <span style="color:var(--muted)">${row.at?new Date(row.at).toLocaleString("en-NG"):"—"}${row.duration!=null?` · +${row.duration}m`:""}</span>
+              </div>`).join("")}
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+          <div id="receipt-qr" style="flex-shrink:0"></div>
+          <div style="font-size:.78rem;color:var(--muted)">
+            <div>Electronically generated receipt.</div>
+            <div>Pickup and delivery verified via one-time codes.</div>
+            <div style="margin-top:6px">Ref: <code>${L.orderId.toUpperCase().slice(0,14)}-${L.createdAt}</code></div>
+            <div style="margin-top:6px"><a href="${L.trackingUrl}" target="_blank" style="color:var(--brand)">${L.trackingUrl}</a></div>
+          </div>
+        </div>
+        <div style="margin-top:18px;font-size:.78rem;color:var(--muted);text-align:center;border-top:1px solid var(--line);padding-top:10px">
+          © ${new Date().getFullYear()} Mimi's Delivery · Lagos, Nigeria · Order ${L.orderId}
+        </div>
+      </div>`;
+
+    // Render QR in the viewer
+    const qrBox = document.getElementById("receipt-qr");
+    if(qrBox){
+      new QRCode(qrBox, { text: L.trackingUrl, width: 90, height: 90, correctLevel: QRCode.CorrectLevel.M });
+    }
+
+    $("#receipt-download").onclick = () => downloadReceiptPDF(orderId);
+  } catch(e){
+    console.warn(e);
+    body.innerHTML = '<div class="alert warn">Could not load receipt.</div>';
+  }
+}
+
+/* Public receipt viewer entry — ?receipt=ORDER_ID */
+async function openPublicReceipt(orderId){
+  $("#public-site").style.display = "block";
+  $("#app-shell").classList.remove("active");
+  const root = $("#page-root");
+  root.innerHTML = `<section><div class="container" style="max-width:820px">
+    <div class="section-head"><span class="eyebrow">Receipt</span><h2>Delivery Receipt</h2></div>
+    <div id="public-receipt-body"><div class="empty">Loading receipt…</div></div>
+  </div></section>`;
+  await viewReceiptPublic(orderId, "#public-receipt-body");
+}
+
+async function viewReceiptPublic(orderId, container){
+  try {
+    const snap = await DB.col("orders").doc(orderId).get();
+    if(!snap.exists){ document.querySelector(container).innerHTML = '<div class="alert warn">No receipt found for this order.</div>'; return; }
+    const o = { id: snap.id, ...snap.data() };
+    // Fetch rider if needed
+    let rider = null;
+    if(o.riderId){
+      try { const rs = await DB.col("riders").doc(o.riderId).get(); if(rs.exists) rider = { id:o.riderId, ...rs.data() }; } catch(e){}
+    }
+    const L = buildReceiptLayout(o, rider);
+    const el = document.querySelector(container);
+    el.innerHTML = `
+      <div class="receipt-shell">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--accent);padding-bottom:14px;margin-bottom:16px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="brand-mark" style="width:44px;height:44px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7h13v10H3z"/></svg></div>
+            <div>
+              <div style="font-family:var(--font-head);font-weight:800;font-size:1.15rem">MIMI'S DELIVERY</div>
+              <div style="font-size:.78rem;color:var(--muted)">Fast & Reliable Delivery across Lagos</div>
+            </div>
+          </div>
+          <div style="text-align:right;font-size:.78rem;color:var(--muted)">hello@mimisdelivery.ng<br>+234 800 000 0000</div>
+        </div>
+        <h2 style="margin:0 0 4px">DELIVERY RECEIPT</h2>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:14px">Order <strong>#${L.orderId.slice(0,10).toUpperCase()}</strong> · Issued ${new Date(L.issuedAt).toLocaleString("en-NG")}</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700">SENDER</div>
+            <div style="font-weight:700;margin-top:4px">${L.sender.name}</div>
+            <div style="font-size:.85rem">${L.sender.phone}</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700">RECEIVER</div>
+            <div style="font-weight:700;margin-top:4px">${L.receiver.name}</div>
+            <div style="font-size:.85rem">${L.receiver.phone}</div>
+            <div style="font-size:.8rem;color:var(--muted)">${L.receiver.address}</div>
+          </div>
+        </div>
+
+        ${L.rider ? `
+        <div style="background:var(--brand-soft);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;gap:14px;align-items:center">
+          ${L.rider.photoUrl ? `<img src="${L.rider.photoUrl}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #fff">` : `<div class="avatar" style="width:56px;height:56px;display:grid;place-items:center">${(L.rider.name||"R")[0].toUpperCase()}</div>`}
+          <div>
+            <div style="font-size:.72rem;color:#c2410c;font-weight:700">YOUR RIDER</div>
+            <div style="font-weight:700">${L.rider.name}</div>
+            <div style="font-size:.85rem">${L.rider.vehicle} ${L.rider.plate&&L.rider.plate!=='-'?'· '+L.rider.plate:''}</div>
+          </div>
+        </div>` : ""}
+
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:14px">
+          <div style="font-size:.72rem;color:var(--muted);font-weight:700">ROUTE</div>
+          <div style="font-weight:700;margin:4px 0">${L.route.pickupZone} → ${L.route.dropZone}</div>
+          <div style="font-size:.85rem">${L.route.pickupAddr} → ${L.route.dropAddr}</div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:.72rem;color:var(--muted);font-weight:700;margin-bottom:6px">DELIVERY TIMELINE</div>
+          ${L.timeline.map((row,i)=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0;font-size:.85rem">
+            <span>${i+1}. ${row.label}</span>
+            <span style="color:var(--muted)">${row.at?new Date(row.at).toLocaleString("en-NG"):"—"}</span>
+          </div>`).join("")}
+        </div>
+
+        <div style="text-align:center;padding-top:14px;border-top:1px solid var(--line)">
+          <button class="btn btn-primary" onclick="downloadReceiptPDF('${L.orderId}')">📄 Download PDF</button>
+        </div>
+
+        <div style="margin-top:18px;font-size:.78rem;color:var(--muted);text-align:center">
+          © ${new Date().getFullYear()} Mimi's Delivery · Lagos, Nigeria · Order ${L.orderId}
+        </div>
+      </div>`;
+  } catch(e){
+    console.warn(e);
+    document.querySelector(container).innerHTML = '<div class="alert warn">Could not load receipt.</div>';
+  }
+}
+
 /* ============ BOOT ============ */
 $("#yr").textContent = new Date().getFullYear();
-route("home");
+
+/* Handle ?to=UID, ?receipt=ORDER_ID, ?track=ORDER_ID, ?admin */
+(async function boot(){
+  const params = new URLSearchParams(location.search);
+  const toId = params.get("to");
+  const receiptId = params.get("receipt");
+  const trackId = params.get("track");
+
+  if(receiptId){ openPublicReceipt(receiptId); return; }
+
+  if(toId){
+    // Check if user is signed in; if not, stash and prompt login.
+    const curUser = DB.auth.currentUser;
+    if(!curUser){
+      state.pendingInviteReceiverId = toId;
+      route("home");
+      // Show a banner in the top area
+      setTimeout(()=>{
+        // Try to look up the receiver for a nicer prompt
+        DB.col("users").doc(toId).get().then(s=>{
+          if(s.exists){
+            const rp = s.data();
+            const banner = document.createElement("div");
+            banner.className = "container";
+            banner.innerHTML = `<div class="alert info" style="margin-top:16px">
+              You're about to send a delivery to <strong>${rp.name||"a Mimi's customer"}</strong>.
+              <a style="color:var(--brand);font-weight:700;cursor:pointer" onclick="openAuth('login')">Log in</a> or
+              <a style="color:var(--brand);font-weight:700;cursor:pointer" onclick="openAuth('register')">sign up</a> to continue.
+            </div>`;
+            const root = $("#page-root");
+            root.insertBefore(banner, root.firstChild);
+          }
+        }).catch(()=>{});
+      }, 300);
+    } else {
+      state.pendingInviteReceiverId = toId;
+      route("home");
+    }
+    return;
+  }
+
+  if(trackId){
+    route("track");
+    setTimeout(()=>{ $("#tk-id").value = trackId; }, 200);
+    return;
+  }
+
+  route("home");
+})();
 
 if (!FB_READY) {
   setTimeout(() => toast("Demo mode: using local storage. Add your Firebase config to enable cloud sync.", "info"), 800);
