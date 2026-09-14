@@ -2116,8 +2116,18 @@ function bindOrderActions(o){
     if(act==="rate"){ const r = +prompt("Rate rider 1-5", "5"); if(!r) return; await DB.col("orders").doc(o.id).update({ rating: r }); const rider = state.riders.find(x=>x.id===o.riderId); if(rider){ const all = state.orders.filter(x=>x.riderId===o.riderId && x.rating); const avg = (all.reduce((s,x)=>s+x.rating,0)+r)/(all.length+1); await DB.col("riders").doc(o.riderId).update({ rating: avg }); } toast("Thanks for rating!","success"); }
     if(act==="reorder"){
   closeModal("order-modal");
-  // Preserve receiver link if the original order was sent to a Mimi's customer
-  if(o.receiverId){
+  const isReceiverSide = isRecv;
+
+  if(isReceiverSide){
+    // Receiver is sending back → receiver becomes sender, original sender becomes receiver
+    state.prefillReceiver = {
+      uid: o.customerId || null,
+      name: o.customerName || "",
+      phone: o.customerPhone || "",
+      address: o.pickupAddr || ""   // original pickup becomes new drop
+    };
+  } else if(o.receiverId){
+    // Sender reordering to the same registered receiver
     state.prefillReceiver = {
       uid: o.receiverId,
       name: o.receiverName || "",
@@ -2127,20 +2137,33 @@ function bindOrderActions(o){
   } else {
     state.prefillReceiver = null;
   }
+
   openBooking();
   setTimeout(()=>{
-    $("#b-pickup").value = o.pickupZone;
-    $("#b-drop").value   = o.dropZone;
-    $("#b-paddr").value  = o.pickupAddr;
-    $("#b-daddr").value  = o.dropAddr;
-    $("#b-rname").value  = o.receiverName;
-    $("#b-rphone").value = o.receiverPhone;
-    $("#b-pkg").value    = o.package;
-    if(o.receiverId){
+    if(isReceiverSide){
+      // Swap pickup and drop
+      $("#b-pickup").value = o.dropZone;
+      $("#b-drop").value   = o.pickupZone;
+      $("#b-paddr").value  = o.dropAddr;
+      $("#b-daddr").value  = o.pickupAddr;
+      $("#b-rname").value  = o.customerName || "";
+      $("#b-rphone").value = o.customerPhone || "";
+    } else {
+      $("#b-pickup").value = o.pickupZone;
+      $("#b-drop").value   = o.dropZone;
+      $("#b-paddr").value  = o.pickupAddr;
+      $("#b-daddr").value  = o.dropAddr;
+      $("#b-rname").value  = o.receiverName || "";
+      $("#b-rphone").value = o.receiverPhone || "";
+    }
+    $("#b-pkg").value = o.package;
+    if(state.prefillReceiver && state.prefillReceiver.uid){
       const note = $("#b-receiver-uid-note");
       if(note){
         note.style.display = "block";
-        note.innerHTML = `Reordering to <strong>${o.receiverName || "the same receiver"}</strong> (link invite).`;
+        note.innerHTML = isReceiverSide
+          ? `Sending back to <strong>${state.prefillReceiver.name || "the original sender"}</strong>.`
+          : `Reordering to <strong>${state.prefillReceiver.name || "the same receiver"}</strong>.`;
       }
     }
   }, 100);
