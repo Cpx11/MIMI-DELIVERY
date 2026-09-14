@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -9,11 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- Leaflet Map (for live tracking) -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-  /* ---------- Design Tokens: Blue / Orange / White ---------- */
   :root{
     --bg:#f5f8fc;
     --surface:#ffffff;
@@ -21,10 +18,10 @@
     --ink-2:#2c3e50;
     --muted:#6b7b8d;
     --line:#e2e8f0;
-    --brand:#f97316;          /* orange */
+    --brand:#f97316;
     --brand-2:#fb923c;
     --brand-soft:#fff3e6;
-    --accent:#1e3a8a;         /* deep blue */
+    --accent:#1e3a8a;
     --accent-2:#3b82f6;
     --accent-soft:#e6f0ff;
     --ok:#10b981;
@@ -47,7 +44,6 @@
   button{font-family:inherit;cursor:pointer}
   .container{max-width:1180px;margin:0 auto;padding:0 20px}
 
-  /* ---------- Navigation ---------- */
   .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);z-index:50}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;max-width:1180px;margin:0 auto}
   .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:800;font-size:1.15rem;cursor:pointer}
@@ -69,7 +65,6 @@
   .btn-block{width:100%;justify-content:center}
   .menu-btn{display:none;background:transparent;border:0;font-size:1.4rem;color:var(--ink)}
 
-  /* ---------- Hero ---------- */
   .hero{position:relative;overflow:hidden;padding:64px 0 40px;background:linear-gradient(160deg,var(--accent-soft) 0%,#fff 60%)}
   .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center}
   .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--brand-soft);color:#c2410c;padding:6px 12px;border-radius:999px;font-weight:600;font-size:.78rem;letter-spacing:.02em}
@@ -80,7 +75,6 @@
   .hero-stat .num{font-family:var(--font-head);font-size:1.6rem;font-weight:800;color:var(--accent)}
   .hero-stat .lbl{font-size:.82rem;color:var(--muted)}
 
-  /* ---------- Price Card ---------- */
   .price-card{background:var(--surface);border-radius:20px;padding:24px;box-shadow:var(--shadow-lg);border:1px solid var(--line)}
   .price-card h3{font-size:1.05rem;margin-bottom:14px;display:flex;align-items:center;gap:8px}
   .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
@@ -92,7 +86,6 @@
   .price-out .val{font-family:var(--font-head);font-weight:800;font-size:1.4rem}
   .price-out .lbl{font-size:.78rem;opacity:.8}
 
-  /* ---------- Sections ---------- */
   section{padding:64px 0}
   .section-head{text-align:center;max-width:680px;margin:0 auto 36px}
   .section-head .eyebrow{color:var(--brand);font-weight:700;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase}
@@ -112,7 +105,6 @@
   .zone{padding:14px;border:1px dashed var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;gap:10px}
   .zone .dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
 
-  /* ---------- Footer ---------- */
   footer{background:#0b1a2e;color:#cbd5e1;padding:48px 0 24px;margin-top:48px}
   footer .container{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
   footer h4{color:#fff;font-size:1rem;margin-bottom:12px}
@@ -120,7 +112,6 @@
   footer a:hover{color:#fff}
   .copyright{border-top:1px solid #1e293b;margin-top:30px;padding-top:18px;text-align:center;color:#64748b;font-size:.85rem}
 
-  /* ---------- Modals ---------- */
   .modal-bg{position:fixed;inset:0;background:rgba(10,26,43,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
   .modal-bg.open{display:flex}
   .modal{background:#fff;border-radius:16px;max-width:480px;width:100%;max-height:90vh;overflow:auto;box-shadow:var(--shadow-lg);animation:popin .2s ease}
@@ -131,15 +122,16 @@
   .modal-body{padding:22px 24px}
   .x{background:transparent;border:0;font-size:1.4rem;color:var(--muted);cursor:pointer;line-height:1}
 
-  /* ---------- Role Tabs ---------- */
   .role-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#f1f5f9;padding:6px;border-radius:12px;margin-bottom:18px}
+  .role-tabs.two-tabs{grid-template-columns:repeat(2,1fr)}
   .role-tab{padding:10px;background:transparent;border:0;border-radius:8px;font-weight:600;font-size:.88rem;color:var(--ink-2);transition:all .15s}
   .role-tab.active{background:#fff;color:var(--brand);box-shadow:0 2px 6px rgba(0,0,0,.05)}
+  .admin-reveal{text-align:center;font-size:.72rem;color:var(--muted);margin-top:14px;letter-spacing:.06em;text-transform:uppercase}
+  .admin-reveal span{cursor:pointer;user-select:none}
 
-  /* ---------- App Shell ---------- */
   .app-shell{display:none;min-height:100vh;background:var(--bg)}
   .app-shell.active{display:grid;grid-template-columns:240px 1fr}
-  .sidebar{background:#0b1a2e;color:#cbd5e1;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;overflow-y:auto}
+  .sidebar{background:#0b1a2e;color:#cbd5e1;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;overflow-y:auto;z-index:60}
   .sidebar .brand{color:#fff;padding:0 8px 18px;border-bottom:1px solid #1e293b;margin-bottom:14px}
   .nav-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:.92rem;font-weight:500;border:0;background:transparent;width:100%;text-align:left;transition:all .15s}
   .nav-item:hover{background:#1e293b;color:#fff}
@@ -149,8 +141,10 @@
   .main{padding:24px 28px;max-width:100%;overflow-x:hidden}
   .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
   .top-bar h2{margin:0;font-size:1.5rem}
-  .user-chip{display:flex;align-items:center;gap:10px;padding:6px 12px 6px 6px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:.88rem;font-weight:500}
+  .user-chip{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:.88rem;font-weight:500;cursor:pointer;transition:all .15s}
+  .user-chip:hover{background:#f8fafc;border-color:var(--brand);box-shadow:0 4px 12px rgba(249,115,22,.12)}
   .user-chip .avatar{width:30px;height:30px;font-size:.75rem}
+  .user-chip .edit-hint{font-size:.68rem;color:var(--muted);margin-left:2px}
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
   .kpi{background:#fff;padding:18px;border-radius:var(--radius);border:1px solid var(--line)}
   .kpi .lbl{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
@@ -213,22 +207,25 @@
   .alert.warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
   .alert.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
 
-  /* ---------- Map ---------- */
   .map-container{height:300px;border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-top:12px}
   #tracking-map{height:100%;width:100%}
   .leaflet-container{font-family:var(--font-body)}
 
-  /* ---------- Responsive ---------- */
+  /* Mobile sidebar overlay backdrop */
+  .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(10,26,43,.5);z-index:55}
+  .sidebar-backdrop.open{display:block}
+
   @media (max-width: 960px){
     .hero-grid{grid-template-columns:1fr;gap:32px}
     .grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}
     footer .container{grid-template-columns:1fr 1fr}
     .kpis{grid-template-columns:repeat(2,1fr)}
     .app-shell.active{grid-template-columns:1fr}
-    .sidebar{position:fixed;left:-260px;width:240px;z-index:60;transition:left .25s}
-    .sidebar.open{left:0}
+    .sidebar{position:fixed;left:-280px;width:240px;transition:left .25s ease}
+    .sidebar.open{left:0;box-shadow:0 0 40px rgba(0,0,0,.4)}
     .menu-btn{display:inline-block}
     .nav-links{display:none}
+    .top-bar .menu-btn{display:inline-block!important}
   }
   @media (max-width: 600px){
     .grid-3,.grid-4{grid-template-columns:1fr}
@@ -242,7 +239,6 @@
 </head>
 <body>
 
-<!-- ============ PUBLIC SITE ============ -->
 <div id="public-site">
   <header class="nav">
     <div class="nav-inner">
@@ -300,8 +296,8 @@
   </footer>
 </div>
 
-<!-- ============ APP SHELL ============ -->
 <div id="app-shell" class="app-shell">
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7h13v10H3z"/></svg></div>
@@ -318,19 +314,19 @@
   <div class="main">
     <div class="top-bar">
       <div style="display:flex;align-items:center;gap:10px">
-        <button class="menu-btn" style="display:none" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <button class="menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
         <h2 id="page-title">Dashboard</h2>
       </div>
-      <div class="user-chip">
+      <div class="user-chip" id="user-chip" onclick="openEditProfile()" title="Edit profile">
         <div class="avatar" id="user-avatar">M</div>
         <span id="user-name">User</span>
+        <span class="edit-hint">✎</span>
       </div>
     </div>
     <div id="app-root"></div>
   </div>
 </div>
 
-<!-- ============ AUTH MODAL ============ -->
 <div class="modal-bg" id="auth-modal">
   <div class="modal">
     <div class="modal-head">
@@ -338,10 +334,9 @@
       <button class="x" onclick="closeModal('auth-modal')">×</button>
     </div>
     <div class="modal-body">
-      <div class="role-tabs" id="role-tabs">
+      <div class="role-tabs two-tabs" id="role-tabs">
         <button class="role-tab active" data-role="customer">Customer</button>
         <button class="role-tab" data-role="rider">Rider</button>
-        <button class="role-tab" data-role="admin">Admin</button>
       </div>
       <form id="auth-form">
         <div class="field" id="name-field" style="display:none">
@@ -365,11 +360,44 @@
           New here? <a style="color:var(--brand);cursor:pointer;font-weight:600" onclick="switchAuth()">Create an account</a>
         </p>
       </form>
+      <div class="admin-reveal" id="admin-reveal" title="Admin access">
+        <span onclick="revealAdminTab()" style="color:var(--line)">•</span>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ============ BOOKING MODAL ============ -->
+<div class="modal-bg" id="edit-profile-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>Edit Profile</h3><button class="x" onclick="closeModal('edit-profile-modal')">×</button></div>
+    <div class="modal-body">
+      <form id="edit-profile-form">
+        <div class="field">
+          <label>Full Name</label>
+          <input class="input" id="ep-name" placeholder="Your full name" required>
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input class="input" id="ep-phone" placeholder="+234...">
+        </div>
+        <div class="field">
+          <label>Email (read-only)</label>
+          <input class="input" id="ep-email" type="email" disabled style="background:#f8fafc;color:var(--muted)">
+        </div>
+        <div id="ep-addresses-block">
+          <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <strong style="font-size:.9rem">Saved Addresses</strong>
+            <button type="button" class="btn-mini primary" id="ep-add-addr">+ Add</button>
+          </div>
+          <div id="ep-addresses-list"></div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit" style="margin-top:14px">Save Changes</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="modal-bg" id="book-modal">
   <div class="modal lg">
     <div class="modal-head"><h3>Book a Delivery</h3><button class="x" onclick="closeModal('book-modal')">×</button></div>
@@ -421,7 +449,6 @@
   </div>
 </div>
 
-<!-- ============ ORDER DETAIL MODAL ============ -->
 <div class="modal-bg" id="order-modal">
   <div class="modal lg">
     <div class="modal-head"><h3 id="om-title">Order Details</h3><button class="x" onclick="closeModal('order-modal')">×</button></div>
@@ -429,7 +456,6 @@
   </div>
 </div>
 
-<!-- ============ OTP MODAL ============ -->
 <div class="modal-bg" id="otp-modal">
   <div class="modal">
     <div class="modal-head"><h3 id="otp-title">Enter OTP</h3><button class="x" onclick="closeModal('otp-modal')">×</button></div>
@@ -444,7 +470,6 @@
   </div>
 </div>
 
-<!-- ============ TRACKING MAP MODAL ============ -->
 <div class="modal-bg" id="tracking-modal">
   <div class="modal lg">
     <div class="modal-head"><h3>Live Tracking</h3><button class="x" onclick="closeModal('tracking-modal')">×</button></div>
@@ -459,22 +484,17 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ============ Firebase (compat) ============ -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 <script>
-
 /* ============================================================
    MIMI'S DELIVERY — single-file vanilla JS + Firebase app
    Blue / Orange / White · Live map tracking · Role dashboards
    ============================================================ */
 
-
-
-/* ---------- Firebase config (PLACEHOLDER — replace) ---------- */
 const firebaseConfig = {
   apiKey: "AIzaSyCt0y6dtIqm_CP6kBE-QqCdFemizozgQhQ",
   authDomain: "delivery-a88a5.firebaseapp.com",
@@ -482,7 +502,7 @@ const firebaseConfig = {
   storageBucket: "delivery-a88a5.firebasestorage.app",
   messagingSenderId: "107075618001",
   appId: "1:107075618001:web:585bada4cbf4d06c26f1f0"
-}; 
+};
 
 let FB_READY = false;
 let auth, db, storage;
@@ -494,7 +514,6 @@ try {
   FB_READY = !firebaseConfig.apiKey.startsWith("REPLACE");
 } catch (e) { console.warn("Firebase init failed:", e); }
 
-/* ---------- LOCAL FALLBACK (works without real Firebase) ---------- */
 const LOCAL = (() => {
   const KEY = "mimi_local_db_v1";
   const AKEY = "mimi_local_auth_v1";
@@ -586,10 +605,8 @@ const LOCAL = (() => {
   };
 })();
 
-/* db shim: use Firebase if available, else LOCAL */
 const DB = FB_READY ? { col: (n) => db.collection(n), auth: auth } : LOCAL;
 
-/* ---------- Constants ---------- */
 const ZONES = ["Lagos Island","Victoria Island","Lekki","Ajah","Ikoyi","Yaba","Surulere","Ikeja","Mainland","Apapa","Festac","Berger"];
 const ZONE_KM = {
   "Lagos Island":3,"Victoria Island":5,"Lekki":15,"Ajah":25,"Ikoyi":4,"Yaba":10,
@@ -600,18 +617,17 @@ const DEFAULT_SETTINGS = {
   autoAssign: false, cod: true, transfer: true, express: true
 };
 
-/* ---------- App State ---------- */
 const state = {
   user: null, profile: null, role: null,
   settings: {...DEFAULT_SETTINGS},
   page: "home", dashTab: "overview",
   orders: [], riders: [], unsubs: [],
   authMode: "login", authRole: "customer",
+  adminTabRevealed: false,
   trackingMap: null, trackingMarker: null, trackingInterval: null,
   trackingOrderId: null
 };
 
-/* ---------- Utilities ---------- */
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 const fmt = (n) => "₦" + (Number(n)||0).toLocaleString();
@@ -624,7 +640,18 @@ function openModal(id){ $("#"+id).classList.add("open"); }
 function closeModal(id){ $("#"+id).classList.remove("open"); }
 function toggleMobileNav(){ const links = $(".nav-links"); links.style.display = links.style.display==="flex"?"none":"flex"; links.style.flexDirection="column"; links.style.position="absolute"; links.style.top="60px"; links.style.right="10px"; links.style.background="#fff"; links.style.padding="14px"; links.style.borderRadius="10px"; links.style.boxShadow="var(--shadow-lg)";}
 
-/* ---------- Pricing engine ---------- */
+/* ===== Sidebar toggle (mobile) ===== */
+function toggleSidebar(){
+  const sb = document.getElementById("sidebar");
+  const bd = document.getElementById("sidebar-backdrop");
+  sb.classList.toggle("open");
+  bd.classList.toggle("open", sb.classList.contains("open"));
+}
+function closeSidebar(){
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebar-backdrop").classList.remove("open");
+}
+
 function calcPrice({pickup, drop, type, heavy}, s = state.settings){
   const km = Math.abs((ZONE_KM[pickup]||5) - (ZONE_KM[drop]||5)) + 4;
   let base = s.basePrice + km * s.perKm;
@@ -635,7 +662,6 @@ function calcPrice({pickup, drop, type, heavy}, s = state.settings){
   return { price: Math.round(base/50)*50, km, breakdown };
 }
 
-/* ============ PUBLIC ROUTING ============ */
 function route(p){
   state.page = p;
   $("#public-site").style.display="block";
@@ -867,9 +893,42 @@ function openAuth(mode){
     : `Have an account? <a style="color:var(--brand);cursor:pointer;font-weight:600" onclick="switchAuth()">Login</a>`;
   $("#name-field").style.display = mode==="register" ? "flex" : "none";
   $("#phone-field").style.display = mode==="register" ? "flex" : "none";
+  // Hide admin tab on public modal unless already revealed via ?admin or the dot
+  if(!state.adminTabRevealed && !isAdminUrl()){
+    const tabs = $("#role-tabs");
+    tabs.classList.add("two-tabs");
+    const adminTab = tabs.querySelector('[data-role="admin"]');
+    if(!adminTab){
+      const b = document.createElement("button");
+      b.className = "role-tab";
+      b.dataset.role = "admin";
+      b.textContent = "Admin";
+      tabs.appendChild(b);
+      bindRoleTab(b);
+    }
+    tabs.querySelector('[data-role="admin"]').style.display = "none";
+  } else {
+    $("#role-tabs").classList.remove("two-tabs");
+    const adminTab = $("#role-tabs").querySelector('[data-role="admin"]');
+    if(adminTab) adminTab.style.display = "";
+  }
   openModal("auth-modal");
 }
 function switchAuth(){ openAuth(state.authMode==="login"?"register":"login"); }
+
+function isAdminUrl(){
+  return new URLSearchParams(location.search).has("admin");
+}
+function revealAdminTab(){
+  state.adminTabRevealed = true;
+  const tabs = $("#role-tabs");
+  tabs.classList.remove("two-tabs");
+  const adminTab = tabs.querySelector('[data-role="admin"]');
+  if(adminTab) adminTab.style.display = "";
+  toast("Admin tab unlocked", "info");
+}
+// If URL contains ?admin, auto-reveal
+if(isAdminUrl()) state.adminTabRevealed = true;
 
 function bookDeliveryEntry(){
   if(!state.user){ openAuth("login"); toast("Please login as a customer to book.", "info"); return; }
@@ -877,11 +936,14 @@ function bookDeliveryEntry(){
   openBooking();
 }
 
-$$("#role-tabs .role-tab").forEach(b => b.addEventListener("click", () => {
-  $$("#role-tabs .role-tab").forEach(x=>x.classList.remove("active"));
-  b.classList.add("active");
-  state.authRole = b.dataset.role;
-}));
+function bindRoleTab(b){
+  b.addEventListener("click", () => {
+    $$("#role-tabs .role-tab").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    state.authRole = b.dataset.role;
+  });
+}
+$$("#role-tabs .role-tab").forEach(bindRoleTab);
 
 $("#auth-form").addEventListener("submit", async (e) => {
   e.preventDefault();
@@ -890,6 +952,11 @@ $("#auth-form").addEventListener("submit", async (e) => {
   const name = $("#auth-name").value.trim();
   const phone = $("#auth-phone").value.trim();
   const role = state.authRole;
+  // Prevent public admin registration unless tab was revealed
+  if(role==="admin" && !state.adminTabRevealed && !isAdminUrl()){
+    toast("Admin registration is restricted.", "error");
+    return;
+  }
   try {
     if(state.authMode==="register"){
       const cred = await DB.auth.createUserWithEmailAndPassword(email, pw);
@@ -967,7 +1034,7 @@ function renderSidebar(){
   $("#side-nav").innerHTML = items.map(it=>`<button class="nav-item ${state.dashTab===it.k?'active':''}" onclick="setTab('${it.k}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${it.i}</svg>${it.t}</button>`).join("");
 }
 
-function setTab(k){ state.dashTab = k; renderSidebar(); renderDashboard(); document.getElementById('sidebar').classList.remove('open'); }
+function setTab(k){ state.dashTab = k; renderSidebar(); renderDashboard(); closeSidebar(); }
 
 /* ============ REAL-TIME SUBSCRIPTIONS ============ */
 function subscribeData(){
@@ -1176,16 +1243,16 @@ function bindDashboard(){
     toast("Setting updated", "success");
   }));
   if ($("#online-tog")) $("#online-tog").addEventListener("change", async (e) => {
-  const on = e.target.checked;
-  await DB.col("riders").doc(state.user.uid).update({ online: on });
-  if (on) {
-    startRiderGps();
-    toast("Online — broadcasting your live location", "success");
-  } else {
-    stopRiderGps();
-    toast("Offline — GPS stopped", "info");
-  }
-});
+    const on = e.target.checked;
+    await DB.col("riders").doc(state.user.uid).update({ online: on });
+    if (on) {
+      startRiderGps();
+      toast("Online — broadcasting your live location", "success");
+    } else {
+      stopRiderGps();
+      toast("Offline — GPS stopped", "info");
+    }
+  });
   if($("#adm-search")) $("#adm-search").addEventListener("input", e => {
     const q = e.target.value.toLowerCase();
     const filtered = state.orders.filter(o => !q || o.id.toLowerCase().includes(q) || (o.customerName||"").toLowerCase().includes(q) || (o.customerPhone||"").includes(q) || (o.receiverPhone||"").includes(q));
@@ -1209,6 +1276,86 @@ window.delAddr = async (i) => {
 };
 window.toggleVerify = async (id, val) => { await DB.col("riders").doc(id).update({ verified: val }); toast("Rider updated", "success"); };
 window.removeRider = async (id) => { if(!confirm("Remove this rider?")) return; await DB.col("riders").doc(id).delete(); toast("Rider removed", "success"); };
+
+/* ============ EDIT PROFILE ============ */
+function openEditProfile(){
+  if(!state.user || !state.profile){ toast("Not signed in", "error"); return; }
+  $("#ep-name").value = state.profile.name || "";
+  $("#ep-phone").value = state.profile.phone || "";
+  $("#ep-email").value = state.profile.email || state.user.email || "";
+  // Show saved addresses block only for customers
+  const addrBlock = $("#ep-addresses-block");
+  if(state.role === "customer"){
+    addrBlock.style.display = "block";
+    renderEpAddresses();
+  } else {
+    addrBlock.style.display = "none";
+  }
+  openModal("edit-profile-modal");
+}
+
+function renderEpAddresses(){
+  const list = $("#ep-addresses-list");
+  const addrs = state.profile.addresses || [];
+  if(!addrs.length){
+    list.innerHTML = '<div style="font-size:.85rem;color:var(--muted);padding:8px 0">No saved addresses yet.</div>';
+    return;
+  }
+  list.innerHTML = addrs.map((a,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)">
+      <div>
+        <strong style="font-size:.9rem">${a.label}</strong>
+        <div style="font-size:.82rem;color:var(--muted)">${a.address}</div>
+      </div>
+      <button type="button" class="btn-mini danger" onclick="removeEpAddress(${i})">Remove</button>
+    </div>
+  `).join("");
+}
+
+window.removeEpAddress = async (i) => {
+  const addrs = [...(state.profile.addresses||[])];
+  addrs.splice(i,1);
+  await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
+  // optimistically update local so re-render works even before snapshot
+  state.profile.addresses = addrs;
+  renderEpAddresses();
+  toast("Address removed", "success");
+};
+
+$("#ep-add-addr") && $("#ep-add-addr").addEventListener("click", async () => {
+  const label = prompt("Address label (e.g. Home, Office)");
+  if(!label) return;
+  const address = prompt("Full address");
+  if(!address) return;
+  const addrs = [...(state.profile.addresses||[]), {label, address}];
+  await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
+  state.profile.addresses = addrs;
+  renderEpAddresses();
+  toast("Address added", "success");
+});
+
+$("#edit-profile-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = $("#ep-name").value.trim();
+  const phone = $("#ep-phone").value.trim();
+  if(!name){ toast("Name cannot be empty", "error"); return; }
+  try {
+    await DB.col("users").doc(state.user.uid).update({ name, phone });
+    if(state.role === "rider"){
+      // keep rider doc in sync
+      await DB.col("riders").doc(state.user.uid).set({ name, phone }, { merge: true });
+    }
+    // Update header immediately (optimistic)
+    state.profile.name = name;
+    state.profile.phone = phone;
+    $("#user-name").textContent = name;
+    $("#user-avatar").textContent = (name||"U")[0].toUpperCase();
+    closeModal("edit-profile-modal");
+    toast("Profile updated ✔", "success");
+  } catch(err){
+    toast(err.message || "Update failed", "error");
+  }
+});
 
 /* ============ BOOKING ============ */
 function openBooking(){
@@ -1394,7 +1541,6 @@ function promptOtp(title, expected, onOk){
 }
 
 /* ============ LIVE TRACKING MAP ============ */
-/* ============ LIVE TRACKING MAP ============ */
 let gpsWatchId = null;
 let trackingUnsubRider = null;
 
@@ -1435,11 +1581,9 @@ function openTrackingMap(orderId) {
     if (!snap.exists) { toast("Order not found", "error"); return; }
     const o = { id: snap.id, ...snap.data() };
 
-    // Destroy any previous map instance
     if (state.trackingMap) { state.trackingMap.remove(); state.trackingMap = null; }
     if (trackingUnsubRider) { trackingUnsubRider(); trackingUnsubRider = null; }
 
-    // --- zone fallback coords ---
     const zoneCoords = {
       "Lagos Island": [6.4550, 3.3841], "Victoria Island": [6.4281, 3.4219],
       "Lekki": [6.4474, 3.5561], "Ajah": [6.4667, 3.5667], "Ikoyi": [6.4520, 3.4340],
@@ -1450,7 +1594,6 @@ function openTrackingMap(orderId) {
     const pickupCoord = zoneCoords[o.pickupZone] || [6.4550, 3.3841];
     const dropCoord   = zoneCoords[o.dropZone]   || [6.4550, 3.3841];
 
-    // --- init map ---
     const midLat = (pickupCoord[0] + dropCoord[0]) / 2;
     const midLng = (pickupCoord[1] + dropCoord[1]) / 2;
     state.trackingMap = L.map("tracking-map").setView([midLat, midLng], 12);
@@ -1459,7 +1602,6 @@ function openTrackingMap(orderId) {
       attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
     }).addTo(state.trackingMap);
 
-    // Pickup + Drop markers
     L.marker(pickupCoord, { icon: L.divIcon({ className:"", iconSize:[24,24], iconAnchor:[12,12],
       html:'<div style="background:#1e3a8a;width:24px;height:24px;border-radius:50%;border:3px solid white;display:grid;place-items:center;color:white;font-size:11px;font-weight:700">P</div>'
     })}).addTo(state.trackingMap).bindPopup("Pickup: " + o.pickupZone);
@@ -1468,7 +1610,6 @@ function openTrackingMap(orderId) {
       html:'<div style="background:#f97316;width:24px;height:24px;border-radius:50%;border:3px solid white;display:grid;place-items:center;color:white;font-size:11px;font-weight:700">D</div>'
     })}).addTo(state.trackingMap).bindPopup("Drop-off: " + o.dropZone);
 
-    // Real road route via OSRM (no key needed)
     fetch(`https://router.project-osrm.org/route/v1/driving/${pickupCoord[1]},${pickupCoord[0]};${dropCoord[1]},${dropCoord[0]}?overview=full&geometries=geojson`)
       .then(r => r.json())
       .then(data => {
@@ -1482,7 +1623,6 @@ function openTrackingMap(orderId) {
         L.polyline([pickupCoord, dropCoord], { color:"#3b82f6", weight:3, dashArray:"6,6" }).addTo(state.trackingMap);
       });
 
-    // --- Bike marker (only moves when GPS updates come in) ---
     const bikeIcon = L.divIcon({
       className: "bike-marker", iconSize:[36,36], iconAnchor:[18,18],
       html: `<div style="background:#f97316;width:36px;height:36px;border-radius:50%;border:3px solid white;box-shadow:0 4px 12px rgba(249,115,22,.5);display:grid;place-items:center">
@@ -1495,7 +1635,6 @@ function openTrackingMap(orderId) {
     });
     state.trackingMarker = L.marker(pickupCoord, { icon: bikeIcon }).addTo(state.trackingMap);
 
-    // --- Realtime listener to rider's GPS ---
     if (!o.riderId) {
       $("#tracking-status").innerHTML = `<div class="alert warn">No rider assigned yet. Waiting…</div>`;
       return;
@@ -1516,7 +1655,6 @@ function openTrackingMap(orderId) {
                      : `${Math.round(age/60000)} min ago`;
         state.trackingMarker.setLatLng([r.lat, r.lng]);
 
-        // Rotate the bike icon to heading
         const el = state.trackingMarker.getElement();
         if (el && r.heading) {
           const inner = el.querySelector("div");
@@ -1536,7 +1674,6 @@ function openTrackingMap(orderId) {
           </div>`;
       });
     } else {
-      // LOCAL mode fallback: poll localStorage every 3s
       setInterval(() => {
         const snap = LOCAL.col("riders").doc(o.riderId);
         snap.get().then(s => {
@@ -1551,7 +1688,6 @@ function openTrackingMap(orderId) {
   });
 }
 
-/* Modal close wiring for tracking modal */
 document.getElementById("tracking-modal").addEventListener("click", (e) => {
   if (e.target.id === "tracking-modal") closeTrackingMap();
 });
@@ -1570,7 +1706,7 @@ function closeTrackingMap() {
   closeModal("tracking-modal");
 }
 
-/* ---- Boot ---- */
+/* ============ BOOT ============ */
 $("#yr").textContent = new Date().getFullYear();
 route("home");
 
