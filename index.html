@@ -2114,7 +2114,37 @@ function bindOrderActions(o){
     }); }
     if(act==="fail"){ const reason = prompt("Reason for failure?"); if(!reason) return; await DB.col("orders").doc(o.id).update({ status:"failed", failReason: reason, history:[...(o.history||[]),{at:now(),status:"failed",note:reason}] }); toast("Marked failed","success"); }
     if(act==="rate"){ const r = +prompt("Rate rider 1-5", "5"); if(!r) return; await DB.col("orders").doc(o.id).update({ rating: r }); const rider = state.riders.find(x=>x.id===o.riderId); if(rider){ const all = state.orders.filter(x=>x.riderId===o.riderId && x.rating); const avg = (all.reduce((s,x)=>s+x.rating,0)+r)/(all.length+1); await DB.col("riders").doc(o.riderId).update({ rating: avg }); } toast("Thanks for rating!","success"); }
-    if(act==="reorder"){ closeModal("order-modal"); openBooking(); setTimeout(()=>{ $("#b-pickup").value=o.pickupZone; $("#b-drop").value=o.dropZone; $("#b-paddr").value=o.pickupAddr; $("#b-daddr").value=o.dropAddr; $("#b-rname").value=o.receiverName; $("#b-rphone").value=o.receiverPhone; $("#b-pkg").value=o.package; },100); }
+    if(act==="reorder"){
+  closeModal("order-modal");
+  // Preserve receiver link if the original order was sent to a Mimi's customer
+  if(o.receiverId){
+    state.prefillReceiver = {
+      uid: o.receiverId,
+      name: o.receiverName || "",
+      phone: o.receiverPhone || "",
+      address: o.dropAddr || ""
+    };
+  } else {
+    state.prefillReceiver = null;
+  }
+  openBooking();
+  setTimeout(()=>{
+    $("#b-pickup").value = o.pickupZone;
+    $("#b-drop").value   = o.dropZone;
+    $("#b-paddr").value  = o.pickupAddr;
+    $("#b-daddr").value  = o.dropAddr;
+    $("#b-rname").value  = o.receiverName;
+    $("#b-rphone").value = o.receiverPhone;
+    $("#b-pkg").value    = o.package;
+    if(o.receiverId){
+      const note = $("#b-receiver-uid-note");
+      if(note){
+        note.style.display = "block";
+        note.innerHTML = `Reordering to <strong>${o.receiverName || "the same receiver"}</strong> (link invite).`;
+      }
+    }
+  }, 100);
+}
     if(act==="report"){ const msg = prompt("Describe the issue"); if(!msg) return; await DB.col("orders").doc(o.id).update({ report: msg }); toast("Issue reported, support will reach out","success"); }
     if(act==="track"){ closeModal("order-modal"); openTrackingMap(o.id); }
     if(act==="receipt"){ closeModal("order-modal"); viewReceipt(o.id); }
