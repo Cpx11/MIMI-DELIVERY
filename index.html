@@ -211,7 +211,6 @@
   #tracking-map{height:100%;width:100%}
   .leaflet-container{font-family:var(--font-body)}
 
-  /* Mobile sidebar overlay backdrop */
   .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(10,26,43,.5);z-index:55}
   .sidebar-backdrop.open{display:block}
 
@@ -1395,10 +1394,31 @@ $("#book-form").addEventListener("submit", async (e) => {
     history: [{at: now(), status:"pending", note:"Order created"}]
   };
   const ref = await DB.col("orders").add(order);
+  // Notify customer + receiver of their OTPs (SMS hook — plug in Twilio/Termii/etc. later)
+  sendOtpSms({ ...order, id: ref.id });
   toast("Order placed ✔  ID: "+ref.id.slice(0,8), "success");
   closeModal("book-modal");
   state.dashTab="orders"; renderDashboard();
 });
+
+/* Placeholder SMS hook — replace the body with a real provider call later.
+   Intended flow:
+     - Send `pickupOtp` to `order.customerPhone` (sender reads it to rider at pickup).
+     - Send `deliveryOtp` to `order.receiverPhone` (receiver reads it to rider at delivery).
+   The rider must NEVER be told these codes by the system. */
+function sendOtpSms(order){
+  try {
+    console.log("[SMS hook] Would send to customer", order.customerPhone,
+                "pickup OTP:", order.pickupOtp);
+    console.log("[SMS hook] Would send to receiver", order.receiverPhone,
+                "delivery OTP:", order.deliveryOtp);
+    // TODO: plug in your SMS provider here, e.g.:
+    // await fetch("/api/send-otp", { method:"POST", headers:{ "Content-Type":"application/json" },
+    //   body: JSON.stringify({ customerPhone: order.customerPhone, receiverPhone: order.receiverPhone,
+    //                          pickupOtp: order.pickupOtp, deliveryOtp: order.deliveryOtp,
+    //                          orderId: order.id }) });
+  } catch(e){ console.warn("SMS hook failed", e); }
+}
 
 /* ============ ORDER DETAIL MODAL ============ */
 function viewOrder(id){
@@ -1445,7 +1465,8 @@ function renderOrderDetail(o){
       ${o.riderId && o.status!=="delivered" ? `<button class="btn-mini primary" data-act="track">📍 Live Track</button>` : ""}
     </div>`;
   }
-  const showOtp = (isRider) || (isCust && o.status==="confirmed") || (isCust && o.status==="picked") || isAdmin;
+  /* SECURITY: rider must NOT see either OTP. Only customer + admin see codes for support. */
+  const showOtp = isAdmin || (isCust && (o.status==="confirmed" || o.status==="picked"));
   return `
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
     <div>
@@ -1512,14 +1533,23 @@ function bindOrderActions(o){
     if(act==="paid"){ await DB.col("orders").doc(o.id).update({ paid:true }); toast("Marked paid","success"); }
     if(act==="accept"){ await DB.col("orders").doc(o.id).update({ status:"confirmed", history:[...(o.history||[]),{at:now(),status:"confirmed",note:"Rider accepted"}] }); toast("Job accepted","success"); }
     if(act==="decline"){ await DB.col("orders").doc(o.id).update({ riderId:null, riderName:null, status:"pending", history:[...(o.history||[]),{at:now(),status:"pending",note:"Rider declined"}] }); toast("Declined","success"); }
-    if(act==="pickup"){ promptOtp("Verify Pickup OTP", o.pickupOtp, async () => { await DB.col("orders").doc(o.id).update({ status:"picked", history:[...(o.history||[]),{at:now(),status:"picked",note:"Picked up"}] }); toast("Pickup verified","success"); }); }
+    if(act==="pickup"){
+      // Pass the ORDER ID so promptOtp can verify against Firestore, not the local copy
+      promptOtp("Verify Pickup OTP", o.id, async () => {
+        await DB.col("orders").doc(o.id).update({ status:"picked", history:[...(o.history||[]),{at:now(),status:"picked",note:"Picked up"}] });
+        toast("Pickup verified","success");
+      });
+    }
     if(act==="transit"){ await DB.col("orders").doc(o.id).update({ status:"transit", history:[...(o.history||[]),{at:now(),status:"transit",note:"In transit"}] }); toast("In transit","success"); }
-    if(act==="deliver"){ promptOtp("Verify Delivery OTP", o.deliveryOtp, async () => {
-      await DB.col("orders").doc(o.id).update({ status:"delivered", deliveredAt: now(), history:[...(o.history||[]),{at:now(),status:"delivered",note:"Delivered ✔"}] });
-      const rider = state.riders.find(r=>r.id===o.riderId);
-      if(rider){ await DB.col("riders").doc(o.riderId).update({ deliveries:(rider.deliveries||0)+1, earnings:(rider.earnings||0)+Math.round((o.price||0)*0.7) }); }
-      toast("Delivered ✔","success");
-    }); }
+    if(act==="deliver"){
+      // Pass the ORDER ID so promptOtp can verify against Firestore, not the local copy
+      promptOtp("Verify Delivery OTP", o.id, async () => {
+        await DB.col("orders").doc(o.id).update({ status:"delivered", deliveredAt: now(), history:[...(o.history||[]),{at:now(),status:"delivered",note:"Delivered ✔"}] });
+        const rider = state.riders.find(r=>r.id===o.riderId);
+        if(rider){ await DB.col("riders").doc(o.riderId).update({ deliveries:(rider.deliveries||0)+1, earnings:(rider.earnings||0)+Math.round((o.price||0)*0.7) }); }
+        toast("Delivered ✔","success");
+      });
+    }
     if(act==="fail"){ const reason = prompt("Reason for failure?"); if(!reason) return; await DB.col("orders").doc(o.id).update({ status:"failed", failReason: reason, history:[...(o.history||[]),{at:now(),status:"failed",note:reason}] }); toast("Marked failed","success"); }
     if(act==="rate"){ const r = +prompt("Rate rider 1-5", "5"); if(!r) return; await DB.col("orders").doc(o.id).update({ rating: r }); const rider = state.riders.find(x=>x.id===o.riderId); if(rider){ const all = state.orders.filter(x=>x.riderId===o.riderId && x.rating); const avg = (all.reduce((s,x)=>s+x.rating,0)+r)/(all.length+1); await DB.col("riders").doc(o.riderId).update({ rating: avg }); } toast("Thanks for rating!","success"); }
     if(act==="reorder"){ closeModal("order-modal"); openBooking(); setTimeout(()=>{ $("#b-pickup").value=o.pickupZone; $("#b-drop").value=o.dropZone; $("#b-paddr").value=o.pickupAddr; $("#b-daddr").value=o.dropAddr; $("#b-rname").value=o.receiverName; $("#b-rphone").value=o.receiverPhone; $("#b-pkg").value=o.package; },100); }
@@ -1528,14 +1558,34 @@ function bindOrderActions(o){
   }));
 }
 
-function promptOtp(title, expected, onOk){
+/* ============================================================================
+   OTP VERIFICATION
+   - Second arg is now the ORDER ID (not the expected code).
+   - The expected code is fetched fresh from Firestore at verify time.
+   - The rider never sees the code, neither in the order modal nor here.
+   - Only the customer (pickup) / receiver (delivery, via SMS hook) knows it.
+   ============================================================================ */
+function promptOtp(title, orderId, onOk){
   $("#otp-title").textContent = title;
-  $("#otp-msg").textContent = `Expected OTP from ${title.includes('Pickup')?'customer':'receiver'}. (Demo OTP: ${expected})`;
-  const ins = $$("#otp-modal .otp-input input"); ins.forEach((i,idx)=>{ i.value=""; i.oninput=()=>{ if(i.value && idx<3) ins[idx+1].focus(); }; });
-  $("#otp-confirm").onclick = () => {
+  const who = title.includes('Pickup') ? 'customer' : 'receiver';
+  $("#otp-msg").textContent = `Ask the ${who} for their 4-digit code and enter it below.`;
+  const ins = $$("#otp-modal .otp-input input");
+  ins.forEach((i,idx)=>{ i.value=""; i.oninput=()=>{ if(i.value && idx<3) ins[idx+1].focus(); }; });
+  $("#otp-confirm").onclick = async () => {
     const code = ins.map(i=>i.value).join("");
-    if(code===expected){ closeModal("otp-modal"); onOk(); }
-    else toast("Invalid OTP","error");
+    if(code.length !== 4){ toast("Enter all 4 digits","error"); return; }
+    const field = title.includes("Pickup") ? "pickupOtp" : "deliveryOtp";
+    let expected = null;
+    try {
+      const snap = await DB.col("orders").doc(orderId).get();
+      if(snap.exists){
+        const data = snap.data();
+        expected = data ? data[field] : null;
+      }
+    } catch(e){ console.warn("OTP fetch failed", e); }
+    if(!expected){ toast("Could not verify OTP — try again","error"); return; }
+    if(code === String(expected)){ closeModal("otp-modal"); onOk(); }
+    else toast("Invalid OTP — ask again","error");
   };
   openModal("otp-modal");
 }
