@@ -2012,7 +2012,8 @@ function renderOrderDetail(o){
     </div>`;
   }
 
-  const showOtp = isAdmin || (isCust && (o.status==="confirmed" || o.status==="picked"));
+  const showSenderOtp   = isAdmin || isCust;
+const showReceiverOtp = isAdmin || (isRecv && (o.status==="picked" || o.status==="transit"));
 
   // Rider card
   let riderCard = "";
