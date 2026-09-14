@@ -1159,6 +1159,7 @@ $("#auth-form").addEventListener("submit", async (e) => {
 });
 
 /* ============ AUTH STATE → DASHBOARD ============ */
+/* ============ AUTH STATE → DASHBOARD ============ */
 DB.auth.onAuthStateChanged(async (user) => {
   state.unsubs.forEach(u=>{try{u();}catch(e){}}); state.unsubs=[];
   if(!user){ state.user=null; state.profile=null; state.role=null; route("home"); return; }
@@ -1170,6 +1171,41 @@ DB.auth.onAuthStateChanged(async (user) => {
     }
     state.profile = snap.data();
     state.role = state.profile.role;
+
+    // ---- Self-heal: a rider must have a riders/{uid} document ----
+    if(state.role === "rider"){
+      try {
+        const rSnap = await DB.col("riders").doc(user.uid).get();
+        if(!rSnap.exists){
+          // Rebuild the rider doc from what we know — using safe string fallbacks
+          // so Firestore never rejects the write for an undefined field.
+          await DB.col("riders").doc(user.uid).set({
+            name: state.profile.name || user.email.split("@")[0],
+            phone: state.profile.phone || "",
+            online: false,
+            verified: false,
+            createdAt: now(),
+            deliveries: 0,
+            earnings: 0,
+            rating: 5.0,
+            photoUrl: "",
+            vehicleType: "",
+            plateNumber: "",
+            vehicleMake: "",
+            vehicleModel: "",
+            vehicleYear: "",
+            vehicleColor: "",
+            licenseId: "",
+            mainZone: "",
+            emergencyContact: "",
+            emergencyPhone: "",
+            submittedAt: now()
+          });
+          console.warn("[self-heal] Created missing riders/"+user.uid);
+        }
+      } catch(e){ console.warn("[self-heal] Could not create riders doc", e); }
+    }
+
     enterDashboard();
 
     // If there's a pending invite link (?to=UID) and user is a customer, open booking prefilled.
@@ -1177,9 +1213,9 @@ DB.auth.onAuthStateChanged(async (user) => {
       const inviteId = state.pendingInviteReceiverId;
       state.pendingInviteReceiverId = null;
       try {
-        const rSnap = await DB.col("users").doc(inviteId).get();
-        if(rSnap.exists){
-          const rp = rSnap.data();
+        const rSnap2 = await DB.col("users").doc(inviteId).get();
+        if(rSnap2.exists){
+          const rp = rSnap2.data();
           if(rp.role === "customer"){
             state.prefillReceiver = {
               uid: inviteId,
