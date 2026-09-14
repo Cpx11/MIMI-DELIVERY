@@ -2064,7 +2064,8 @@ const showReceiverOtp = isAdmin || (isRecv && (o.status==="picked" || o.status==
       <h4 style="margin:12px 0 6px">Receiver</h4>
       <p style="margin:2px 0;font-size:.9rem">${o.receiverName}<br><span style="color:var(--muted)">${o.receiverPhone}</span></p>
       ${riderCard}
-      ${showOtp?`<div class="alert info" style="margin-top:10px"><strong>Pickup OTP:</strong> ${o.pickupOtp} · <strong>Delivery OTP:</strong> ${o.deliveryOtp}</div>`:""}
+    ${showSenderOtp?`<div class="alert info" style="margin-top:10px"><strong>Your Pickup OTP:</strong> ${o.pickupOtp}<div style="font-size:.78rem;color:var(--muted);margin-top:4px">Give this to the rider when they arrive to pick up the package.</div></div>`:""}
+      ${showReceiverOtp?`<div class="alert success" style="margin-top:10px"><strong>Your Delivery OTP:</strong> ${o.deliveryOtp}<div style="font-size:.78rem;color:var(--muted);margin-top:4px">Share this with the rider only when you physically receive the package.</div></div>`:""}
     </div>
     <div>
       <h4 style="margin-bottom:6px">Timeline</h4>
