@@ -1127,28 +1127,42 @@ $("#auth-form").addEventListener("submit", async (e) => {
       const uid = cred.user.uid;
       await DB.col("users").doc(uid).set({ name: name||email.split("@")[0], email, phone, role, createdAt: now() });
       if(role==="rider"){
-        let photoUrl = "";
-        if(riderData && FB_READY){
-          try { photoUrl = await uploadRiderPhoto(uid, riderData.photoFile); }
-          catch(err){ console.warn("Photo upload failed", err); toast("Photo upload failed, saving profile without it","error"); }
-        }
-        await DB.col("riders").doc(uid).set({
-          name: name||email, phone, online:false, verified:false, createdAt: now(),
-          deliveries: 0, earnings: 0, rating: 5.0,
-          photoUrl,
-          vehicleType: riderData?.vtype || "",
-          plateNumber: riderData?.plate || "",
-          vehicleMake: riderData?.make || "",
-          vehicleModel: riderData?.model || "",
-          vehicleYear: riderData?.year || "",
-          vehicleColor: riderData?.color || "",
-          licenseId: riderData?.license || "",
-          mainZone: riderData?.zone || "",
-          emergencyContact: riderData?.ecname || "",
-          emergencyPhone: riderData?.ecphone || "",
-          submittedAt: now()
-        });
-      }
+  const S = (v) => (v == null ? "" : String(v));
+  let photoUrl = "";
+  if(riderData && FB_READY){
+    try { photoUrl = await uploadRiderPhoto(uid, riderData.photoFile); }
+    catch(err){ console.warn("Photo upload failed", err); toast("Photo upload failed, saving profile without it","error"); }
+  }
+  try {
+    await DB.col("riders").doc(uid).set({
+      name: S(name||email),
+      phone: S(phone),
+      online: false,
+      verified: false,
+      createdAt: now(),
+      deliveries: 0,
+      earnings: 0,
+      rating: 5.0,
+      photoUrl: S(photoUrl),
+      vehicleType: S(riderData?.vtype),
+      plateNumber: S(riderData?.plate),
+      vehicleMake: S(riderData?.make),
+      vehicleModel: S(riderData?.model),
+      vehicleYear: S(riderData?.year),
+      vehicleColor: S(riderData?.color),
+      licenseId: S(riderData?.license),
+      mainZone: S(riderData?.zone),
+      emergencyContact: S(riderData?.ecname),
+      emergencyPhone: S(riderData?.ecphone),
+      submittedAt: now()
+    });
+    console.log("[register] riders/"+uid+" created");
+  } catch(err){
+    console.error("[register] riders write failed:", err);
+    toast("Could not save rider profile: " + (err.message || err.code || "unknown error"), "error");
+    // Don't silently swallow it — this is exactly the bug that leaves a rider half-registered.
+  }
+}
       toast("Account created!", "success");
     } else {
       await DB.auth.signInWithEmailAndPassword(email, pw);
