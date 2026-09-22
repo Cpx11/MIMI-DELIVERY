@@ -1556,7 +1556,18 @@ DB.auth.onAuthStateChanged(async (user) => {
   state.unsubs.push(unsubS);
 });
 
-async function logout(){ await DB.auth.signOut(); }
+async function logout(){
+  document.body.classList.remove("dashboard-mode");
+  const pub = $("#public-site");
+  if(pub){
+    pub.style.display = "block";
+    pub.style.visibility = "";
+    pub.style.pointerEvents = "";
+  }
+  document.querySelectorAll(".nav").forEach(n => n.style.display = "");
+  document.querySelectorAll("footer").forEach(f => f.style.display = "");
+  await DB.auth.signOut();
+}
 
 /* ============ DASHBOARD SHELL ============ */
 function enterDashboard(){
@@ -4791,7 +4802,18 @@ DB.auth.onAuthStateChanged(async (user) => {
   state.unsubs.push(unsubS);
 });
 
-async function logout(){ await DB.auth.signOut(); }
+async function logout(){
+  document.body.classList.remove("dashboard-mode");
+  const pub = $("#public-site");
+  if(pub){
+    pub.style.display = "block";
+    pub.style.visibility = "";
+    pub.style.pointerEvents = "";
+  }
+  document.querySelectorAll(".nav").forEach(n => n.style.display = "");
+  document.querySelectorAll("footer").forEach(f => f.style.display = "");
+  await DB.auth.signOut();
+}
 
 /* ============ DASHBOARD SHELL ============ */
 function enterDashboard(){
