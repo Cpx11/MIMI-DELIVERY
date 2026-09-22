@@ -1411,24 +1411,21 @@ $("#auth-form").addEventListener("submit", async (e) => {
       const cred = await DB.auth.createUserWithEmailAndPassword(email, pw);
       const uid = cred.user.uid;
 
-      // Send verification email to CUSTOMERS and RIDERS (skip admins only)
+     // Send verification email to CUSTOMERS and RIDERS (skip admins only)
       if(role === "customer" || role === "rider"){
         try {
           if(FB_READY && cred.user && typeof cred.user.sendEmailVerification === "function"){
-            await cred.user.sendEmailVerification();
+            // continueUrl = where the user lands after clicking the link in their inbox
+            const continueUrl = location.origin + location.pathname + "?verified=1";
+            const actionCodeSettings = {
+              url: continueUrl,
+              handleCodeInApp: false   // false = Firebase verifies, then redirects to continueUrl
+            };
+            await cred.user.sendEmailVerification(actionCodeSettings);
             toast("Verification email sent — check your inbox ✔", "info");
           }
         } catch(err){ console.warn("sendEmailVerification failed:", err); }
       }
-      await DB.col("users").doc(uid).set({ name: name||email.split("@")[0], email, phone, role, createdAt: now(), receivingCode: genReceivingCode() });
-
-      if(role==="rider"){
-        const S = (v) => (v == null ? "" : String(v));
-        let photoUrl = "";
-        if(riderData && FB_READY){
-          try { photoUrl = await uploadRiderPhoto(uid, riderData.photoFile); }
-          catch(err){ console.warn("Photo upload failed", err); toast("Photo upload failed, saving profile without it","error"); }
-        }
         // Upload docs (compress base64)
         let docs = {};
         if(riderData){
