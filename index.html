@@ -1560,7 +1560,19 @@ async function logout(){ await DB.auth.signOut(); }
 
 /* ============ DASHBOARD SHELL ============ */
 function enterDashboard(){
-  $("#public-site").style.display="none";
+  // Hide public site entirely and mark body as "dashboard-mode"
+  document.body.classList.add("dashboard-mode");
+  const pub = $("#public-site");
+  if(pub){
+    pub.style.display = "none";
+    pub.style.visibility = "hidden";
+    pub.style.pointerEvents = "none";
+  }
+  // Also hide any stray nav/footer that might be outside #public-site
+  document.querySelectorAll(".nav").forEach(n => n.style.display = "none");
+  document.querySelectorAll("footer").forEach(f => f.style.display = "none");
+
+  // Show the app shell
   $("#app-shell").classList.add("active");
   $("#user-name").textContent = state.profile.name || state.profile.email;
   $("#user-avatar").textContent = (state.profile.name||state.profile.email||"U")[0].toUpperCase();
