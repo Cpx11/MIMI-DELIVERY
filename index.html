@@ -1,4 +1,3485 @@
-<!doctype html>
+<!doctype <!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Mimi's Delivery — Fast & Reliable Delivery in Lagos</title>
+<meta name="description" content="Mimi's Delivery — Real-time logistics and delivery platform for Lagos. Book, track and manage deliveries." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f8fc;
+    --surface:#ffffff;
+    --ink:#0a1a2b;
+    --ink-2:#2c3e50;
+    --muted:#6b7b8d;
+    --line:#e2e8f0;
+    --brand:#f97316;
+    --brand-2:#fb923c;
+    --brand-soft:#fff3e6;
+    --accent:#1e3a8a;
+    --accent-2:#3b82f6;
+    --accent-soft:#e6f0ff;
+    --ok:#10b981;
+    --warn:#f59e0b;
+    --bad:#ef4444;
+    --radius:14px;
+    --shadow:0 8px 24px rgba(15,23,42,.06);
+    --shadow-lg:0 20px 48px rgba(15,23,42,.10);
+    --font-body:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    --font-head:'Plus Jakarta Sans',sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);-webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4{font-family:var(--font-head);color:var(--ink);margin:0 0 .5rem}
+  h1{font-size:clamp(2rem,4.5vw,3.4rem);line-height:1.05;letter-spacing:-.02em;font-weight:800}
+  h2{font-size:clamp(1.5rem,3vw,2.2rem);font-weight:800;letter-spacing:-.01em}
+  h3{font-size:1.1rem;font-weight:700}
+  p{color:var(--ink-2);line-height:1.6;margin:0 0 .75rem}
+  a{color:inherit;text-decoration:none}
+  button{font-family:inherit;cursor:pointer}
+  .container{max-width:1180px;margin:0 auto;padding:0 20px}
+
+  .nav{position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:saturate(180%) blur(12px);border-bottom:1px solid var(--line);z-index:50}
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;max-width:1180px;margin:0 auto}
+  .brand{display:flex;align-items:center;gap:10px;font-family:var(--font-head);font-weight:800;font-size:1.15rem;cursor:pointer}
+  .brand-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:grid;place-items:center;color:#fff;box-shadow:0 6px 14px rgba(30,58,138,.35)}
+  .brand-mark svg{width:20px;height:20px}
+  .nav-links{display:flex;gap:26px;align-items:center}
+  .nav-links a{color:var(--ink-2);font-weight:500;font-size:.95rem;cursor:pointer;transition:color .15s}
+  .nav-links a:hover{color:var(--brand)}
+  .nav-cta{display:flex;gap:10px;align-items:center}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:10px;font-weight:600;font-size:.92rem;border:0;transition:transform .08s ease, box-shadow .15s ease, background .15s ease}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--brand);color:#fff;box-shadow:0 6px 16px rgba(249,115,22,.3)}
+  .btn-primary:hover{background:#ea6a0e}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn-ghost:hover{background:#f1f5f9}
+  .btn-dark{background:var(--accent);color:#fff}
+  .btn-dark:hover{background:#172d6e}
+  .btn-sm{padding:7px 12px;font-size:.82rem;border-radius:8px}
+  .btn-block{width:100%;justify-content:center}
+  .menu-btn{display:none;background:transparent;border:0;font-size:1.4rem;color:var(--ink)}
+
+  .hero{position:relative;overflow:hidden;padding:64px 0 40px;background:linear-gradient(160deg,var(--accent-soft) 0%,#fff 60%)}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:50px;align-items:center}
+  .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--brand-soft);color:#c2410c;padding:6px 12px;border-radius:999px;font-weight:600;font-size:.78rem;letter-spacing:.02em}
+  .hero h1 span{background:linear-gradient(90deg,var(--accent),var(--accent-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero-sub{font-size:1.08rem;color:var(--ink-2);max-width:520px;margin-top:14px}
+  .hero-actions{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap}
+  .hero-stats{display:flex;gap:28px;margin-top:32px;flex-wrap:wrap}
+  .hero-stat .num{font-family:var(--font-head);font-size:1.6rem;font-weight:800;color:var(--accent)}
+  .hero-stat .lbl{font-size:.82rem;color:var(--muted)}
+
+  .price-card{background:var(--surface);border-radius:20px;padding:24px;box-shadow:var(--shadow-lg);border:1px solid var(--line)}
+  .price-card h3{font-size:1.05rem;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+  .field label{font-size:.78rem;font-weight:600;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
+  .input,.select,textarea.input{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:.95rem;font-family:inherit;background:#fff;color:var(--ink);transition:border .15s, box-shadow .15s}
+  .input:focus,.select:focus,textarea.input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px rgba(249,115,22,.12)}
+  .row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .price-out{margin-top:8px;padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#2a4a7a);color:#fff;display:flex;justify-content:space-between;align-items:center}
+  .price-out .val{font-family:var(--font-head);font-weight:800;font-size:1.4rem}
+  .price-out .lbl{font-size:.78rem;opacity:.8}
+
+  section{padding:64px 0}
+  .section-head{text-align:center;max-width:680px;margin:0 auto 36px}
+  .section-head .eyebrow{color:var(--brand);font-weight:700;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);transition:transform .15s, box-shadow .15s}
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+  .icon-badge{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;margin-bottom:14px;font-size:1.3rem}
+  .icon-badge.orange{background:var(--brand-soft);color:var(--brand)}
+  .stat-card{background:var(--surface);padding:24px;border-radius:var(--radius);border:1px solid var(--line);text-align:center}
+  .stat-card .num{font-family:var(--font-head);font-size:2rem;font-weight:800;color:var(--accent)}
+  .stat-card .lbl{color:var(--muted);font-size:.88rem;margin-top:4px}
+  .testi{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .testi .who{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#bfdbfe,#93c5fd);display:grid;place-items:center;color:#1e3a8a;font-weight:700;font-size:.9rem;overflow:hidden;flex-shrink:0}
+  .avatar img{width:100%;height:100%;object-fit:cover}
+  .zones{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+  .zone{padding:14px;border:1px dashed var(--line);border-radius:12px;background:#fff;display:flex;align-items:center;gap:10px}
+  .zone .dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
+
+  footer{background:#0b1a2e;color:#cbd5e1;padding:48px 0 24px;margin-top:48px}
+  footer .container{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
+  footer h4{color:#fff;font-size:1rem;margin-bottom:12px}
+  footer a{display:block;color:#94a3b8;padding:4px 0;font-size:.9rem;cursor:pointer}
+  footer a:hover{color:#fff}
+  .copyright{border-top:1px solid #1e293b;margin-top:30px;padding-top:18px;text-align:center;color:#64748b;font-size:.85rem}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(10,26,43,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+  .modal-bg.open{display:flex}
+  .modal{background:#fff;border-radius:16px;max-width:480px;width:100%;max-height:90vh;overflow:auto;box-shadow:var(--shadow-lg);animation:popin .2s ease}
+  .modal.lg{max-width:720px}
+  .modal.xl{max-width:900px}
+  @keyframes popin{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+  .modal-head{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .modal-head h3{margin:0;font-size:1.15rem}
+  .modal-body{padding:22px 24px}
+  .x{background:transparent;border:0;font-size:1.4rem;color:var(--muted);cursor:pointer;line-height:1}
+
+  .role-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#f1f5f9;padding:6px;border-radius:12px;margin-bottom:18px}
+  .role-tabs.two-tabs{grid-template-columns:repeat(2,1fr)}
+  .role-tab{padding:10px;background:transparent;border:0;border-radius:8px;font-weight:600;font-size:.88rem;color:var(--ink-2);transition:all .15s}
+  .role-tab.active{background:#fff;color:var(--brand);box-shadow:0 2px 6px rgba(0,0,0,.05)}
+  .admin-reveal{text-align:center;font-size:.72rem;color:var(--muted);margin-top:14px;letter-spacing:.06em;text-transform:uppercase}
+  .admin-reveal span{cursor:pointer;user-select:none}
+
+  .app-shell{display:none;min-height:100vh;background:var(--bg)}
+  .app-shell.active{display:grid;grid-template-columns:240px 1fr}
+  .sidebar{background:#0b1a2e;color:#cbd5e1;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;overflow-y:auto;z-index:60}
+  .sidebar .brand{color:#fff;padding:0 8px 18px;border-bottom:1px solid #1e293b;margin-bottom:14px}
+  .nav-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:.92rem;font-weight:500;border:0;background:transparent;width:100%;text-align:left;transition:all .15s}
+  .nav-item:hover{background:#1e293b;color:#fff}
+  .nav-item.active{background:var(--brand);color:#fff}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0}
+  .sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid #1e293b}
+  .main{padding:24px 28px;max-width:100%;overflow-x:hidden}
+  .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+  .top-bar h2{margin:0;font-size:1.5rem}
+  .user-chip{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;background:#fff;border:1px solid var(--line);border-radius:999px;font-size:.88rem;font-weight:500;cursor:pointer;transition:all .15s}
+  .user-chip:hover{background:#f8fafc;border-color:var(--brand);box-shadow:0 4px 12px rgba(249,115,22,.12)}
+  .user-chip .avatar{width:30px;height:30px;font-size:.75rem}
+  .user-chip .edit-hint{font-size:.68rem;color:var(--muted);margin-left:2px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+  .kpi{background:#fff;padding:18px;border-radius:var(--radius);border:1px solid var(--line)}
+  .kpi .lbl{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  .kpi .num{font-family:var(--font-head);font-size:1.7rem;font-weight:800;margin-top:6px;color:var(--ink)}
+  .kpi .delta{font-size:.78rem;color:var(--ok);margin-top:2px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:0;margin-bottom:18px;overflow:hidden}
+  .panel-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  .panel-head h3{margin:0;font-size:1rem}
+  .panel-body{padding:16px 20px}
+  table{width:100%;border-collapse:collapse;font-size:.9rem}
+  th,td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  th{font-weight:600;color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;background:#f8fafc}
+  tr:last-child td{border-bottom:0}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:.75rem;font-weight:600;text-transform:capitalize}
+  .b-pending{background:#fef3c7;color:#92400e}
+  .b-confirmed{background:#dbeafe;color:#1e40af}
+  .b-assigned{background:#ede9fe;color:#6d28d9}
+  .b-picked{background:#fde68a;color:#854d0e}
+  .b-transit{background:#bfdbfe;color:#1e3a8a}
+  .b-delivered{background:#d1fae5;color:#065f46}
+  .b-failed{background:#fee2e2;color:#991b1b}
+  .b-online{background:#d1fae5;color:#065f46}
+  .b-offline{background:#f1f5f9;color:#475569}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:14px 18px;border-radius:10px;box-shadow:var(--shadow-lg);z-index:200;display:none;font-size:.9rem;max-width:340px}
+  .toast.show{display:block;animation:popin .2s}
+  .toast.error{background:var(--bad)}
+  .toast.success{background:var(--ok)}
+  .toast.info{background:var(--accent-2)}
+  .timeline{display:flex;flex-direction:column;gap:0}
+  .tl-step{display:flex;gap:14px;padding:10px 0}
+  .tl-dot{width:14px;height:14px;border-radius:50%;background:#e2e8f0;margin-top:4px;flex-shrink:0;position:relative}
+  .tl-step.done .tl-dot{background:var(--ok)}
+  .tl-step.current .tl-dot{background:var(--brand);box-shadow:0 0 0 4px rgba(249,115,22,.2)}
+  .tl-line{width:2px;background:#e2e8f0;margin-left:6px;flex:1;min-height:14px}
+  .tl-step.done .tl-line{background:var(--ok)}
+  .tl-content .t{font-weight:600;font-size:.92rem}
+  .tl-content .s{font-size:.78rem;color:var(--muted)}
+  .empty{padding:40px 20px;text-align:center;color:var(--muted)}
+  .empty svg{width:42px;height:42px;opacity:.4;margin-bottom:10px}
+  .actions-row{display:flex;gap:6px;flex-wrap:wrap}
+  .btn-mini{padding:5px 10px;font-size:.78rem;border-radius:6px;border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer;transition:all .15s}
+  .btn-mini:hover{background:#f1f5f9}
+  .btn-mini.danger{color:var(--bad);border-color:#fecaca}
+  .btn-mini.danger:hover{background:#fef2f2}
+  .btn-mini.ok{color:var(--ok);border-color:#a7f3d0}
+  .btn-mini.ok:hover{background:#ecfdf5}
+  .btn-mini.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .btn-mini.primary:hover{background:#ea6a0e}
+  .switch{position:relative;display:inline-block;width:44px;height:24px}
+  .switch input{opacity:0;width:0;height:0}
+  .slider{position:absolute;cursor:pointer;inset:0;background:#cbd5e1;border-radius:24px;transition:.2s}
+  .slider:before{position:absolute;content:"";height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+  input:checked + .slider{background:var(--ok)}
+  input:checked + .slider:before{transform:translateX(20px)}
+  .otp-input{display:flex;gap:8px;justify-content:center;margin:12px 0}
+  .otp-input input{width:44px;height:52px;text-align:center;font-size:1.3rem;font-weight:700;border:1px solid var(--line);border-radius:8px}
+  .helper{font-size:.82rem;color:var(--muted);margin-top:4px}
+  .alert{padding:12px 14px;border-radius:10px;font-size:.88rem;margin-bottom:14px}
+  .alert.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+  .alert.warn{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+  .alert.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+
+  .map-container{height:300px;border-radius:12px;overflow:hidden;border:1px solid var(--line);margin-top:12px}
+  #tracking-map{height:100%;width:100%}
+  .leaflet-container{font-family:var(--font-body)}
+
+  .sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(10,26,43,.5);z-index:55}
+  .sidebar-backdrop.open{display:block}
+
+  .subtabs{display:inline-flex;gap:6px;background:#f1f5f9;padding:5px;border-radius:10px}
+  .subtab{padding:7px 16px;border:0;background:transparent;border-radius:7px;font-weight:600;font-size:.85rem;color:var(--ink-2)}
+  .subtab.active{background:#fff;color:var(--brand);box-shadow:0 2px 6px rgba(0,0,0,.05)}
+
+  .rider-card{display:flex;gap:14px;align-items:center;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+  .rider-card .rphoto{width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.1);background:#e2e8f0}
+  .rider-card .rmeta{font-size:.85rem;color:var(--ink-2);line-height:1.45}
+  .rider-card .rname{font-weight:700;color:var(--ink);font-size:.95rem}
+
+  .thumb{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.1);background:#e2e8f0}
+  .thumb-empty{width:44px;height:44px;border-radius:50%;background:#f1f5f9;color:var(--muted);display:grid;place-items:center;font-size:.7rem;text-align:center;line-height:1}
+
+  .doc-thumb{width:130px;height:130px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer;background:#f8fafc}
+
+  .receipt-shell{background:#fff;padding:24px;border-radius:12px;border:1px solid var(--line)}
+  .share-box{display:flex;gap:8px;align-items:center;background:#f8fafc;border:1px dashed var(--line);border-radius:10px;padding:10px;margin-top:8px}
+  .share-box input{flex:1;border:0;background:transparent;font-family:monospace;font-size:.82rem;color:var(--ink-2);outline:none}
+
+  /* live rider feed */
+  .live-feed{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px;max-height:140px;overflow-y:auto}
+  .live-feed-item{font-size:.82rem;padding:4px 0;color:var(--ink-2);border-bottom:1px dashed #e2e8f0}
+  .live-feed-item:last-child{border-bottom:0}
+  .live-feed-item .lt{color:var(--muted);font-size:.72rem;margin-right:6px}
+
+  /* Bank details block */
+  .bank-block{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:14px;margin-top:10px}
+  .bank-block .row{display:flex;justify-content:space-between;padding:4px 0;font-size:.9rem}
+  .bank-block .row .l{color:var(--muted)}
+  .bank-block .row .v{font-weight:700}
+
+  /* Generic info page */
+  .info-page h2{margin-top:24px}
+  .info-page h2:first-child{margin-top:0}
+  .info-page ul{color:var(--ink-2);line-height:1.9;padding-left:20px}
+
+  @media (max-width: 960px){
+    .hero-grid{grid-template-columns:1fr;gap:32px}
+    .grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}
+    footer .container{grid-template-columns:1fr 1fr}
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .app-shell.active{grid-template-columns:1fr}
+    .sidebar{position:fixed;left:-280px;width:240px;transition:left .25s ease}
+    .sidebar.open{left:0;box-shadow:0 0 40px rgba(0,0,0,.4)}
+    .menu-btn{display:inline-block}
+    .nav-links{display:none}
+    .top-bar .menu-btn{display:inline-block!important}
+  }
+  @media (max-width: 600px){
+    .grid-3,.grid-4{grid-template-columns:1fr}
+    footer .container{grid-template-columns:1fr}
+    .row-2{grid-template-columns:1fr}
+    .row-3{grid-template-columns:1fr}
+    .main{padding:18px 16px}
+    table{font-size:.82rem}
+    th,td{padding:9px 8px}
+    .doc-thumb{width:100px;height:100px}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ PUBLIC SITE ============ -->
+<div id="public-site">
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="brand" onclick="route('home')">
+        <div class="brand-mark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h13v10H3z"/><path d="M16 10h4l1 3v4h-5"/><circle cx="7" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+        </div>
+        Mimi's Delivery
+      </div>
+      <nav class="nav-links">
+        <a onclick="route('home')">Home</a>
+        <a onclick="route('services')">Services</a>
+        <a onclick="route('pricing')">Pricing</a>
+        <a onclick="route('track')">Track</a>
+        <a onclick="route('care')">Customer Care</a>
+        <a onclick="route('about')">About</a>
+        <a onclick="route('contact')">Contact</a>
+      </nav>
+      <div class="nav-cta">
+        <button class="btn btn-ghost btn-sm" onclick="openAuth('login')">Login</button>
+        <button class="btn btn-primary btn-sm" onclick="openAuth('register')">Get started</button>
+        <button class="menu-btn" onclick="toggleMobileNav()">☰</button>
+      </div>
+    </div>
+  </header>
+  <main id="page-root"></main>
+  <footer>
+    <div class="container">
+      <div>
+        <div class="brand" style="color:#fff;margin-bottom:10px">
+          <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7h13v10H3z"/></svg></div>
+          Mimi's Delivery
+        </div>
+        <p style="color:#94a3b8;max-width:320px">Lagos's most reliable real-time logistics platform. Move your packages with speed and care.</p>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <a onclick="route('about')">About</a>
+        <a onclick="route('services')">Services</a>
+        <a onclick="route('contact')">Contact</a>
+        <a onclick="route('care')">Customer Care</a>
+      </div>
+      <div>
+        <h4>Support</h4>
+        <a onclick="route('track')">Track Order</a>
+        <a onclick="route('pricing')">Pricing</a>
+        <a href="https://wa.me/2348000000000" target="_blank">WhatsApp</a>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <a onclick="route('terms')">Terms & Conditions</a>
+        <a onclick="route('license')">Website License</a>
+        <a>hello@mimisdelivery.ng</a>
+        <a>+234 800 000 0000</a>
+      </div>
+    </div>
+    <div class="copyright">© <span id="yr"></span> Mimi's Delivery. All rights reserved.</div>
+  </footer>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app-shell" class="app-shell">
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7h13v10H3z"/></svg></div>
+      Mimi's Delivery
+    </div>
+    <div id="side-nav"></div>
+    <div class="sidebar-foot">
+      <button class="nav-item" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="top-bar">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="menu-btn" onclick="toggleSidebar()" aria-label="Toggle menu">☰</button>
+        <h2 id="page-title">Dashboard</h2>
+      </div>
+      <div class="user-chip" id="user-chip" onclick="openEditProfile()" title="Edit profile">
+        <div class="avatar" id="user-avatar">M</div>
+        <span id="user-name">User</span>
+        <span class="edit-hint">✎</span>
+      </div>
+    </div>
+    <div id="app-root"></div>
+  </div>
+</div>
+
+<!-- ============ AUTH MODAL ============ -->
+<div class="modal-bg" id="auth-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="auth-title">Welcome back</h3>
+      <button class="x" onclick="closeModal('auth-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="role-tabs two-tabs" id="role-tabs">
+        <button class="role-tab active" data-role="customer">Customer</button>
+        <button class="role-tab" data-role="rider">Rider</button>
+      </div>
+      <form id="auth-form">
+        <div class="field" id="name-field" style="display:none">
+          <label>Full Name</label>
+          <input class="input" id="auth-name" placeholder="Your full name">
+        </div>
+        <div class="field" id="phone-field" style="display:none">
+          <label>Phone</label>
+          <input class="input" id="auth-phone" placeholder="+234...">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input class="input" id="auth-email" type="email" placeholder="you@email.com" required>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input class="input" id="auth-password" type="password" placeholder="••••••••" required>
+        </div>
+
+        <!-- Rider-only registration fields -->
+        <div id="rider-fields" style="display:none">
+          <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+          <div class="alert info">Rider verification — all fields required. Admin will review before you can go Online.</div>
+
+          <div class="field">
+            <label>Face Picture (selfie)</label>
+            <input class="input" id="r-photo" type="file" accept="image/*" capture="user">
+          </div>
+
+          <div class="row-2">
+            <div class="field"><label>Vehicle Type</label>
+              <select class="select" id="r-vtype">
+                <option value="">— Select —</option>
+                <option>Motorcycle</option>
+                <option>Bicycle</option>
+                <option>Car</option>
+                <option>Van</option>
+                <option>Tricycle</option>
+              </select>
+            </div>
+            <div class="field"><label>Plate Number</label><input class="input" id="r-plate" placeholder="KJA-234-XY" style="text-transform:uppercase"></div>
+          </div>
+          <div class="row-3">
+            <div class="field"><label>Make</label><input class="input" id="r-make" placeholder="Bajaj"></div>
+            <div class="field"><label>Model</label><input class="input" id="r-model" placeholder="Boxer 100"></div>
+            <div class="field"><label>Year</label><input class="input" id="r-year" type="number" placeholder="2022"></div>
+          </div>
+          <div class="row-2">
+            <div class="field"><label>Color</label><input class="input" id="r-color" placeholder="Blue"></div>
+            <div class="field"><label>License / Rider ID</label><input class="input" id="r-license" placeholder="DL-1234567"></div>
+          </div>
+          <div class="field"><label>Main Zone</label>
+            <select class="select" id="r-zone"></select>
+          </div>
+          <div class="row-2">
+            <div class="field"><label>Emergency Contact Name</label><input class="input" id="r-ecname" placeholder="Full name"></div>
+            <div class="field"><label>Emergency Phone</label><input class="input" id="r-ecphone" placeholder="+234..."></div>
+          </div>
+
+          <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+          <div class="alert warn">Documents — upload clear photos. Admin will verify manually.</div>
+
+          <div class="field">
+            <label>Government ID (NIN slip/card, Driver's License, Voter's Card, Passport)</label>
+            <input class="input" id="r-doc-govid" type="file" accept="image/*">
+          </div>
+          <div class="field">
+            <label>Proof of Address (utility bill, tenancy agreement, address verification)</label>
+            <input class="input" id="r-doc-address" type="file" accept="image/*">
+          </div>
+          <div class="field">
+            <label>Driver's License</label>
+            <input class="input" id="r-doc-dl" type="file" accept="image/*">
+          </div>
+          <div class="field">
+            <label>Vehicle Ownership Papers / Lease Proof</label>
+            <input class="input" id="r-doc-vehicle" type="file" accept="image/*">
+          </div>
+          <div class="field">
+            <label>Insurance (optional)</label>
+            <input class="input" id="r-doc-insurance" type="file" accept="image/*">
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="auth-submit" type="submit">Login</button>
+        <p class="helper" style="text-align:center;margin-top:12px" id="auth-switch">
+          New here? <a style="color:var(--brand);cursor:pointer;font-weight:600" onclick="switchAuth()">Create an account</a>
+        </p>
+        <p class="helper" style="text-align:center;margin-top:6px">
+          <a style="color:var(--brand);cursor:pointer;font-weight:600" onclick="openForgotPassword()">Forgot password?</a>
+        </p>
+      </form>
+      <div class="admin-reveal" id="admin-reveal" title="Admin access">
+        <span onclick="revealAdminTab()" style="color:var(--line)">•</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FORGOT PASSWORD MODAL ============ -->
+<div class="modal-bg" id="forgot-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>Reset Password</h3><button class="x" onclick="closeModal('forgot-modal')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:.9rem;color:var(--muted)">Enter your email and we'll send you a link to reset your password.</p>
+      <form id="forgot-form">
+        <div class="field">
+          <label>Email</label>
+          <input class="input" id="fp-email" type="email" placeholder="you@email.com" required>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">Send reset link</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EDIT PROFILE MODAL ============ -->
+<div class="modal-bg" id="edit-profile-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>Edit Profile</h3><button class="x" onclick="closeModal('edit-profile-modal')">×</button></div>
+    <div class="modal-body">
+      <form id="edit-profile-form">
+        <div class="field">
+          <label>Full Name</label>
+          <input class="input" id="ep-name" placeholder="Your full name" required>
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <input class="input" id="ep-phone" placeholder="+234...">
+        </div>
+        <div class="field">
+          <label>Email (read-only)</label>
+          <input class="input" id="ep-email" type="email" disabled style="background:#f8fafc;color:var(--muted)">
+        </div>
+        <div id="ep-addresses-block">
+          <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <strong style="font-size:.9rem">Saved Addresses</strong>
+            <button type="button" class="btn-mini primary" id="ep-add-addr">+ Add</button>
+          </div>
+          <div id="ep-addresses-list"></div>
+        </div>
+        <div id="ep-receivers-block">
+          <hr style="border:0;border-top:1px solid var(--line);margin:14px 0">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <strong style="font-size:.9rem">Saved Receivers</strong>
+            <button type="button" class="btn-mini primary" id="ep-add-recv">+ Add</button>
+          </div>
+          <div id="ep-receivers-list"></div>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit" style="margin-top:14px">Save Changes</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ BOOKING MODAL ============ -->
+<div class="modal-bg" id="book-modal">
+  <div class="modal lg">
+    <div class="modal-head"><h3>Book a Delivery</h3><button class="x" onclick="closeModal('book-modal')">×</button></div>
+    <div class="modal-body">
+      <div id="book-prefill-banner" style="display:none" class="alert info"></div>
+      <form id="book-form">
+        <div class="row-2">
+          <div class="field"><label>Pickup Zone</label>
+            <select class="select" id="b-pickup" required></select>
+          </div>
+          <div class="field"><label>Drop-off Zone</label>
+            <select class="select" id="b-drop" required></select>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>Pickup Address <span id="b-paddr-saved" style="color:var(--brand);cursor:pointer;font-weight:700;text-transform:none">· pick from saved</span></label>
+            <input class="input" id="b-paddr" placeholder="Street address" required>
+          </div>
+          <div class="field">
+            <label>Drop-off Address <span id="b-daddr-saved" style="color:var(--brand);cursor:pointer;font-weight:700;text-transform:none">· pick from saved</span></label>
+            <input class="input" id="b-daddr" placeholder="Street address" required>
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>Receiver Name <span id="b-rname-saved" style="color:var(--brand);cursor:pointer;font-weight:700;text-transform:none">· pick from saved</span></label>
+            <input class="input" id="b-rname" required>
+          </div>
+          <div class="field"><label>Receiver Phone</label><input class="input" id="b-rphone" required></div>
+        </div>
+        <div id="b-receiver-uid-note" style="display:none" class="alert info"></div>
+        <label style="display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--ink-2);margin-bottom:10px">
+          <input type="checkbox" id="b-save-recv"> Save this receiver for next time
+        </label>
+        <div class="field"><label>Package Details</label><textarea class="input" id="b-pkg" rows="2" placeholder="What are we delivering?" required></textarea></div>
+        <div class="field"><label>Delivery Notes (optional)</label><input class="input" id="b-notes" placeholder="Fragile, call before arrival..."></div>
+        <div class="row-2">
+          <div class="field"><label>Delivery Type</label>
+            <select class="select" id="b-type">
+              <option value="regular">Regular</option>
+              <option value="express">Express (faster)</option>
+              <option value="night">Night Delivery</option>
+            </select>
+          </div>
+          <div class="field"><label>Payment Method</label>
+            <select class="select" id="b-pay">
+              <option value="cod">Pay on Delivery</option>
+              <option value="transfer">Bank Transfer</option>
+            </select>
+          </div>
+        </div>
+        <div id="b-bank-block" style="display:none"></div>
+        <div class="row-2">
+          <div class="field"><label>Schedule (optional)</label><input class="input" id="b-sched" type="datetime-local"></div>
+          <div class="field"><label>Heavy package?</label>
+            <select class="select" id="b-heavy"><option value="no">No</option><option value="yes">Yes (+fee)</option></select>
+          </div>
+        </div>
+        <div class="price-out"><div><div class="lbl">Estimated price</div><div class="val" id="b-price">₦0</div></div><div style="font-size:.78rem;opacity:.7" id="b-breakdown"></div></div>
+        <button class="btn btn-primary btn-block" type="submit" style="margin-top:14px">Place Order</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ORDER DETAIL MODAL ============ -->
+<div class="modal-bg" id="order-modal">
+  <div class="modal lg">
+    <div class="modal-head"><h3 id="om-title">Order Details</h3><button class="x" onclick="closeModal('order-modal')">×</button></div>
+    <div class="modal-body" id="om-body"></div>
+  </div>
+</div>
+
+<!-- ============ OTP MODAL ============ -->
+<div class="modal-bg" id="otp-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="otp-title">Enter OTP</h3><button class="x" onclick="closeModal('otp-modal')">×</button></div>
+    <div class="modal-body">
+      <p id="otp-msg">Enter the 4-digit OTP shared by the customer.</p>
+      <div class="otp-input">
+        <input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric">
+        <input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric">
+      </div>
+      <button class="btn btn-primary btn-block" id="otp-confirm">Verify</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TRACKING MAP MODAL ============ -->
+<div class="modal-bg" id="tracking-modal">
+  <div class="modal lg">
+    <div class="modal-head"><h3>Live Tracking</h3><button class="x" onclick="closeModal('tracking-modal')">×</button></div>
+    <div class="modal-body">
+      <div class="map-container">
+        <div id="tracking-map"></div>
+      </div>
+      <div id="tracking-status" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ RECEIPT VIEWER MODAL ============ -->
+<div class="modal-bg" id="receipt-modal">
+  <div class="modal xl">
+    <div class="modal-head">
+      <h3>Delivery Receipt</h3>
+      <button class="x" onclick="closeModal('receipt-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div id="receipt-content"></div>
+      <div class="actions-row" style="margin-top:14px">
+        <button class="btn btn-primary" id="receipt-download">📄 Download PDF</button>
+        <button class="btn btn-ghost" onclick="closeModal('receipt-modal')">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DOCUMENTS VIEWER MODAL (admin) ============ -->
+<div class="modal-bg" id="docs-modal">
+  <div class="modal xl">
+    <div class="modal-head"><h3 id="docs-title">Rider Documents</h3><button class="x" onclick="closeModal('docs-modal')">×</button></div>
+    <div class="modal-body" id="docs-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+<script>
+/* ============================================================
+   MIMI'S DELIVERY — single-file vanilla JS + Firebase app
+   ============================================================ */
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCt0y6dtIqm_CP6kBE-QqCdFemizozgQhQ",
+  authDomain: "delivery-a88a5.firebaseapp.com",
+  projectId: "delivery-a88a5",
+  storageBucket: "delivery-a88a5.firebasestorage.app",
+  messagingSenderId: "107075618001",
+  appId: "1:107075618001:web:585bada4cbf4d06c26f1f0"
+};
+
+let FB_READY = false;
+let auth, db, storage;
+try {
+  firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.firestore();
+  storage = firebase.storage();
+  FB_READY = !firebaseConfig.apiKey.startsWith("REPLACE");
+} catch (e) { console.warn("Firebase init failed:", e); }
+
+const LOCAL = (() => {
+  const KEY = "mimi_local_db_v1";
+  const AKEY = "mimi_local_auth_v1";
+  let data = JSON.parse(localStorage.getItem(KEY) || '{"users":{},"orders":{},"riders":{},"settings":{},"support":{}}');
+  const listeners = [];
+  function persist(){ localStorage.setItem(KEY, JSON.stringify(data)); notify(); }
+  function notify(){ listeners.forEach(l=>{ try{ l.cb(getPath(l.path)); }catch(e){} }); }
+  function getPath(p){
+    if(!p) return null;
+    const [col, id] = p.split("/");
+    if(!data[col]) data[col]={};
+    if(id) return data[col][id] ? {id, ...data[col][id]} : null;
+    return Object.entries(data[col]).map(([k,v])=>({id:k,...v}));
+  }
+  window.addEventListener("storage", e => {
+    if(e.key===KEY){ data = JSON.parse(e.newValue||'{"users":{},"orders":{},"riders":{},"settings":{},"support":{}}'); notify(); }
+    if(e.key===AKEY){ const u = JSON.parse(e.newValue||"null"); authState.user=u; authState.cbs.forEach(c=>c(u)); }
+  });
+  const authState = { user: JSON.parse(localStorage.getItem(AKEY)||"null"), cbs: [] };
+  return {
+    col: (name) => ({
+      doc: (id) => ({
+        set: async (val, opts) => {
+          if(!data[name]) data[name]={};
+          data[name][id] = opts && opts.merge ? {...(data[name][id]||{}), ...val} : val;
+          persist();
+        },
+        update: async (val) => {
+          if(!data[name]) data[name]={};
+          data[name][id] = {...(data[name][id]||{}), ...val};
+          persist();
+        },
+        get: async () => ({ exists: !!(data[name]&&data[name][id]), data: ()=>data[name]&&data[name][id], id }),
+        delete: async () => { if(data[name]) delete data[name][id]; persist(); },
+        onSnapshot: (cb) => {
+          const path = name+"/"+id;
+          const fn = (val) => cb({ exists: !!val, data: ()=>val, id });
+          listeners.push({path, cb: fn });
+          fn(getPath(path));
+          return () => { const i = listeners.findIndex(l=>l.cb===fn); if(i>=0) listeners.splice(i,1); };
+        }
+      }),
+      add: async (val) => {
+        if(!data[name]) data[name]={};
+        const id = "id_" + Math.random().toString(36).slice(2,10);
+        data[name][id] = val;
+        persist();
+        return { id };
+      },
+      onSnapshot: (cb) => {
+        const path = name;
+        const fn = (rows) => cb({ docs: (rows||[]).map(r => ({ id:r.id, data: ()=>{ const {id, ...rest}=r; return rest; } })) });
+        listeners.push({path, cb: fn});
+        fn(getPath(path));
+        return () => { const i = listeners.findIndex(l=>l.cb===fn); if(i>=0) listeners.splice(i,1); };
+      }
+    }),
+    auth: {
+      currentUser: authState.user,
+      onAuthStateChanged: (cb) => { authState.cbs.push(cb); cb(authState.user); return ()=>{}; },
+      createUserWithEmailAndPassword: async (email, pw) => {
+        if(!data.users) data.users={};
+        const existing = Object.entries(data.users).find(([,u])=>u.email===email);
+        if(existing) throw new Error("Email already in use");
+        const uid = "u_" + Math.random().toString(36).slice(2,10);
+        const user = { uid, email, emailVerified: false, sendEmailVerification: async ()=>{}, reload: async ()=>{} };
+        authState.user = user;
+        localStorage.setItem(AKEY, JSON.stringify(user));
+        authState.cbs.forEach(c=>c(user));
+        return { user };
+      },
+      signInWithEmailAndPassword: async (email, pw) => {
+        if(!data.users) data.users={};
+        const entry = Object.entries(data.users).find(([,u])=>u.email===email);
+        if(!entry) throw new Error("No account for this email");
+        const [uid, u] = entry;
+        const user = { uid, email, emailVerified: true };
+        authState.user = user;
+        localStorage.setItem(AKEY, JSON.stringify(user));
+        authState.cbs.forEach(c=>c(user));
+        return { user };
+      },
+      signOut: async () => {
+        authState.user = null;
+        localStorage.removeItem(AKEY);
+        authState.cbs.forEach(c=>c(null));
+      },
+      sendPasswordResetEmail: async (email) => {
+        console.log("[local] Would send password reset for", email);
+        toast("If that email exists, a reset link has been sent", "info");
+      }
+    }
+  };
+})();
+
+const DB = FB_READY ? { col: (n) => db.collection(n), auth: auth } : LOCAL;
+
+const ZONES = ["Lagos Island","Victoria Island","Lekki","Ajah","Ikoyi","Yaba","Surulere","Ikeja","Mainland","Apapa","Festac","Berger"];
+const ZONE_KM = {
+  "Lagos Island":3,"Victoria Island":5,"Lekki":15,"Ajah":25,"Ikoyi":4,"Yaba":10,
+  "Surulere":12,"Ikeja":18,"Mainland":14,"Apapa":10,"Festac":20,"Berger":24
+};
+const DEFAULT_SETTINGS = {
+  basePrice: 800, perKm: 150, expressMul: 1.5, nightFee: 500, heavyFee: 700,
+  autoAssign: false, cod: true, transfer: true, express: true,
+  bank: { name: "GTBank", accountNumber: "0123456789", accountName: "Mimi's Delivery Ltd" }
+};
+
+const state = {
+  user: null, profile: null, role: null,
+  settings: {...DEFAULT_SETTINGS},
+  page: "home", dashTab: "overview",
+  orders: [], riders: [], tickets: [], unsubs: [],
+  authMode: "login", authRole: "customer",
+  adminTabRevealed: false,
+  customerSubtab: "sent",
+  pendingInviteReceiverId: null,
+  prefillReceiver: null,
+  trackingMap: null, trackingMarker: null, trackingInterval: null,
+  trackingOrderId: null,
+  liveFeedUnsub: null,
+  liveFeedLastNotify: 0,
+  liveFeedLastPos: null
+};
+
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const fmt = (n) => "₦" + (Number(n)||0).toLocaleString();
+const fmtDate = (ts) => { if(!ts) return "-"; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleString("en-NG", {dateStyle:"medium", timeStyle:"short"});};
+const now = () => Date.now();
+const uid = () => Math.random().toString(36).slice(2,10);
+
+function toast(msg, type=""){ const t=$("#toast"); t.className="toast show "+type; t.textContent=msg; setTimeout(()=>t.classList.remove("show"),3200); }
+function openModal(id){ $("#"+id).classList.add("open"); }
+function closeModal(id){ $("#"+id).classList.remove("open"); }
+function toggleMobileNav(){ const links = $(".nav-links"); links.style.display = links.style.display==="flex"?"none":"flex"; links.style.flexDirection="column"; links.style.position="absolute"; links.style.top="60px"; links.style.right="10px"; links.style.background="#fff"; links.style.padding="14px"; links.style.borderRadius="10px"; links.style.boxShadow="var(--shadow-lg)";}
+
+function toggleSidebar(){
+  const sb = document.getElementById("sidebar");
+  const bd = document.getElementById("sidebar-backdrop");
+  sb.classList.toggle("open");
+  bd.classList.toggle("open", sb.classList.contains("open"));
+}
+function closeSidebar(){
+  document.getElementById("sidebar").classList.remove("open");
+  document.getElementById("sidebar-backdrop").classList.remove("open");
+}
+
+function calcPrice({pickup, drop, type, heavy}, s = state.settings){
+  const km = Math.abs((ZONE_KM[pickup]||5) - (ZONE_KM[drop]||5)) + 4;
+  let base = s.basePrice + km * s.perKm;
+  let breakdown = [`Base ${fmt(s.basePrice)}`, `~${km}km × ${fmt(s.perKm)}`];
+  if(type==="express"){ base *= s.expressMul; breakdown.push(`Express ×${s.expressMul}`); }
+  if(type==="night"){ base += s.nightFee; breakdown.push(`Night +${fmt(s.nightFee)}`); }
+  if(heavy==="yes"){ base += s.heavyFee; breakdown.push(`Heavy +${fmt(s.heavyFee)}`); }
+  return { price: Math.round(base/50)*50, km, breakdown };
+}
+
+function route(p){
+  state.page = p;
+  $("#public-site").style.display="block";
+  $("#app-shell").classList.remove("active");
+  window.scrollTo(0,0);
+  const root = $("#page-root");
+  if(p==="home") root.innerHTML = renderHome();
+  else if(p==="services") root.innerHTML = renderServices();
+  else if(p==="pricing") root.innerHTML = renderPricing();
+  else if(p==="track") root.innerHTML = renderTrack();
+  else if(p==="about") root.innerHTML = renderAbout();
+  else if(p==="contact") root.innerHTML = renderContact();
+  else if(p==="care") root.innerHTML = renderCare();
+  else if(p==="terms") root.innerHTML = renderTerms();
+  else if(p==="license") root.innerHTML = renderLicense();
+  if(p==="home") bindHomeCalc();
+  if(p==="track") bindTrack();
+  if(p==="care") bindCare();
+}
+
+function renderHome(){
+  const zones = ZONES.map(z=>`<option>${z}</option>`).join("");
+  return `
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="hero-eyebrow"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--brand);margin-right:4px"></span> Real-time logistics for Lagos</span>
+        <h1>Fast & reliable <span>delivery</span> across Lagos.</h1>
+        <p class="hero-sub">Send parcels, documents and packages across Lagos with live tracking, transparent pricing and trusted riders — powered by Mimi's Delivery.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="bookDeliveryEntry()">Book Delivery</button>
+          <button class="btn btn-ghost" onclick="route('track')">Track Parcel</button>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat"><div class="num">25k+</div><div class="lbl">Deliveries</div></div>
+          <div class="hero-stat"><div class="num">450+</div><div class="lbl">Active Riders</div></div>
+          <div class="hero-stat"><div class="num">98%</div><div class="lbl">Success Rate</div></div>
+          <div class="hero-stat"><div class="num">12+</div><div class="lbl">Service Zones</div></div>
+        </div>
+      </div>
+      <div class="price-card">
+        <h3><span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:var(--accent-soft);color:var(--accent);text-align:center;line-height:22px;font-size:.75rem;font-weight:700">₦</span> Live Price Calculator</h3>
+        <div class="row-2">
+          <div class="field"><label>Pickup zone</label><select class="select" id="hc-pickup">${zones}</select></div>
+          <div class="field"><label>Drop-off zone</label><select class="select" id="hc-drop">${zones}</select></div>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Delivery type</label>
+            <select class="select" id="hc-type"><option value="regular">Regular</option><option value="express">Express</option><option value="night">Night</option></select>
+          </div>
+          <div class="field"><label>Heavy?</label>
+            <select class="select" id="hc-heavy"><option value="no">No</option><option value="yes">Yes</option></select>
+          </div>
+        </div>
+        <div class="price-out"><div><div class="lbl">Estimated price</div><div class="val" id="hc-price">₦0</div></div><div style="font-size:.78rem;opacity:.8" id="hc-bd"></div></div>
+        <button class="btn btn-primary btn-block" style="margin-top:12px" onclick="bookDeliveryEntry()">Continue to booking →</button>
+      </div>
+    </div>
+  </section>
+  <section style="background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">Our Services</span><h2>Built for every kind of delivery</h2><p>From documents to bulky items — choose the speed that fits.</p></div>
+      <div class="grid-3">
+        ${[
+          {t:"Regular Delivery",d:"Cost-effective same-day pickup across Lagos zones.",i:"📦"},
+          {t:"Express Delivery",d:"Priority rider, faster pickup and door-to-door drop.",i:"⚡"},
+          {t:"Night Delivery",d:"Discreet evening runs for businesses and stores.",i:"🌙"}
+        ].map(s=>`<div class="card"><div class="icon-badge orange">${s.i}</div><h3>${s.t}</h3><p>${s.d}</p></div>`).join("")}
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">By the numbers</span><h2>Trusted by Lagos businesses</h2></div>
+      <div class="grid-4">
+        <div class="stat-card"><div class="num">25,438</div><div class="lbl">Deliveries completed</div></div>
+        <div class="stat-card"><div class="num">450</div><div class="lbl">Verified riders</div></div>
+        <div class="stat-card"><div class="num">98.4%</div><div class="lbl">Success rate</div></div>
+        <div class="stat-card"><div class="num">38 min</div><div class="lbl">Avg pickup time</div></div>
+      </div>
+    </div>
+  </section>
+  <section style="background:#fff;border-top:1px solid var(--line)">
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">Coverage</span><h2>Service areas across Lagos</h2></div>
+      <div class="zones">${ZONES.map(z=>`<div class="zone"><span class="dot"></span> ${z}</div>`).join("")}</div>
+    </div>
+  </section>
+  <section>
+    <div class="container">
+      <div class="section-head"><span class="eyebrow">Testimonials</span><h2>Loved by businesses & senders</h2></div>
+      <div class="grid-3">
+        ${[
+          {n:"Aisha O.",r:"Bakery owner",t:"Mimi's has been a lifesaver. Same-day deliveries, real-time tracking, and the riders are polite."},
+          {n:"Tunde A.",r:"E-commerce",t:"We moved all our last-mile to Mimi's. The pricing engine is clear and the dashboard makes admin easy."},
+          {n:"Chioma E.",r:"Fashion brand",t:"From Lekki to Ikeja in under 90 mins. The OTP delivery confirmation gives us peace of mind."}
+        ].map(t=>`<div class="testi">"${t.t}"<div class="who"><div class="avatar">${t.n[0]}</div><div><div style="font-weight:600">${t.n}</div><div style="font-size:.8rem;color:var(--muted)">${t.r}</div></div></div></div>`).join("")}
+      </div>
+    </div>
+  </section>
+  `;
+}
+
+function bindHomeCalc(){
+  const upd = () => {
+    const r = calcPrice({pickup:$("#hc-pickup").value, drop:$("#hc-drop").value, type:$("#hc-type").value, heavy:$("#hc-heavy").value});
+    $("#hc-price").textContent = fmt(r.price);
+    $("#hc-bd").innerHTML = r.breakdown.slice(0,2).join("<br>");
+  };
+  ["hc-pickup","hc-drop","hc-type","hc-heavy"].forEach(id => $("#"+id).addEventListener("change", upd));
+  upd();
+}
+
+function renderServices(){
+  return `<section><div class="container">
+    <div class="section-head"><span class="eyebrow">Services</span><h2>What we deliver</h2></div>
+    <div class="grid-3">
+      ${[
+        {t:"Regular Delivery",d:"Standard same-day delivery across all Lagos zones. Best for non-urgent shipments.",i:"📦"},
+        {t:"Express Delivery",d:"Priority handling with the next available rider — pickup within 30 minutes.",i:"⚡"},
+        {t:"Night Delivery",d:"Evening runs for restaurants, pharmacies and 24/7 businesses.",i:"🌙"},
+        {t:"Document Run",d:"Secure delivery for sensitive documents with OTP verification.",i:"📑"},
+        {t:"E-commerce",d:"Bulk daily pickups for online stores with dedicated dispatcher.",i:"🛍️"},
+        {t:"Food & Grocery",d:"Insulated delivery for restaurants and grocery vendors.",i:"🍱"},
+      ].map(s=>`<div class="card"><div class="icon-badge orange">${s.i}</div><h3>${s.t}</h3><p>${s.d}</p></div>`).join("")}
+    </div>
+  </div></section>`;
+}
+
+function renderPricing(){
+  const s = state.settings;
+  return `<section><div class="container">
+    <div class="section-head"><span class="eyebrow">Pricing</span><h2>Transparent, distance-based pricing</h2><p>Every delivery is priced from a base fee, plus distance, with optional urgency multipliers.</p></div>
+    <div class="grid-3">
+      <div class="card"><h3>Base fee</h3><p style="font-size:1.6rem;font-weight:800;color:var(--brand)">${fmt(s.basePrice)}</p><p>Covers pickup and dispatch.</p></div>
+      <div class="card"><h3>Per km</h3><p style="font-size:1.6rem;font-weight:800;color:var(--brand)">${fmt(s.perKm)}</p><p>Distance-based, calculated from pickup → drop-off zones.</p></div>
+      <div class="card"><h3>Express</h3><p style="font-size:1.6rem;font-weight:800;color:var(--brand)">×${s.expressMul}</p><p>Multiplier applied for express deliveries.</p></div>
+      <div class="card"><h3>Night fee</h3><p style="font-size:1.6rem;font-weight:800;color:var(--brand)">+${fmt(s.nightFee)}</p><p>Added for deliveries after 7pm.</p></div>
+      <div class="card"><h3>Heavy package</h3><p style="font-size:1.6rem;font-weight:800;color:var(--brand)">+${fmt(s.heavyFee)}</p><p>Items above 10kg or oversized.</p></div>
+      <div class="card"><h3>Custom quotes</h3><p style="font-size:1.6rem;font-weight:800;color:var(--brand)">Talk to us</p><p>Bulk and contracts available.</p></div>
+    </div>
+  </div></section>`;
+}
+
+function renderTrack(){
+  return `<section><div class="container" style="max-width:700px">
+    <div class="section-head"><span class="eyebrow">Tracking</span><h2>Track your delivery</h2><p>Enter your order ID or phone number to see real-time status.</p></div>
+    <div class="card">
+      <div class="row-2">
+        <div class="field"><label>Order ID</label><input class="input" id="tk-id" placeholder="id_xxxx"></div>
+        <div class="field"><label>Or Phone</label><input class="input" id="tk-phone" placeholder="+234..."></div>
+      </div>
+      <button class="btn btn-primary btn-block" id="tk-go">Track Now</button>
+      <div id="tk-result" style="margin-top:18px"></div>
+    </div>
+  </div></section>`;
+}
+
+function bindTrack(){
+  $("#tk-go").addEventListener("click", async () => {
+    const id = $("#tk-id").value.trim();
+    const phone = $("#tk-phone").value.trim();
+    const res = $("#tk-result");
+    res.innerHTML = '<div class="empty">Searching…</div>';
+    if(id){
+      DB.col("orders").doc(id).onSnapshot(snap => {
+        if(!snap.exists){ res.innerHTML='<div class="alert warn">No order found with that ID.</div>'; return; }
+        const o = {id: snap.id, ...snap.data()};
+        res.innerHTML = renderTrackTimeline(o);
+      });
+    } else if(phone){
+      DB.col("orders").onSnapshot(snap => {
+        const list = snap.docs.map(d=>({id:d.id,...d.data()})).filter(o=>o.receiverPhone===phone || o.customerPhone===phone);
+        if(!list.length){ res.innerHTML='<div class="alert warn">No orders found for that phone.</div>'; return; }
+        res.innerHTML = list.map(renderTrackTimeline).join("");
+      });
+    }
+  });
+}
+
+function renderTrackTimeline(o){
+  const steps = ["pending","confirmed","assigned","picked","transit","delivered"];
+  const cur = steps.indexOf(o.status);
+  return `<div class="card" style="margin-top:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div><strong>${o.id}</strong> · <span class="badge b-${o.status}">${o.status}</span></div>
+      <div style="font-size:.8rem;color:var(--muted)">${fmtDate(o.createdAt)}</div>
+    </div>
+    <p style="font-size:.88rem;color:var(--muted);margin-bottom:14px">${o.pickupZone} → ${o.dropZone} · ${fmt(o.price)}</p>
+    <div class="timeline">
+      ${steps.map((s,i)=>`<div class="tl-step ${i<cur?'done':''} ${i===cur?'current':''}"><div style="display:flex;flex-direction:column;align-items:center"><div class="tl-dot"></div>${i<steps.length-1?'<div class="tl-line"></div>':''}</div><div class="tl-content" style="padding-bottom:14px"><div class="t" style="text-transform:capitalize">${s}</div><div class="s">${i<=cur?'Completed':'Pending'}</div></div></div>`).join("")}
+    </div>
+    ${o.riderId && o.status!=="delivered" ? `<button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="openTrackingMap('${o.id}')">🗺️ View Live Map</button>` : ""}
+    ${o.status==="delivered" ? `<button class="btn btn-primary btn-sm" style="margin-top:8px" onclick="viewReceipt('${o.id}')">📄 View Receipt</button>` : ""}
+  </div>`;
+}
+
+function renderAbout(){
+  return `<section><div class="container" style="max-width:780px">
+    <div class="section-head"><span class="eyebrow">About</span><h2>We're building Lagos's delivery infrastructure</h2></div>
+    <div class="card">
+      <p>Mimi's Delivery was founded with a simple mission: make moving things across Lagos as easy as sending a text message. We combine a verified rider network with real-time technology so every package, document and parcel arrives safely and on time.</p>
+      <p>Our platform is built for businesses and individuals alike — from bakeries and online stores to families sending birthday gifts to loved ones.</p>
+      <h3 style="margin-top:18px">Why Mimi's?</h3>
+      <ul style="color:var(--ink-2);line-height:1.9">
+        <li>Real-time tracking on every order</li>
+        <li>Transparent distance-based pricing</li>
+        <li>Verified riders with OTP-secured deliveries</li>
+        <li>Dedicated support team for businesses</li>
+      </ul>
+    </div>
+  </div></section>`;
+}
+
+function renderContact(){
+  return `<section><div class="container" style="max-width:680px">
+    <div class="section-head"><span class="eyebrow">Contact</span><h2>We'd love to hear from you</h2></div>
+    <div class="card">
+      <p>📍 Lagos, Nigeria</p>
+      <p>📧 hello@mimisdelivery.ng</p>
+      <p>📞 +234 800 000 0000</p>
+      <a class="btn btn-primary" href="https://wa.me/2348000000000" target="_blank" style="margin-top:10px">💬 Chat on WhatsApp</a>
+    </div>
+  </div></section>`;
+}
+
+/* ============ CUSTOMER CARE PAGE ============ */
+function renderCare(){
+  return `<section><div class="container" style="max-width:820px">
+    <div class="section-head"><span class="eyebrow">Customer Care</span><h2>We're here to help</h2><p>Reach out any time — our support team responds within a few hours.</p></div>
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="card"><div class="icon-badge">📞</div><h3>Call us</h3><p>+234 800 000 0000</p><p class="helper">Mon–Sat, 8am – 8pm WAT</p></div>
+      <div class="card"><div class="icon-badge">💬</div><h3>WhatsApp</h3><p>Fast replies via chat.</p><a class="btn btn-primary btn-sm" href="https://wa.me/2348000000000" target="_blank">Open WhatsApp</a></div>
+      <div class="card"><div class="icon-badge">✉️</div><h3>Email</h3><p>hello@mimisdelivery.ng</p><p class="helper">For detailed issues</p></div>
+    </div>
+    <div class="card">
+      <h3>Report an issue</h3>
+      <p style="font-size:.9rem">Send us a message and we'll get back to you. Include your order ID if relevant.</p>
+      <form id="care-form">
+        <div class="row-2">
+          <div class="field"><label>Your Name</label><input class="input" id="care-name" required></div>
+          <div class="field"><label>Your Email</label><input class="input" id="care-email" type="email" required></div>
+        </div>
+        <div class="field"><label>Subject</label><input class="input" id="care-subject" required placeholder="Short summary"></div>
+        <div class="field"><label>Message</label><textarea class="input" id="care-message" rows="4" required placeholder="Describe the issue…"></textarea></div>
+        <button class="btn btn-primary" type="submit">Send message</button>
+      </form>
+    </div>
+  </div></section>`;
+}
+
+function bindCare(){
+  const form = $("#care-form");
+  if(!form) return;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = $("#care-name").value.trim();
+    const email = $("#care-email").value.trim();
+    const subject = $("#care-subject").value.trim();
+    const message = $("#care-message").value.trim();
+    if(!name || !email || !subject || !message){ toast("Please fill all fields","error"); return; }
+    try {
+      await DB.col("support").add({
+        userId: state.user?.uid || null,
+        name, email, subject, message,
+        createdAt: now(),
+        status: "open"
+      });
+      toast("Message sent — support will reach out shortly ✔","success");
+      form.reset();
+    } catch(err){ toast("Could not send message: " + (err.message||"error"), "error"); }
+  });
+}
+
+/* ============ TERMS & LICENSE PAGES ============ */
+function renderTerms(){
+  return `<section><div class="container info-page" style="max-width:820px">
+    <div class="section-head"><span class="eyebrow">Legal</span><h2>Terms & Conditions</h2><p>Package conditions and general terms of service.</p></div>
+    <div class="card">
+      <h2>1. Prohibited Items</h2>
+      <p>Mimi's Delivery does not transport the following: illegal drugs, firearms, ammunition, hazardous or flammable materials, live animals, human remains, cash above ₦100,000, and any item prohibited by Nigerian law. Packages found to contain prohibited items will be handed to authorities.</p>
+
+      <h2>2. Weight & Size Limits</h2>
+      <ul>
+        <li>Standard package: up to 10kg, no dimension above 60cm.</li>
+        <li>Heavy package: up to 30kg, no dimension above 120cm. Additional fee applies.</li>
+        <li>Items above these limits require a custom quote — contact us.</li>
+      </ul>
+
+      <h2>3. Packaging</h2>
+      <p>Customers are responsible for securely packaging their items. Mimi's Delivery is not liable for damage resulting from inadequate packaging. Fragile items must be marked as such.</p>
+
+      <h2>4. Liability</h2>
+      <p>Our maximum liability per shipment is limited to ₦50,000 or the declared value, whichever is lower, unless additional insurance is purchased.</p>
+
+      <h2>5. Delivery Times</h2>
+      <p>Quoted times are estimates. Delays caused by traffic, weather, or third parties do not constitute a breach of contract.</p>
+
+      <h2>6. Refunds</h2>
+      <p>Full refund if we fail to attempt delivery within 48 hours of the agreed pickup time. Partial refunds may be granted at our discretion.</p>
+
+      <h2>7. Payment</h2>
+      <p>Payments are due on delivery unless prepaid by bank transfer. Bank transfer claims must be verified by admin before the order is treated as paid.</p>
+
+      <h2>8. Changes to Terms</h2>
+      <p>We may update these terms at any time. Continued use of the service constitutes acceptance.</p>
+
+      <p class="helper" style="margin-top:20px">Last updated: ${new Date().toLocaleDateString("en-NG")}</p>
+    </div>
+  </div></section>`;
+}
+
+function renderLicense(){
+  return `<section><div class="container info-page" style="max-width:820px">
+    <div class="section-head"><span class="eyebrow">Legal</span><h2>Website License</h2><p>Copyright and usage terms for this website.</p></div>
+    <div class="card">
+      <h2>Copyright Notice</h2>
+      <p>© ${new Date().getFullYear()} Mimi's Delivery. All rights reserved. The content, layout, design, code, and graphics on this website are the property of Mimi's Delivery and are protected by Nigerian and international copyright laws.</p>
+
+      <h2>Permitted Use</h2>
+      <p>You may view, browse and use this website for its intended purposes — booking, tracking, managing deliveries, and interacting with our service. You may not:</p>
+      <ul>
+        <li>Copy, reproduce or redistribute any part of the site without written permission.</li>
+        <li>Reverse-engineer, decompile or tamper with the website code.</li>
+        <li>Use automated scripts to scrape or overload our servers.</li>
+        <li>Impersonate Mimi's Delivery or misrepresent your affiliation.</li>
+      </ul>
+
+      <h2>Trademarks</h2>
+      <p>"Mimi's Delivery" and the Mimi's Delivery logo are unregistered trademarks. Unauthorised use is prohibited.</p>
+
+      <h2>Third-Party Services</h2>
+      <p>This website uses Firebase (Google) for authentication and data storage, OpenStreetMap for maps, and jsPDF for receipt generation. Their respective terms apply.</p>
+
+      <h2>Disclaimer</h2>
+      <p>This website is provided "as is". Mimi's Delivery makes no warranties about uptime, accuracy or fitness for any particular purpose. Use at your own risk.</p>
+
+      <h2>Contact</h2>
+      <p>For licensing inquiries: hello@mimisdelivery.ng</p>
+
+      <p class="helper" style="margin-top:20px">Last updated: ${new Date().toLocaleDateString("en-NG")}</p>
+    </div>
+  </div></section>`;
+}
+
+/* ============ AUTH ============ */
+function populateRiderZoneSelect(){
+  const sel = $("#r-zone");
+  if(!sel) return;
+  sel.innerHTML = `<option value="">— Select main zone —</option>` + ZONES.map(z=>`<option>${z}</option>`).join("");
+}
+
+function openAuth(mode){
+  state.authMode = mode;
+  populateRiderZoneSelect();
+  $("#auth-title").textContent = mode==="login" ? "Welcome back" : "Create account";
+  $("#auth-submit").textContent = mode==="login" ? "Login" : "Create account";
+  $("#auth-switch").innerHTML = mode==="login"
+    ? `New here? <a style="color:var(--brand);cursor:pointer;font-weight:600" onclick="switchAuth()">Create an account</a>`
+    : `Have an account? <a style="color:var(--brand);cursor:pointer;font-weight:600" onclick="switchAuth()">Login</a>`;
+  $("#name-field").style.display = mode==="register" ? "flex" : "none";
+  $("#phone-field").style.display = mode==="register" ? "flex" : "none";
+  updateRiderFieldsVisibility();
+  if(!state.adminTabRevealed && !isAdminUrl()){
+    const tabs = $("#role-tabs");
+    tabs.classList.add("two-tabs");
+    const adminTab = tabs.querySelector('[data-role="admin"]');
+    if(!adminTab){
+      const b = document.createElement("button");
+      b.className = "role-tab";
+      b.dataset.role = "admin";
+      b.textContent = "Admin";
+      tabs.appendChild(b);
+      bindRoleTab(b);
+    }
+    tabs.querySelector('[data-role="admin"]').style.display = "none";
+  } else {
+    $("#role-tabs").classList.remove("two-tabs");
+    const adminTab = $("#role-tabs").querySelector('[data-role="admin"]');
+    if(adminTab) adminTab.style.display = "";
+  }
+  openModal("auth-modal");
+}
+function switchAuth(){ openAuth(state.authMode==="login"?"register":"login"); }
+
+function updateRiderFieldsVisibility(){
+  const show = state.authRole==="rider" && state.authMode==="register";
+  const box = $("#rider-fields");
+  if(box) box.style.display = show ? "block" : "none";
+}
+
+function isAdminUrl(){
+  return new URLSearchParams(location.search).has("admin");
+}
+function revealAdminTab(){
+  state.adminTabRevealed = true;
+  const tabs = $("#role-tabs");
+  tabs.classList.remove("two-tabs");
+  const adminTab = tabs.querySelector('[data-role="admin"]');
+  if(adminTab) adminTab.style.display = "";
+  toast("Admin tab unlocked", "info");
+}
+if(isAdminUrl()) state.adminTabRevealed = true;
+
+function bookDeliveryEntry(){
+  if(!state.user){ openAuth("login"); toast("Please login as a customer to book.", "info"); return; }
+  if(state.role!=="customer"){ toast("Only customer accounts can book deliveries.", "error"); return; }
+  openBooking();
+}
+
+function bindRoleTab(b){
+  b.addEventListener("click", () => {
+    $$("#role-tabs .role-tab").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    state.authRole = b.dataset.role;
+    updateRiderFieldsVisibility();
+  });
+}
+$$("#role-tabs .role-tab").forEach(bindRoleTab);
+
+/* ---- Image compress to small data URL (no CORS, no Storage) ---- */
+async function fileToCompressedDataURL(file, maxDim = 500, quality = 0.7){
+  if(!file) throw new Error("No file selected");
+  if(file.size > 10 * 1024 * 1024) throw new Error("File must be under 10MB");
+  const dataUrl = await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(new Error("Could not read file"));
+    r.readAsDataURL(file);
+  });
+  const img = await new Promise((resolve, reject) => {
+    const i = new Image();
+    i.onload = () => resolve(i);
+    i.onerror = () => reject(new Error("Could not decode image"));
+    i.src = dataUrl;
+  });
+  let { width: w, height: h } = img;
+  if(w > h){ h = Math.round(h * maxDim / w); w = maxDim; }
+  else     { w = Math.round(w * maxDim / h); h = maxDim; }
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(img, 0, 0, w, h);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+async function uploadRiderPhoto(uid, file){
+  return await fileToCompressedDataURL(file, 400, 0.7);
+}
+async function uploadRiderDoc(uid, file, tag){
+  return await fileToCompressedDataURL(file, 700, 0.7);
+}
+
+/* ---- Forgot password ---- */
+function openForgotPassword(){
+  closeModal("auth-modal");
+  openModal("forgot-modal");
+}
+$("#forgot-form") && $("#forgot-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = $("#fp-email").value.trim();
+  if(!email) return;
+  try {
+    if(FB_READY){
+      await auth.sendPasswordResetEmail(email);
+    } else {
+      await LOCAL.auth.sendPasswordResetEmail(email);
+    }
+    toast("If that email exists, a reset link has been sent ✔", "success");
+    closeModal("forgot-modal");
+  } catch(err){ toast(err.message || "Could not send reset email", "error"); }
+});
+
+$("#auth-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = $("#auth-email").value.trim();
+  const pw = $("#auth-password").value;
+  const name = $("#auth-name").value.trim();
+  const phone = $("#auth-phone").value.trim();
+  const role = state.authRole;
+  if(role==="admin" && !state.adminTabRevealed && !isAdminUrl()){
+    toast("Admin registration is restricted.", "error");
+    return;
+  }
+
+  // Rider registration: collect + validate extra fields including docs
+  let riderData = null;
+  if(state.authMode==="register" && role==="rider"){
+    const photoFile = $("#r-photo").files[0];
+    const vtype = $("#r-vtype").value;
+    const plate = $("#r-plate").value.trim().toUpperCase();
+    const make = $("#r-make").value.trim();
+    const model = $("#r-model").value.trim();
+    const year = $("#r-year").value.trim();
+    const color = $("#r-color").value.trim();
+    const license = $("#r-license").value.trim();
+    const zone = $("#r-zone").value;
+    const ecname = $("#r-ecname").value.trim();
+    const ecphone = $("#r-ecphone").value.trim();
+    const docGovId = $("#r-doc-govid").files[0];
+    const docAddr = $("#r-doc-address").files[0];
+    const docDL = $("#r-doc-dl").files[0];
+    const docVeh = $("#r-doc-vehicle").files[0];
+    const docIns = $("#r-doc-insurance").files[0];
+    if(!photoFile){ toast("Please upload a face picture","error"); return; }
+    if(!vtype || !plate || !make || !model || !year || !color || !license || !zone || !ecname || !ecphone){
+      toast("Please fill all rider verification fields","error"); return;
+    }
+    if(!docGovId || !docAddr || !docDL || !docVeh){
+      toast("Please upload all required documents (Gov ID, Proof of Address, Driver's License, Vehicle Papers)","error"); return;
+    }
+    riderData = { vtype, plate, make, model, year, color, license, zone, ecname, ecphone, photoFile, docGovId, docAddr, docDL, docVeh, docIns };
+  }
+
+  try {
+    if(state.authMode==="register"){
+      const cred = await DB.auth.createUserWithEmailAndPassword(email, pw);
+      const uid = cred.user.uid;
+
+      // Send Firebase verification email (Firebase path only — LOCAL is a no-op)
+      try {
+        if(FB_READY && cred.user && typeof cred.user.sendEmailVerification === "function"){
+          await cred.user.sendEmailVerification();
+          toast("Verification email sent — check your inbox ✔", "info");
+        }
+      } catch(err){ console.warn("sendEmailVerification failed:", err); }
+
+      await DB.col("users").doc(uid).set({ name: name||email.split("@")[0], email, phone, role, createdAt: now(), receivingCode: genReceivingCode() });
+
+      if(role==="rider"){
+        const S = (v) => (v == null ? "" : String(v));
+        let photoUrl = "";
+        if(riderData && FB_READY){
+          try { photoUrl = await uploadRiderPhoto(uid, riderData.photoFile); }
+          catch(err){ console.warn("Photo upload failed", err); toast("Photo upload failed, saving profile without it","error"); }
+        }
+        // Upload docs (compress base64)
+        let docs = {};
+        if(riderData){
+          try { docs.govId = await uploadRiderDoc(uid, riderData.docGovId, "govId"); } catch(e){ console.warn("govId failed", e); }
+          try { docs.proofOfAddress = await uploadRiderDoc(uid, riderData.docAddr, "addr"); } catch(e){ console.warn("addr failed", e); }
+          try { docs.driverLicense = await uploadRiderDoc(uid, riderData.docDL, "dl"); } catch(e){ console.warn("dl failed", e); }
+          try { docs.vehiclePapers = await uploadRiderDoc(uid, riderData.docVeh, "veh"); } catch(e){ console.warn("veh failed", e); }
+          if(riderData.docIns){
+            try { docs.insurance = await uploadRiderDoc(uid, riderData.docIns, "ins"); } catch(e){ console.warn("ins failed", e); }
+          }
+        }
+        try {
+          await DB.col("riders").doc(uid).set({
+            name: S(name||email),
+            phone: S(phone),
+            online: false,
+            verified: false,
+            createdAt: now(),
+            deliveries: 0,
+            earnings: 0,
+            rating: 5.0,
+            photoUrl: S(photoUrl),
+            vehicleType: S(riderData?.vtype),
+            plateNumber: S(riderData?.plate),
+            vehicleMake: S(riderData?.make),
+            vehicleModel: S(riderData?.model),
+            vehicleYear: S(riderData?.year),
+            vehicleColor: S(riderData?.color),
+            licenseId: S(riderData?.license),
+            mainZone: S(riderData?.zone),
+            emergencyContact: S(riderData?.ecname),
+            emergencyPhone: S(riderData?.ecphone),
+            submittedAt: now(),
+            docsSubmittedAt: now(),
+            docs: docs
+          });
+          console.log("[register] riders/"+uid+" created with docs");
+        } catch(err){
+          console.error("[register] riders write failed:", err);
+          toast("Could not save rider profile: " + (err.message || err.code || "unknown error"), "error");
+        }
+      }
+      toast("Account created! Please verify your email before logging in.", "success");
+      // Sign out until verified
+      try { await DB.auth.signOut(); } catch(e){}
+    } else {
+      // Login path — check email verification (Firebase only)
+      await DB.auth.signInWithEmailAndPassword(email, pw);
+      const u = DB.auth.currentUser;
+      if(FB_READY && u && u.reload){ try { await u.reload(); } catch(e){} }
+      if(FB_READY && u && u.emailVerified === false){
+        toast("Please verify your email — check your inbox for the link", "error");
+        await DB.auth.signOut();
+        return;
+      }
+      toast("Welcome back!", "success");
+    }
+    closeModal("auth-modal");
+  } catch(err){ toast(err.message || "Auth failed", "error"); }
+});
+
+function genReceivingCode(){
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let s = "";
+  for(let i=0;i<6;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return "MIMI-" + s;
+}
+
+/* ============ AUTH STATE → DASHBOARD ============ */
+DB.auth.onAuthStateChanged(async (user) => {
+  state.unsubs.forEach(u=>{try{u();}catch(e){}}); state.unsubs=[];
+  if(!user){ state.user=null; state.profile=null; state.role=null; route("home"); return; }
+  state.user = user;
+  const unsub = DB.col("users").doc(user.uid).onSnapshot(async snap => {
+    if(!snap.exists){
+      await DB.col("users").doc(user.uid).set({
+        name: user.email.split("@")[0],
+        email: user.email,
+        role: state.authRole||"customer",
+        createdAt: now(),
+        receivingCode: genReceivingCode()
+      });
+      return;
+    }
+    state.profile = snap.data();
+    state.role = state.profile.role;
+
+    // Ensure receivingCode exists (for pre-existing accounts)
+    if(state.role === "customer" && !state.profile.receivingCode){
+      const code = genReceivingCode();
+      await DB.col("users").doc(user.uid).update({ receivingCode: code });
+      state.profile.receivingCode = code;
+    }
+
+    // Self-heal for rider
+    if(state.role === "rider"){
+      try {
+        const rSnap = await DB.col("riders").doc(user.uid).get();
+        if(!rSnap.exists){
+          await DB.col("riders").doc(user.uid).set({
+            name: state.profile.name || user.email.split("@")[0],
+            phone: state.profile.phone || "",
+            online: false, verified: false, createdAt: now(),
+            deliveries: 0, earnings: 0, rating: 5.0,
+            photoUrl: "", vehicleType: "", plateNumber: "",
+            vehicleMake: "", vehicleModel: "", vehicleYear: "", vehicleColor: "",
+            licenseId: "", mainZone: "", emergencyContact: "", emergencyPhone: "",
+            submittedAt: now(), docsSubmittedAt: now(), docs: {}
+          });
+          console.warn("[self-heal] Created missing riders/"+user.uid);
+        }
+      } catch(e){ console.warn("[self-heal] Could not create riders doc", e); }
+    }
+
+    enterDashboard();
+
+    // Invite handling
+    if(state.pendingInviteReceiverId && state.role === "customer"){
+      const inviteId = state.pendingInviteReceiverId;
+      state.pendingInviteReceiverId = null;
+      try {
+        const rSnap2 = await DB.col("users").doc(inviteId).get();
+        if(rSnap2.exists){
+          const rp = rSnap2.data();
+          if(rp.role === "customer"){
+            state.prefillReceiver = {
+              uid: inviteId,
+              name: rp.name || "",
+              phone: rp.phone || "",
+              address: (rp.addresses && rp.addresses[0] && rp.addresses[0].address) || "",
+              receivingCode: rp.receivingCode || ""
+            };
+            state.dashTab = "book";
+            renderSidebar(); renderDashboard();
+            setTimeout(()=>openBooking(), 300);
+            toast(`Sending to ${state.prefillReceiver.name || "receiver"}`, "success");
+          }
+        }
+      } catch(e){ console.warn("Invite lookup failed", e); }
+    }
+  });
+  state.unsubs.push(unsub);
+  const unsubS = DB.col("settings").doc("global").onSnapshot(snap => {
+    if(snap.exists) state.settings = {...DEFAULT_SETTINGS, ...snap.data()};
+    else DB.col("settings").doc("global").set(DEFAULT_SETTINGS);
+  });
+  state.unsubs.push(unsubS);
+});
+
+async function logout(){ await DB.auth.signOut(); }
+
+/* ============ DASHBOARD SHELL ============ */
+function enterDashboard(){
+  $("#public-site").style.display="none";
+  $("#app-shell").classList.add("active");
+  $("#user-name").textContent = state.profile.name || state.profile.email;
+  $("#user-avatar").textContent = (state.profile.name||state.profile.email||"U")[0].toUpperCase();
+  renderSidebar();
+  state.dashTab = "overview";
+  renderDashboard();
+  subscribeData();
+}
+
+function renderSidebar(){
+  const items = {
+    customer: [
+      {k:"overview", t:"Overview", i:'<path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/>'},
+      {k:"book", t:"Book Delivery", i:'<path d="M12 5v14M5 12h14"/>'},
+      {k:"orders", t:"My Shipments", i:'<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/>'},
+      {k:"share", t:"Share & Receive", i:'<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.5" x2="15.4" y2="6.5"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/>'},
+      {k:"addresses", t:"Addresses & Receivers", i:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 1 1 18 0z"/>'},
+    ],
+    rider: [
+      {k:"overview", t:"Overview", i:'<path d="M3 12l9-9 9 9"/>'},
+      {k:"jobs", t:"Assigned Jobs", i:'<rect x="3" y="3" width="18" height="18" rx="2"/>'},
+      {k:"earnings", t:"Earnings", i:'<path d="M12 2v20M5 9h14"/>'},
+      {k:"history", t:"History", i:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'},
+    ],
+    admin: [
+      {k:"overview", t:"Overview", i:'<path d="M3 12l9-9 9 9"/>'},
+      {k:"orders", t:"Orders", i:'<rect x="3" y="3" width="18" height="18" rx="2"/>'},
+      {k:"queue", t:"Unconfirmed Queue", i:'<circle cx="12" cy="12" r="10"/>'},
+      {k:"riders", t:"Riders", i:'<circle cx="12" cy="7" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/>'},
+      {k:"support", t:"Support", i:'<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'},
+      {k:"pricing", t:"Pricing & Bank", i:'<path d="M12 2v20"/>'},
+      {k:"settings", t:"System Settings", i:'<circle cx="12" cy="12" r="3"/>'},
+    ]
+  }[state.role] || [];
+  $("#side-nav").innerHTML = items.map(it=>`<button class="nav-item ${state.dashTab===it.k?'active':''}" onclick="setTab('${it.k}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${it.i}</svg>${it.t}</button>`).join("");
+}
+
+function setTab(k){ state.dashTab = k; renderSidebar(); renderDashboard(); closeSidebar(); }
+
+/* ============ REAL-TIME SUBSCRIPTIONS ============ */
+function subscribeData(){
+  const unsubO = DB.col("orders").onSnapshot(snap => {
+    state.orders = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    if(state.role==="rider") state.orders = state.orders.filter(o=>o.riderId===state.user.uid);
+    renderDashboard(true);
+  });
+  state.unsubs.push(unsubO);
+  const unsubR = DB.col("riders").onSnapshot(snap => {
+    state.riders = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderDashboard(true);
+  });
+  state.unsubs.push(unsubR);
+  if(state.role==="admin"){
+    const unsubT = DB.col("support").onSnapshot(snap => {
+      state.tickets = snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+      renderDashboard(true);
+    });
+    state.unsubs.push(unsubT);
+  }
+}
+
+/* ============ DASHBOARDS ============ */
+function renderDashboard(){
+  $("#page-title").textContent = {
+    overview:"Dashboard", book:"Book Delivery", orders:"My Shipments", share:"Share & Receive", addresses:"Addresses & Receivers",
+    jobs:"My Jobs", earnings:"Earnings", history:"Delivery History",
+    queue:"Unconfirmed Queue", riders:"Riders", support:"Support Tickets", pricing:"Pricing & Bank", settings:"System Settings"
+  }[state.dashTab] || "Dashboard";
+  const root = $("#app-root");
+  if(state.role==="customer") root.innerHTML = renderCustomer();
+  else if(state.role==="rider") root.innerHTML = renderRider();
+  else if(state.role==="admin") root.innerHTML = renderAdmin();
+  bindDashboard();
+}
+
+/* ----- CUSTOMER ----- */
+function sentOrders(){ return state.orders.filter(o=>o.customerId===state.user.uid); }
+function receivedOrders(){ return state.orders.filter(o=>o.receiverId===state.user.uid); }
+
+function renderCustomer(){
+  if(state.dashTab==="overview"){
+    const sent = sentOrders();
+    const received = receivedOrders();
+    const activeSent = sent.filter(x=>!["delivered","failed"].includes(x.status)).length;
+    const activeRecv = received.filter(x=>!["delivered","failed"].includes(x.status)).length;
+    const delivered = sent.concat(received).filter(x=>x.status==="delivered").length;
+    return `
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Sent</div><div class="num">${sent.length}</div></div>
+      <div class="kpi"><div class="lbl">Received</div><div class="num">${received.length}</div></div>
+      <div class="kpi"><div class="lbl">Active</div><div class="num">${activeSent+activeRecv}</div></div>
+      <div class="kpi"><div class="lbl">Delivered</div><div class="num">${delivered}</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Quick actions</h3></div>
+      <div class="panel-body">
+        <div class="actions-row">
+          <button class="btn btn-primary btn-sm" onclick="openBooking()">+ New Delivery</button>
+          <button class="btn btn-ghost btn-sm" onclick="shareMyProfile()">🔗 Share my profile link</button>
+          <button class="btn btn-ghost btn-sm" onclick="setTab('share')">Open Share & Receive</button>
+        </div>
+        <div class="share-box" style="margin-top:14px">
+          <input id="share-profile-input" readonly value="${receiverProfileLink(state.user.uid)}">
+          <button class="btn-mini primary" onclick="copyShareLink()">Copy</button>
+        </div>
+        <p class="helper" style="margin-top:6px">Send this link to someone so they can deliver to you without typing your details.</p>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Recent Activity</h3>
+        <div class="subtabs">
+          <button class="subtab ${state.customerSubtab==='sent'?'active':''}" onclick="setCustomerSubtab('sent')">Sent</button>
+          <button class="subtab ${state.customerSubtab==='received'?'active':''}" onclick="setCustomerSubtab('received')">Received</button>
+        </div>
+      </div>
+      ${ordersTable(state.customerSubtab==='sent'?sentOrders().slice(0,6):receivedOrders().slice(0,6), "customer")}
+    </div>`;
+  }
+  if(state.dashTab==="book"){ openBooking(); return `<div class="empty">Opening booking…</div>`; }
+  if(state.dashTab==="orders"){
+    return `<div class="panel">
+      <div class="panel-head">
+        <h3>My Shipments</h3>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <div class="subtabs">
+            <button class="subtab ${state.customerSubtab==='sent'?'active':''}" onclick="setCustomerSubtab('sent')">Sent</button>
+            <button class="subtab ${state.customerSubtab==='received'?'active':''}" onclick="setCustomerSubtab('received')">Received</button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openBooking()">+ New Delivery</button>
+        </div>
+      </div>
+      ${ordersTable(state.customerSubtab==='sent'?sentOrders():receivedOrders(), "customer")}
+    </div>`;
+  }
+  if(state.dashTab==="share"){
+    const code = state.profile.receivingCode || "MIMI-XXXXXX";
+    return `<div class="panel">
+      <div class="panel-head"><h3>Share & Receive</h3></div>
+      <div class="panel-body">
+        <div class="alert success"><strong>Your receiving code:</strong> <code style="font-size:1rem;font-weight:800">${code}</code>
+          <div style="font-size:.82rem;color:var(--muted);margin-top:4px">Give this code to senders so they can find you in our system.</div>
+        </div>
+        <p style="margin-bottom:10px">Share your profile link with anyone who wants to send you a package. When they open it, they'll be taken straight to a pre-filled booking form.</p>
+        <div class="share-box">
+          <input id="share-profile-input" readonly value="${receiverProfileLink(state.user.uid)}">
+          <button class="btn-mini primary" onclick="copyShareLink()">Copy</button>
+        </div>
+        <div class="actions-row" style="margin-top:14px">
+          <button class="btn btn-primary btn-sm" onclick="shareMyProfile()">🔗 Copy link</button>
+          <button class="btn btn-ghost btn-sm" onclick="sendShareViaWhatsApp()">💬 Share via WhatsApp</button>
+        </div>
+        <p class="helper" style="margin-top:12px">Anyone with your link can send you a delivery. Only share it with people you trust.</p>
+
+        <hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+        <h3 style="margin-bottom:10px">You're receiving ${receivedOrders().length} shipment(s)</h3>
+        ${ordersTable(receivedOrders(), "customer")}
+      </div>
+    </div>`;
+  }
+  if(state.dashTab==="addresses"){
+    const saved = (state.profile.addresses)||[];
+    const recvs = (state.profile.savedReceivers)||[];
+    return `<div class="panel">
+      <div class="panel-head"><h3>Saved Addresses</h3><button class="btn btn-primary btn-sm" id="add-addr">+ Add Address</button></div>
+      <div class="panel-body">
+        ${saved.length? saved.map((a,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <div>
+            <strong>${a.label}</strong> ${a.isDefault?'<span class="badge b-delivered" style="margin-left:6px">Default</span>':''}
+            <div style="font-size:.85rem;color:var(--muted)">${a.address}${a.zone?' · '+a.zone:''}</div>
+          </div>
+          <div class="actions-row">
+            ${!a.isDefault?`<button class="btn-mini primary" onclick="setDefaultAddr(${i})">Set default</button>`:''}
+            <button class="btn-mini danger" onclick="delAddr(${i})">Remove</button>
+          </div>
+        </div>`).join("") : '<div class="empty">No saved addresses yet.</div>'}
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Saved Receivers</h3><button class="btn btn-primary btn-sm" id="add-recv">+ Add Receiver</button></div>
+      <div class="panel-body">
+        ${recvs.length? recvs.map((r,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:10px">
+          <div>
+            <strong>${r.label||r.name}</strong>
+            <div style="font-size:.85rem;color:var(--muted)">${r.name} · ${r.phone} · ${r.address}${r.zone?' · '+r.zone:''}</div>
+          </div>
+          <button class="btn-mini danger" onclick="delReceiver(${i})">Remove</button>
+        </div>`).join("") : '<div class="empty">No saved receivers yet.</div>'}
+      </div>
+    </div>`;
+  }
+}
+
+function setCustomerSubtab(k){ state.customerSubtab = k; renderDashboard(); }
+
+/* ----- RIDER ----- */
+function renderRider(){
+  const o = state.orders;
+  const me = state.riders.find(r=>r.id===state.user.uid) || {};
+  if(state.dashTab==="overview"){
+    const active = o.filter(x=>!["delivered","failed"].includes(x.status)).length;
+    const completed = o.filter(x=>x.status==="delivered").length;
+    const photoHtml = me.photoUrl
+      ? `<img src="${me.photoUrl}" alt="me" style="width:56px;height:56px;border-radius:50%;object-fit:cover">`
+      : `<div class="avatar" style="width:56px;height:56px;font-size:1rem">${(me.name||"R")[0].toUpperCase()}</div>`;
+    return `
+    <div class="alert info" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:12px">
+        ${photoHtml}
+        <div>
+          <strong>${me.name||"Rider"}</strong>
+          <div style="font-size:.8rem;color:var(--muted)">
+            ${me.verified ? 'Verified ✓' : '⚠ Awaiting admin approval'}
+            ${me.mainZone ? ' · '+me.mainZone : ''}
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div><strong>Status:</strong> <span class="badge ${me.online?'b-online':'b-offline'}">${me.online?'Online':'Offline'}</span></div>
+        <label class="switch"><input type="checkbox" id="online-tog" ${me.online?'checked':''}><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Active Jobs</div><div class="num">${active}</div></div>
+      <div class="kpi"><div class="lbl">Completed</div><div class="num">${completed}</div></div>
+      <div class="kpi"><div class="lbl">Earnings</div><div class="num">${fmt(me.earnings||0)}</div></div>
+      <div class="kpi"><div class="lbl">Rating</div><div class="num">${(me.rating||4.8).toFixed(1)}★</div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><h3>Vehicle & Verification</h3></div>
+      <div class="panel-body" style="font-size:.9rem">
+        <p style="margin:2px 0"><strong>Vehicle:</strong> ${me.vehicleType||"—"} ${me.vehicleMake?`· ${me.vehicleMake} ${me.vehicleModel||""} (${me.vehicleYear||""})`:""} ${me.vehicleColor?'· '+me.vehicleColor:""}</p>
+        <p style="margin:2px 0"><strong>Plate:</strong> ${me.plateNumber||"—"}</p>
+        <p style="margin:2px 0"><strong>License ID:</strong> ${me.licenseId||"—"}</p>
+        <p style="margin:2px 0"><strong>Emergency Contact:</strong> ${me.emergencyContact||"—"} ${me.emergencyPhone?'('+me.emergencyPhone+')':''}</p>
+      </div>
+    </div>
+    <div class="panel"><div class="panel-head"><h3>Current Jobs</h3></div>${ordersTable(o.filter(x=>!["delivered","failed"].includes(x.status)), "rider")}</div>`;
+  }
+  if(state.dashTab==="jobs"){
+    return `<div class="panel"><div class="panel-head"><h3>Assigned Jobs</h3></div>${ordersTable(o.filter(x=>!["delivered","failed"].includes(x.status)), "rider")}</div>`;
+  }
+  if(state.dashTab==="earnings"){
+    const completed = o.filter(x=>x.status==="delivered");
+    const total = completed.reduce((s,x)=>s+(x.price||0)*0.7, 0);
+    return `<div class="kpis">
+      <div class="kpi"><div class="lbl">Lifetime Earnings</div><div class="num">${fmt(me.earnings||total)}</div></div>
+      <div class="kpi"><div class="lbl">Deliveries</div><div class="num">${completed.length}</div></div>
+      <div class="kpi"><div class="lbl">Avg per delivery</div><div class="num">${fmt(completed.length?total/completed.length:0)}</div></div>
+      <div class="kpi"><div class="lbl">Rating</div><div class="num">${(me.rating||4.8).toFixed(1)}★</div></div>
+    </div>
+    <div class="panel"><div class="panel-head"><h3>Recent Payouts</h3></div>${ordersTable(completed.slice(0,10), "rider")}</div>`;
+  }
+  if(state.dashTab==="history"){
+    return `<div class="panel"><div class="panel-head"><h3>Delivery History</h3></div>${ordersTable(o.filter(x=>["delivered","failed"].includes(x.status)), "rider")}</div>`;
+  }
+}
+
+/* ----- ADMIN ----- */
+function renderAdmin(){
+  const o = state.orders;
+  if(state.dashTab==="overview"){
+    const active = o.filter(x=>!["delivered","failed","pending"].includes(x.status)).length;
+    const pending = o.filter(x=>x.status==="pending").length;
+    const delivered = o.filter(x=>x.status==="delivered");
+    const revenue = delivered.reduce((s,x)=>s+(x.price||0),0);
+    const onlineRiders = state.riders.filter(r=>r.online).length;
+    const openTickets = state.tickets.filter(t=>t.status==="open").length;
+    return `
+    <div class="kpis">
+      <div class="kpi"><div class="lbl">Total Orders</div><div class="num">${o.length}</div><div class="delta">+${pending} pending</div></div>
+      <div class="kpi"><div class="lbl">Active Deliveries</div><div class="num">${active}</div></div>
+      <div class="kpi"><div class="lbl">Revenue</div><div class="num">${fmt(revenue)}</div></div>
+      <div class="kpi"><div class="lbl">Open Tickets</div><div class="num">${openTickets}</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Live Orders</h3>
+        <input class="input" id="adm-search" placeholder="Search by ID, customer or phone" style="max-width:280px">
+      </div>
+      ${ordersTable(o.slice(0,15), "admin")}
+    </div>`;
+  }
+  if(state.dashTab==="orders"){
+    return `<div class="panel"><div class="panel-head"><h3>All Orders</h3><input class="input" id="adm-search" placeholder="Search…" style="max-width:280px"></div>${ordersTable(o, "admin")}</div>`;
+  }
+  if(state.dashTab==="queue"){
+    return `<div class="panel"><div class="panel-head"><h3>Unconfirmed Orders</h3></div>${ordersTable(o.filter(x=>x.status==="pending"), "admin")}</div>`;
+  }
+  if(state.dashTab==="riders"){
+    return `<div class="panel"><div class="panel-head"><h3>Rider Management</h3></div>
+      <div style="overflow:auto">
+      <table><thead><tr>
+        <th>Photo</th><th>Name / Phone</th><th>Vehicle</th><th>Plate</th><th>Zone</th><th>Status</th><th>Verified</th><th>Deliveries</th><th>Actions</th>
+      </tr></thead>
+      <tbody>${state.riders.map(r=>`<tr>
+        <td>${r.photoUrl ? `<img class="thumb" src="${r.photoUrl}" onclick="previewImage('${r.photoUrl}')" style="cursor:pointer">` : `<div class="thumb-empty">No<br>photo</div>`}</td>
+        <td><strong>${r.name||"—"}</strong><div style="font-size:.78rem;color:var(--muted)">${r.phone||"—"}</div></td>
+        <td style="font-size:.82rem">${r.vehicleType||"—"} ${r.vehicleMake?`<div style="color:var(--muted)">${r.vehicleMake} ${r.vehicleModel||""} ${r.vehicleYear?'('+r.vehicleYear+')':""} ${r.vehicleColor?'· '+r.vehicleColor:""}</div>`:""}</td>
+        <td style="font-size:.82rem">${r.plateNumber||"—"}</td>
+        <td style="font-size:.82rem">${r.mainZone||"—"}</td>
+        <td><span class="badge ${r.online?'b-online':'b-offline'}">${r.online?'Online':'Offline'}</span></td>
+        <td>${r.verified?'✅ Yes':'⚠️ No'}</td>
+        <td>${r.deliveries||0}</td>
+        <td><div class="actions-row">
+          ${!r.verified?`<button class="btn-mini ok" onclick="approveRider('${r.id}',true)">Approve</button>`:`<button class="btn-mini" onclick="approveRider('${r.id}',false)">Reject</button>`}
+          <button class="btn-mini" onclick="viewRiderDocs('${r.id}')">📄 Docs</button>
+          <button class="btn-mini" onclick="viewRider('${r.id}')">View</button>
+          <button class="btn-mini danger" onclick="removeRider('${r.id}')">Remove</button>
+        </div></td></tr>`).join("") || `<tr><td colspan="9" class="empty">No riders yet.</td></tr>`}
+      </tbody></table></div>
+    </div>`;
+  }
+  if(state.dashTab==="support"){
+    return `<div class="panel"><div class="panel-head"><h3>Support Tickets</h3></div>
+      <div class="panel-body">
+        ${state.tickets.length? state.tickets.map(t=>`
+          <div style="padding:12px 0;border-bottom:1px solid var(--line)">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+              <div>
+                <strong>${t.subject}</strong>
+                <div style="font-size:.82rem;color:var(--muted)">${t.name} · ${t.email} · ${fmtDate(t.createdAt)}</div>
+              </div>
+              <span class="badge ${t.status==='open'?'b-pending':'b-delivered'}">${t.status}</span>
+            </div>
+            <p style="margin:8px 0 6px;font-size:.9rem">${t.message}</p>
+            <div class="actions-row">
+              ${t.status==="open"?`<button class="btn-mini ok" onclick="closeTicket('${t.id}')">Mark resolved</button>`:""}
+              <a class="btn-mini" href="mailto:${t.email}?subject=Re: ${encodeURIComponent(t.subject)}">Reply by email</a>
+            </div>
+          </div>`).join("") : '<div class="empty">No support tickets yet.</div>'}
+      </div>
+    </div>`;
+  }
+  if(state.dashTab==="pricing"){
+    const s = state.settings;
+    return `<div class="panel"><div class="panel-head"><h3>Pricing Engine</h3></div>
+      <div class="panel-body">
+        <div class="row-2">
+          <div class="field"><label>Base Price (₦)</label><input class="input" id="ps-base" type="number" value="${s.basePrice}"></div>
+          <div class="field"><label>Per KM (₦)</label><input class="input" id="ps-km" type="number" value="${s.perKm}"></div>
+        </div>
+        <div class="row-2">
+          <div class="field"><label>Express Multiplier</label><input class="input" id="ps-exp" type="number" step="0.1" value="${s.expressMul}"></div>
+          <div class="field"><label>Night Fee (₦)</label><input class="input" id="ps-night" type="number" value="${s.nightFee}"></div>
+        </div>
+        <div class="field"><label>Heavy Package Fee (₦)</label><input class="input" id="ps-heavy" type="number" value="${s.heavyFee}"></div>
+        <button class="btn btn-primary" id="ps-save">Save Pricing</button>
+      </div></div>
+    <div class="panel"><div class="panel-head"><h3>Bank Transfer Details</h3></div>
+      <div class="panel-body">
+        <div class="field"><label>Bank Name</label><input class="input" id="bk-name" value="${s.bank?.name||''}"></div>
+        <div class="field"><label>Account Number</label><input class="input" id="bk-number" value="${s.bank?.accountNumber||''}"></div>
+        <div class="field"><label>Account Name</label><input class="input" id="bk-accountname" value="${s.bank?.accountName||''}"></div>
+        <button class="btn btn-primary" id="bk-save">Save Bank Details</button>
+      </div></div>`;
+  }
+  if(state.dashTab==="settings"){
+    const s = state.settings;
+    return `<div class="panel"><div class="panel-head"><h3>System Toggles</h3></div>
+      <div class="panel-body">
+        ${[
+          ["autoAssign","Auto-assign riders"],["cod","Cash on Delivery"],
+          ["transfer","Bank Transfer payments"],["express","Express delivery available"]
+        ].map(([k,l])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)"><div><strong>${l}</strong></div><label class="switch"><input type="checkbox" data-toggle="${k}" ${s[k]?'checked':''}><span class="slider"></span></label></div>`).join("")}
+      </div></div>`;
+  }
+}
+
+/* ===== Shared tables ===== */
+function ordersTable(rows, role){
+  if(!rows || !rows.length) return `<div class="empty">No orders to show.</div>`;
+  const cols = role==="admin"
+    ? ["ID","Customer","Route","Type","Price","Status","Created","Actions"]
+    : role==="rider"
+    ? ["ID","Route","Pay","Price","Status","Actions"]
+    : ["ID","Route","Type","Price","Status","Created","Actions"];
+  return `<div style="overflow:auto"><table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join("")}</tr></thead><tbody>
+    ${rows.map(o=>{
+      const route = `${o.pickupZone||"—"} → ${o.dropZone||"—"}`;
+      const badge = `<span class="badge b-${o.status}">${o.status}</span>${o.paymentClaimed && !o.paid ? ' <span class="badge b-pending">claim</span>' : ''}`;
+      const acts = `<button class="btn-mini" onclick="viewOrder('${o.id}')">View</button>${o.status==="delivered"?`<button class="btn-mini" onclick="viewReceipt('${o.id}')" style="margin-left:4px">📄</button>`:""}`;
+      if(role==="admin") return `<tr><td><strong>${o.id.slice(0,8)}</strong></td><td>${o.customerName||"—"}<div style="font-size:.78rem;color:var(--muted)">${o.customerPhone||""}</div></td><td>${route}</td><td>${o.type}</td><td>${fmt(o.price)}</td><td>${badge}</td><td style="font-size:.82rem">${fmtDate(o.createdAt)}</td><td>${acts}</td></tr>`;
+      if(role==="rider") return `<tr><td><strong>${o.id.slice(0,8)}</strong></td><td>${route}</td><td>${o.payment||"-"}</td><td>${fmt(o.price)}</td><td>${badge}</td><td>${acts}</td></tr>`;
+      return `<tr><td><strong>${o.id.slice(0,8)}</strong></td><td>${route}</td><td>${o.type}</td><td>${fmt(o.price)}</td><td>${badge}</td><td style="font-size:.82rem">${fmtDate(o.createdAt)}</td><td>${acts}</td></tr>`;
+    }).join("")}
+  </tbody></table></div>`;
+}
+
+/* ===== Dashboard bindings ===== */
+function bindDashboard(){
+  if($("#ps-save")) $("#ps-save").addEventListener("click", async () => {
+    const ns = {
+      basePrice: +$("#ps-base").value, perKm: +$("#ps-km").value,
+      expressMul: +$("#ps-exp").value, nightFee: +$("#ps-night").value, heavyFee: +$("#ps-heavy").value
+    };
+    await DB.col("settings").doc("global").set({...state.settings, ...ns}, {merge:true});
+    toast("Pricing updated ✔", "success");
+  });
+  if($("#bk-save")) $("#bk-save").addEventListener("click", async () => {
+    const bank = {
+      name: $("#bk-name").value.trim(),
+      accountNumber: $("#bk-number").value.trim(),
+      accountName: $("#bk-accountname").value.trim()
+    };
+    await DB.col("settings").doc("global").set({...state.settings, bank}, {merge:true});
+    toast("Bank details updated ✔", "success");
+  });
+  $$("input[data-toggle]").forEach(t => t.addEventListener("change", async () => {
+    const k = t.dataset.toggle;
+    await DB.col("settings").doc("global").set({...state.settings, [k]: t.checked}, {merge:true});
+    toast("Setting updated", "success");
+  }));
+  if ($("#online-tog")) $("#online-tog").addEventListener("change", async (e) => {
+    const on = e.target.checked;
+    const me = state.riders.find(r=>r.id===state.user.uid) || {};
+    if(on && !me.verified){
+      e.target.checked = false;
+      toast("Awaiting admin approval before going online.", "error");
+      return;
+    }
+    await DB.col("riders").doc(state.user.uid).update({ online: on });
+    if (on) {
+      startRiderGps();
+      toast("Online — broadcasting your live location", "success");
+    } else {
+      stopRiderGps();
+      toast("Offline — GPS stopped", "info");
+    }
+  });
+  if($("#adm-search")) $("#adm-search").addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
+    const filtered = state.orders.filter(o => !q || o.id.toLowerCase().includes(q) || (o.customerName||"").toLowerCase().includes(q) || (o.customerPhone||"").includes(q) || (o.receiverPhone||"").includes(q));
+    const tbl = e.target.closest(".panel").querySelector("table");
+    if(tbl) tbl.parentElement.outerHTML = ordersTable(filtered, "admin");
+  });
+  if($("#add-addr")) $("#add-addr").addEventListener("click", async () => {
+    const label = prompt("Address label (e.g. Home, Office)");
+    if(!label) return;
+    const address = prompt("Full address");
+    if(!address) return;
+    const zone = prompt("Zone (e.g. Lekki, Yaba)") || "";
+    const addrs = [...(state.profile.addresses||[]), {label, address, zone, isDefault: (state.profile.addresses||[]).length===0}];
+    await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
+    toast("Address saved", "success");
+  });
+  if($("#add-recv")) $("#add-recv").addEventListener("click", async () => {
+    const label = prompt("Label (e.g. Office - Chidi)");
+    if(!label) return;
+    const name = prompt("Receiver full name"); if(!name) return;
+    const phone = prompt("Receiver phone"); if(!phone) return;
+    const address = prompt("Receiver address"); if(!address) return;
+    const zone = prompt("Zone (optional)") || "";
+    const recvs = [...(state.profile.savedReceivers||[]), {label, name, phone, address, zone}];
+    await DB.col("users").doc(state.user.uid).update({ savedReceivers: recvs });
+    toast("Receiver saved", "success");
+  });
+}
+
+window.delAddr = async (i) => {
+  const addrs = [...(state.profile.addresses||[])]; addrs.splice(i,1);
+  if(addrs.length && !addrs.some(a=>a.isDefault)) addrs[0].isDefault = true;
+  await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
+};
+window.setDefaultAddr = async (i) => {
+  const addrs = [...(state.profile.addresses||[])];
+  addrs.forEach((a,j)=>{ a.isDefault = (j===i); });
+  await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
+  toast("Default address updated", "success");
+};
+window.delReceiver = async (i) => {
+  const recvs = [...(state.profile.savedReceivers||[])]; recvs.splice(i,1);
+  await DB.col("users").doc(state.user.uid).update({ savedReceivers: recvs });
+  toast("Receiver removed", "success");
+};
+window.toggleVerify = async (id, val) => { await DB.col("riders").doc(id).update({ verified: val, approvedAt: val?now():null, approvedBy: state.user.uid }); toast("Rider updated", "success"); };
+window.approveRider = async (id, val) => {
+  await DB.col("riders").doc(id).update({ verified: val, approvedAt: val?now():null, approvedBy: state.user.uid });
+  toast(val?"Rider approved ✔":"Rider rejected", val?"success":"info");
+};
+window.removeRider = async (id) => { if(!confirm("Remove this rider?")) return; await DB.col("riders").doc(id).delete(); toast("Rider removed", "success"); };
+window.previewImage = (url) => { window.open(url, "_blank"); };
+window.viewRider = (id) => {
+  const r = state.riders.find(x=>x.id===id);
+  if(!r) return;
+  const lines = [
+    `Name: ${r.name||"-"}`,
+    `Phone: ${r.phone||"-"}`,
+    `Vehicle: ${r.vehicleType||"-"} ${r.vehicleMake||""} ${r.vehicleModel||""} (${r.vehicleYear||"-"}) ${r.vehicleColor||""}`,
+    `Plate: ${r.plateNumber||"-"}`,
+    `License: ${r.licenseId||"-"}`,
+    `Zone: ${r.mainZone||"-"}`,
+    `Emergency: ${r.emergencyContact||"-"} ${r.emergencyPhone?"("+r.emergencyPhone+")":""}`,
+    `Verified: ${r.verified?"Yes":"No"}`,
+    `Deliveries: ${r.deliveries||0}`,
+    `Rating: ${(r.rating||4.8).toFixed(1)}★`
+  ].join("\n");
+  alert(lines);
+};
+
+window.viewRiderDocs = (id) => {
+  const r = state.riders.find(x=>x.id===id);
+  if(!r) return;
+  $("#docs-title").textContent = "Documents — " + (r.name || "Rider");
+  const docs = r.docs || {};
+  const items = [
+    ["Government ID", docs.govId],
+    ["Proof of Address", docs.proofOfAddress],
+    ["Driver's License", docs.driverLicense],
+    ["Vehicle Papers", docs.vehiclePapers],
+    ["Insurance", docs.insurance]
+  ];
+  $("#docs-body").innerHTML = `
+    <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px">
+      ${r.photoUrl ? `<img src="${r.photoUrl}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.1)">` : `<div class="avatar" style="width:64px;height:64px;display:grid;place-items:center;font-size:1.2rem">${(r.name||"R")[0].toUpperCase()}</div>`}
+      <div>
+        <div style="font-weight:800;font-size:1.1rem">${r.name||"Rider"}</div>
+        <div style="font-size:.85rem;color:var(--muted)">${r.phone||""}</div>
+        <div style="font-size:.85rem;color:var(--muted)">${r.vehicleType||""} ${r.plateNumber?'· '+r.plateNumber:''} ${r.mainZone?'· '+r.mainZone:''}</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px">
+      ${items.map(([label, data]) => data ? `
+        <div>
+          <div style="font-size:.78rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">${label}</div>
+          <img class="doc-thumb" src="${data}" onclick="previewImage('${data}')" alt="${label}">
+        </div>` : `
+        <div>
+          <div style="font-size:.78rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">${label}</div>
+          <div class="doc-thumb" style="display:grid;place-items:center;color:var(--muted);font-size:.85rem;cursor:default">Not uploaded</div>
+        </div>`).join("")}
+    </div>
+    <div class="actions-row" style="margin-top:16px">
+      ${!r.verified?`<button class="btn-mini ok" onclick="closeModal('docs-modal'); approveRider('${r.id}',true)">Approve Rider</button>`:""}
+      ${r.verified?`<button class="btn-mini" onclick="closeModal('docs-modal'); approveRider('${r.id}',false)">Revoke Approval</button>`:""}
+      <button class="btn-mini danger" onclick="closeModal('docs-modal'); removeRider('${r.id}')">Remove Rider</button>
+    </div>`;
+  openModal("docs-modal");
+};
+
+window.closeTicket = async (id) => {
+  await DB.col("support").doc(id).update({ status: "resolved", resolvedAt: now(), resolvedBy: state.user.uid });
+  toast("Ticket resolved ✔", "success");
+};
+
+/* ============ SHARE PROFILE LINK ============ */
+function receiverProfileLink(uid){
+  const base = location.origin + location.pathname;
+  return `${base}?to=${uid}`;
+}
+window.shareMyProfile = async () => {
+  const link = receiverProfileLink(state.user.uid);
+  try { await navigator.clipboard.writeText(link); toast("Link copied to clipboard ✔", "success"); }
+  catch(e){ prompt("Copy this link", link); }
+};
+window.copyShareLink = async () => {
+  const el = $("#share-profile-input");
+  if(!el) return;
+  try { await navigator.clipboard.writeText(el.value); toast("Link copied ✔", "success"); }
+  catch(e){ el.select(); document.execCommand("copy"); toast("Link copied ✔", "success"); }
+};
+window.sendShareViaWhatsApp = () => {
+  const link = receiverProfileLink(state.user.uid);
+  const code = state.profile.receivingCode || "";
+  const text = encodeURIComponent(`Send me a delivery on Mimi's Delivery.\nMy receiving code: ${code}\nLink: ${link}`);
+  window.open(`https://wa.me/?text=${text}`, "_blank");
+};
+
+/* ============ EDIT PROFILE ============ */
+function openEditProfile(){
+  if(!state.user || !state.profile){ toast("Not signed in", "error"); return; }
+  $("#ep-name").value = state.profile.name || "";
+  $("#ep-phone").value = state.profile.phone || "";
+  $("#ep-email").value = state.profile.email || state.user.email || "";
+  const addrBlock = $("#ep-addresses-block");
+  const recvBlock = $("#ep-receivers-block");
+  if(state.role === "customer"){
+    addrBlock.style.display = "block";
+    recvBlock.style.display = "block";
+    renderEpAddresses();
+    renderEpReceivers();
+  } else {
+    addrBlock.style.display = "none";
+    recvBlock.style.display = "none";
+  }
+  openModal("edit-profile-modal");
+}
+
+function renderEpAddresses(){
+  const list = $("#ep-addresses-list");
+  const addrs = state.profile.addresses || [];
+  if(!addrs.length){
+    list.innerHTML = '<div style="font-size:.85rem;color:var(--muted);padding:8px 0">No saved addresses yet.</div>';
+    return;
+  }
+  list.innerHTML = addrs.map((a,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);gap:8px">
+      <div>
+        <strong style="font-size:.9rem">${a.label}</strong>${a.isDefault?' <span class="badge b-delivered" style="margin-left:4px">Default</span>':''}
+        <div style="font-size:.82rem;color:var(--muted)">${a.address}${a.zone?' · '+a.zone:''}</div>
+      </div>
+      <div class="actions-row">
+        ${!a.isDefault?`<button type="button" class="btn-mini primary" onclick="setDefaultAddr(${i})">Default</button>`:''}
+        <button type="button" class="btn-mini danger" onclick="removeEpAddress(${i})">Remove</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function renderEpReceivers(){
+  const list = $("#ep-receivers-list");
+  const recvs = state.profile.savedReceivers || [];
+  if(!recvs.length){
+    list.innerHTML = '<div style="font-size:.85rem;color:var(--muted);padding:8px 0">No saved receivers yet.</div>';
+    return;
+  }
+  list.innerHTML = recvs.map((r,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);gap:8px">
+      <div>
+        <strong style="font-size:.9rem">${r.label||r.name}</strong>
+        <div style="font-size:.82rem;color:var(--muted)">${r.name} · ${r.phone} · ${r.address}</div>
+      </div>
+      <button type="button" class="btn-mini danger" onclick="removeEpReceiver(${i})">Remove</button>
+    </div>
+  `).join("");
+}
+
+window.removeEpAddress = async (i) => {
+  const addrs = [...(state.profile.addresses||[])];
+  addrs.splice(i,1);
+  if(addrs.length && !addrs.some(a=>a.isDefault)) addrs[0].isDefault = true;
+  await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
+  state.profile.addresses = addrs;
+  renderEpAddresses();
+  toast("Address removed", "success");
+};
+window.removeEpReceiver = async (i) => {
+  const recvs = [...(state.profile.savedReceivers||[])];
+  recvs.splice(i,1);
+  await DB.col("users").doc(state.user.uid).update({ savedReceivers: recvs });
+  state.profile.savedReceivers = recvs;
+  renderEpReceivers();
+  toast("Receiver removed", "success");
+};
+
+$("#ep-add-addr") && $("#ep-add-addr").addEventListener("click", async () => {
+  const label = prompt("Address label (e.g. Home, Office)");
+  if(!label) return;
+  const address = prompt("Full address"); if(!address) return;
+  const zone = prompt("Zone (optional)") || "";
+  const addrs = [...(state.profile.addresses||[]), {label, address, zone, isDefault: (state.profile.addresses||[]).length===0}];
+  await DB.col("users").doc(state.user.uid).update({ addresses: addrs });
+  state.profile.addresses = addrs;
+  renderEpAddresses();
+  toast("Address added", "success");
+});
+
+$("#ep-add-recv") && $("#ep-add-recv").addEventListener("click", async () => {
+  const label = prompt("Label (e.g. Office - Chidi)"); if(!label) return;
+  const name = prompt("Receiver full name"); if(!name) return;
+  const phone = prompt("Receiver phone"); if(!phone) return;
+  const address = prompt("Receiver address"); if(!address) return;
+  const zone = prompt("Zone (optional)") || "";
+  const recvs = [...(state.profile.savedReceivers||[]), {label, name, phone, address, zone}];
+  await DB.col("users").doc(state.user.uid).update({ savedReceivers: recvs });
+  state.profile.savedReceivers = recvs;
+  renderEpReceivers();
+  toast("Receiver added", "success");
+});
+
+$("#edit-profile-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const name = $("#ep-name").value.trim();
+  const phone = $("#ep-phone").value.trim();
+  if(!name){ toast("Name cannot be empty", "error"); return; }
+  try {
+    await DB.col("users").doc(state.user.uid).update({ name, phone });
+    if(state.role === "rider"){
+      await DB.col("riders").doc(state.user.uid).set({ name, phone }, { merge: true });
+    }
+    state.profile.name = name;
+    state.profile.phone = phone;
+    $("#user-name").textContent = name;
+    $("#user-avatar").textContent = (name||"U")[0].toUpperCase();
+    closeModal("edit-profile-modal");
+    toast("Profile updated ✔", "success");
+  } catch(err){
+    toast(err.message || "Update failed", "error");
+  }
+});
+
+/* ============ BOOKING ============ */
+function openBooking(){
+  const z = ZONES.map(x=>`<option>${x}</option>`).join("");
+  $("#b-pickup").innerHTML = z; $("#b-drop").innerHTML = z;
+  $("#b-drop").value = ZONES[2];
+
+  const addrs = state.profile?.addresses || [];
+  const def = addrs.find(a=>a.isDefault) || (addrs.length===1?addrs[0]:null);
+  if(def){
+    if(def.zone) $("#b-pickup").value = def.zone;
+    $("#b-paddr").value = def.address || "";
+  } else if(addrs.length===0){
+    $("#b-paddr").value = "";
+  }
+
+  const pr = state.prefillReceiver;
+  const note = $("#b-receiver-uid-note");
+  if(pr){
+    $("#b-rname").value = pr.name || "";
+    $("#b-rphone").value = pr.phone || "";
+    if(pr.address) $("#b-daddr").value = pr.address;
+    note.style.display = "block";
+    note.innerHTML = `This delivery is going to <strong>${pr.name||"a Mimi's customer"}</strong>${pr.receivingCode?` · code <code>${pr.receivingCode}</code>`:""}.`;
+  } else {
+    note.style.display = "none";
+    note.innerHTML = "";
+  }
+
+  const upd = () => {
+    const r = calcPrice({pickup:$("#b-pickup").value, drop:$("#b-drop").value, type:$("#b-type").value, heavy:$("#b-heavy").value});
+    $("#b-price").textContent = fmt(r.price);
+    $("#b-breakdown").innerHTML = r.breakdown.join(" + ");
+  };
+  ["b-pickup","b-drop","b-type","b-heavy"].forEach(id=>$("#"+id).onchange=upd);
+  upd();
+
+  $("#b-paddr-saved").onclick = pickSavedAddressForPickup;
+  $("#b-rname-saved").onclick = pickSavedReceiver;
+
+  // Bank transfer block
+  const paySel = $("#b-pay");
+  paySel.onchange = () => renderBankBlock();
+  renderBankBlock();
+
+  openModal("book-modal");
+}
+
+function renderBankBlock(){
+  const block = $("#b-bank-block");
+  if(!block) return;
+  if($("#b-pay").value !== "transfer"){ block.style.display = "none"; block.innerHTML = ""; return; }
+  const b = state.settings.bank || {};
+  const price = $("#b-price").textContent || "₦0";
+  block.style.display = "block";
+  block.innerHTML = `
+    <div class="bank-block">
+      <div style="font-weight:700;margin-bottom:8px">Transfer to:</div>
+      <div class="row"><span class="l">Bank</span><span class="v">${b.name||"-"}</span></div>
+      <div class="row"><span class="l">Account Number</span><span class="v">${b.accountNumber||"-"}</span></div>
+      <div class="row"><span class="l">Account Name</span><span class="v">${b.accountName||"-"}</span></div>
+      <div class="row"><span class="l">Amount</span><span class="v">${price}</span></div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:8px">After transferring, click "Place Order" and mark "I have paid" in the order. Admin will verify.</div>
+    </div>`;
+}
+
+function pickSavedAddressForPickup(){
+  const addrs = state.profile?.addresses || [];
+  if(!addrs.length){ toast("No saved addresses yet. Add one in Addresses & Receivers.","info"); return; }
+  showPicker("Pick a saved pickup", addrs.map(a=>({label:a.label, sub:`${a.address}${a.zone?' · '+a.zone:''}`})), (i)=>{
+    const a = addrs[i];
+    if(a.zone) $("#b-pickup").value = a.zone;
+    $("#b-paddr").value = a.address || "";
+  });
+}
+
+function pickSavedReceiver(){
+  const recvs = state.profile?.savedReceivers || [];
+  if(!recvs.length){ toast("No saved receivers yet. Add one in Addresses & Receivers.","info"); return; }
+  showPicker("Pick a saved receiver", recvs.map(r=>({label:r.label||r.name, sub:`${r.name} · ${r.phone} · ${r.address}`})), (i)=>{
+    const r = recvs[i];
+    $("#b-rname").value = r.name || "";
+    $("#b-rphone").value = r.phone || "";
+    if(r.address) $("#b-daddr").value = r.address;
+    if(r.zone) $("#b-drop").value = r.zone;
+    toast("Receiver filled","success");
+  });
+}
+
+function showPicker(title, items, onPick){
+  const existing = document.getElementById("picker-modal");
+  if(existing) existing.remove();
+  const bg = document.createElement("div");
+  bg.className = "modal-bg open"; bg.id = "picker-modal";
+  bg.innerHTML = `
+    <div class="modal">
+      <div class="modal-head"><h3>${title}</h3><button class="x" onclick="document.getElementById('picker-modal').remove()">×</button></div>
+      <div class="modal-body">
+        ${items.map((it,i)=>`<div style="padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer" data-i="${i}">
+          <strong style="font-size:.92rem">${it.label}</strong>
+          <div style="font-size:.82rem;color:var(--muted)">${it.sub||""}</div>
+        </div>`).join("")}
+      </div>
+    </div>`;
+  document.body.appendChild(bg);
+  bg.querySelectorAll("[data-i]").forEach(el => el.onclick = () => {
+    onPick(+el.dataset.i);
+    bg.remove();
+  });
+  bg.addEventListener("click", e => { if(e.target===bg) bg.remove(); });
+}
+
+$("#book-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if(!state.user || state.role!=="customer"){ toast("Login as customer to book", "error"); return; }
+  const pickup = $("#b-pickup").value, drop = $("#b-drop").value;
+  const r = calcPrice({pickup, drop, type:$("#b-type").value, heavy:$("#b-heavy").value});
+  const pr = state.prefillReceiver || {};
+  const saveRecv = $("#b-save-recv").checked;
+  const order = {
+    customerId: state.user.uid,
+    customerName: state.profile.name || state.profile.email,
+    customerPhone: state.profile.phone || "",
+    receiverId: pr.uid || null,
+    receiverReceivingCode: pr.receivingCode || null,
+    pickupZone: pickup, dropZone: drop,
+    pickupAddr: $("#b-paddr").value, dropAddr: $("#b-daddr").value,
+    receiverName: $("#b-rname").value, receiverPhone: $("#b-rphone").value,
+    package: $("#b-pkg").value, notes: $("#b-notes").value,
+    type: $("#b-type").value, payment: $("#b-pay").value,
+    scheduledAt: $("#b-sched").value || null,
+    heavy: $("#b-heavy").value, price: r.price, distance: r.km,
+    status: "pending", createdAt: now(),
+    pickupOtp: String(Math.floor(1000+Math.random()*9000)),
+    deliveryOtp: String(Math.floor(1000+Math.random()*9000)),
+    riderId: null, riderName: null,
+    paymentClaimed: false,
+    history: [{at: now(), status:"pending", note:"Order created"}]
+  };
+  const ref = await DB.col("orders").add(order);
+  sendOtpSms({ ...order, id: ref.id });
+
+  if(saveRecv){
+    const recvs = [...(state.profile.savedReceivers||[])];
+    const exists = recvs.find(x => x.phone === order.receiverPhone);
+    if(!exists){
+      recvs.push({
+        label: order.receiverName || "Saved",
+        name: order.receiverName,
+        phone: order.receiverPhone,
+        address: order.dropAddr,
+        zone: order.dropZone,
+        receiverId: order.receiverId || undefined
+      });
+      await DB.col("users").doc(state.user.uid).update({ savedReceivers: recvs });
+      state.profile.savedReceivers = recvs;
+    }
+  }
+
+  toast("Order placed ✔  ID: "+ref.id.slice(0,8), "success");
+  closeModal("book-modal");
+  state.prefillReceiver = null;
+  state.dashTab="orders"; renderDashboard();
+});
+
+function sendOtpSms(order){
+  try {
+    const trackingUrl = `${location.origin}${location.pathname}?receipt=${order.id}`;
+    console.log("[SMS hook] → customer", order.customerPhone, "pickup OTP:", order.pickupOtp);
+    console.log("[SMS hook] → receiver", order.receiverPhone, "delivery OTP:", order.deliveryOtp, "tracking:", trackingUrl);
+  } catch(e){ console.warn("SMS hook failed", e); }
+}
+
+/* ============ ORDER DETAIL MODAL ============ */
+function viewOrder(id){
+  DB.col("orders").doc(id).onSnapshot(snap => {
+    if(!snap.exists){ closeModal("order-modal"); return; }
+    const o = {id: snap.id, ...snap.data()};
+    $("#om-title").textContent = "Order " + o.id.slice(0,8);
+    $("#om-body").innerHTML = renderOrderDetail(o);
+    bindOrderActions(o);
+    attachLiveFeed(o);
+  });
+  openModal("order-modal");
+}
+
+function renderOrderDetail(o){
+  const steps = ["pending","confirmed","assigned","picked","transit","delivered"];
+  const cur = steps.indexOf(o.status);
+  const isAdmin = state.role==="admin";
+  const isRider = state.role==="rider" && o.riderId===state.user.uid;
+  const isCust = state.role==="customer" && o.customerId===state.user.uid;
+  const isRecv = state.role==="customer" && o.receiverId===state.user.uid && !isCust;
+  const ridersList = state.riders.filter(r=>r.verified !== false);
+  const rider = o.riderId ? state.riders.find(r=>r.id===o.riderId) : null;
+
+  let actions = "";
+  if(isAdmin){
+    actions = `
+      <div class="actions-row" style="margin-top:14px">
+        ${o.status==="pending"?`<button class="btn-mini ok" data-act="confirm">Confirm</button><button class="btn-mini danger" data-act="reject">Reject</button>`:""}
+        ${o.status!=="delivered" && o.status!=="failed" ? `<select class="select" id="assign-rider" style="max-width:200px"><option value="">— Assign rider —</option>${ridersList.map(r=>`<option value="${r.id}" ${o.riderId===r.id?'selected':''}>${r.name||r.id}</option>`).join("")}</select><button class="btn-mini primary" data-act="assign">Assign</button>`:""}
+        <a class="btn-mini" href="tel:${o.customerPhone}">📞 Call customer</a>
+        <button class="btn-mini" data-act="paid">Mark Paid</button>
+        ${o.paymentClaimed && !o.paid?`<button class="btn-mini ok" data-act="verify-payment">Verify Payment Claim</button>`:""}
+        ${o.status==="delivered"?`<button class="btn-mini primary" data-act="receipt">📄 Receipt</button>`:""}
+      </div>`;
+  } else if(isRider){
+    actions = `<div class="actions-row" style="margin-top:14px">
+      ${o.status==="assigned"?`<button class="btn-mini primary" data-act="accept">Accept Job</button><button class="btn-mini danger" data-act="decline">Decline</button>`:""}
+      ${o.status==="confirmed" || o.status==="assigned"?`<button class="btn-mini primary" data-act="pickup">Verify Pickup (OTP)</button>`:""}
+      ${o.status==="picked"?`<button class="btn-mini primary" data-act="transit">Start Transit</button>`:""}
+      ${o.status==="transit"?`<button class="btn-mini ok" data-act="deliver">Verify Delivery (OTP)</button>`:""}
+      ${!["delivered","failed"].includes(o.status)?`<button class="btn-mini danger" data-act="fail">Mark Failed</button>`:""}
+      <a class="btn-mini" target="_blank" href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(o.pickupAddr)}&destination=${encodeURIComponent(o.dropAddr)}">🗺️ Navigate</a>
+      ${o.status==="delivered"?`<button class="btn-mini primary" data-act="receipt">📄 Receipt</button>`:""}
+    </div>`;
+  } else if(isCust || isRecv){
+    actions = `<div class="actions-row" style="margin-top:14px">
+      ${isCust && o.status==="delivered" && !o.rating?`<button class="btn-mini primary" data-act="rate">Rate rider</button>`:""}
+      ${isCust && o.payment==="transfer" && !o.paid && !o.paymentClaimed?`<button class="btn-mini ok" data-act="claim-paid">I have paid</button>`:""}
+      ${isCust && o.payment==="transfer" && o.paymentClaimed && !o.paid?`<span class="badge b-pending" style="padding:6px 12px">Payment verification pending</span>`:""}
+      <button class="btn-mini danger" data-act="report">Report issue</button>
+      ${o.riderId && o.status!=="delivered" ? `<button class="btn-mini primary" data-act="track">📍 Live Track</button>` : ""}
+      ${o.status==="delivered"?`<button class="btn-mini primary" data-act="receipt">📄 Receipt</button>`:""}
+    </div>`;
+  }
+
+  const showSenderOtp   = isAdmin || isCust;
+  const showReceiverOtp = isAdmin || (isRecv && (o.status==="picked" || o.status==="transit"));
+
+  let riderCard = "";
+  if(rider){
+    riderCard = `
+      <h4 style="margin:12px 0 6px">Rider</h4>
+      <div class="rider-card">
+        ${rider.photoUrl ? `<img class="rphoto" src="${rider.photoUrl}" alt="">` : `<div class="avatar rphoto" style="display:grid;place-items:center">${(rider.name||"R")[0].toUpperCase()}</div>`}
+        <div class="rmeta">
+          <div class="rname">${rider.name||o.riderName||"Rider"}</div>
+          <div>${rider.vehicleType||""} ${rider.vehicleMake?`· ${rider.vehicleMake} ${rider.vehicleModel||""}`:""}</div>
+          <div>${rider.plateNumber?`Plate: ${rider.plateNumber}`:""} ${rider.mainZone?`· ${rider.mainZone}`:""}</div>
+          <div>${(rider.rating||4.8).toFixed(1)}★ · ${rider.deliveries||0} deliveries</div>
+        </div>
+      </div>`;
+  } else if(o.riderName){
+    riderCard = `<h4 style="margin:12px 0 6px">Rider</h4><p style="margin:2px 0;font-size:.9rem">${o.riderName}</p>`;
+  } else {
+    riderCard = `<h4 style="margin:12px 0 6px">Rider</h4><p style="margin:2px 0;font-size:.9rem"><span style="color:var(--muted)">Unassigned</span></p>`;
+  }
+
+  const showLiveFeed = (isCust || isRecv || isAdmin) && o.status === "transit";
+
+  return `
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <div>
+      <h4 style="margin-bottom:6px">Route</h4>
+      <p style="margin:0"><strong>${o.pickupZone}</strong> → <strong>${o.dropZone}</strong></p>
+      <p style="font-size:.82rem;color:var(--muted)">${o.pickupAddr} → ${o.dropAddr}</p>
+      <div style="background:linear-gradient(135deg,#e0f2fe,#dbeafe);border-radius:12px;height:180px;display:grid;place-items:center;color:#475569;font-size:.9rem;position:relative;overflow:hidden;margin-top:10px">
+        <div style="position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 20px,rgba(255,255,255,.4) 20px,rgba(255,255,255,.4) 21px)"></div>
+        <span style="position:relative;z-index:1">🗺️ Live route preview</span>
+      </div>
+    </div>
+    <div>
+      <h4 style="margin-bottom:6px">Details</h4>
+      <p style="margin:2px 0;font-size:.9rem"><strong>Status:</strong> <span class="badge b-${o.status}">${o.status}</span></p>
+      <p style="margin:2px 0;font-size:.9rem"><strong>Type:</strong> ${o.type} · <strong>Payment:</strong> ${o.payment} <span class="badge ${o.paid?'b-delivered':'b-pending'}">${o.paid?'Paid':'Unpaid'}</span></p>
+      <p style="margin:2px 0;font-size:.9rem"><strong>Price:</strong> ${fmt(o.price)}</p>
+      <p style="margin:2px 0;font-size:.9rem"><strong>Distance:</strong> ~${o.distance} km</p>
+      <p style="margin:2px 0;font-size:.9rem"><strong>Package:</strong> ${o.package}</p>
+      ${o.notes?`<p style="margin:2px 0;font-size:.85rem;color:var(--muted)">Note: ${o.notes}</p>`:""}
+      ${o.payment==="transfer" && !o.paid && isAdmin?`<p style="margin:6px 0;font-size:.85rem;color:#b45309">⚠ Bank transfer — verify payment claim before marking paid.</p>`:""}
+    </div>
+  </div>
+  <hr style="border:0;border-top:1px solid var(--line);margin:16px 0">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+    <div>
+      <h4 style="margin-bottom:6px">Sender</h4>
+      <p style="margin:2px 0;font-size:.9rem">${o.customerName||"—"}<br><span style="color:var(--muted)">${o.customerPhone||"—"}</span></p>
+      <h4 style="margin:12px 0 6px">Receiver</h4>
+      <p style="margin:2px 0;font-size:.9rem">${o.receiverName}<br><span style="color:var(--muted)">${o.receiverPhone}</span>${o.receiverReceivingCode?`<br><span style="font-size:.78rem;color:var(--muted)">Code: ${o.receiverReceivingCode}</span>`:""}</p>
+      ${riderCard}
+      ${showSenderOtp?`<div class="alert info" style="margin-top:10px"><strong>Your Pickup OTP:</strong> ${o.pickupOtp}<div style="font-size:.78rem;color:var(--muted);margin-top:4px">Give this to the rider when they arrive to pick up the package.</div></div>`:""}
+      ${showReceiverOtp?`<div class="alert success" style="margin-top:10px"><strong>Your Delivery OTP:</strong> ${o.deliveryOtp}<div style="font-size:.78rem;color:var(--muted);margin-top:4px">Share this with the rider only when you physically receive the package.</div></div>`:""}
+    </div>
+    <div>
+      <h4 style="margin-bottom:6px">Timeline</h4>
+      <div class="timeline">
+        ${steps.map((s,i)=>`<div class="tl-step ${i<cur?'done':''} ${i===cur?'current':''}"><div style="display:flex;flex-direction:column;align-items:center"><div class="tl-dot"></div>${i<steps.length-1?'<div class="tl-line"></div>':''}</div><div class="tl-content" style="padding-bottom:10px"><div class="t" style="text-transform:capitalize">${s}</div></div></div>`).join("")}
+      </div>
+      ${showLiveFeed?`<h4 style="margin:14px 0 6px">Live Rider Updates</h4><div class="live-feed" id="live-feed"><div class="live-feed-item"><span class="lt">${new Date().toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})}</span> Watching for updates…</div></div>`:""}
+    </div>
+  </div>
+  ${actions}
+  `;
+}
+
+function bindOrderActions(o){
+  $$("#om-body [data-act]").forEach(b => b.addEventListener("click", async () => {
+    const act = b.dataset.act;
+    if(act==="confirm"){
+      let upd = { status:"confirmed", history:[...(o.history||[]), {at:now(), status:"confirmed", note:"Confirmed by admin"}] };
+      if(state.settings.autoAssign){
+        const online = state.riders.filter(r=>r.online && r.verified!==false);
+        if(online.length){ const pick = online[0]; upd.riderId=pick.id; upd.riderName=pick.name; upd.status="assigned"; upd.history.push({at:now(), status:"assigned", note:"Auto-assigned to "+pick.name}); }
+      }
+      await DB.col("orders").doc(o.id).update(upd);
+      toast("Order confirmed", "success");
+    }
+    if(act==="reject"){ await DB.col("orders").doc(o.id).update({ status:"failed", failReason:"Rejected by admin", history:[...(o.history||[]),{at:now(),status:"failed",note:"Rejected by admin"}] }); toast("Order rejected", "success"); }
+    if(act==="assign"){
+      const rid = $("#assign-rider").value;
+      if(!rid){ toast("Pick a rider","error"); return; }
+      const r = state.riders.find(x=>x.id===rid);
+      await DB.col("orders").doc(o.id).update({ riderId: rid, riderName: r?.name||rid, status:"assigned", history:[...(o.history||[]),{at:now(),status:"assigned",note:"Assigned to "+(r?.name||rid)}] });
+      toast("Rider assigned", "success");
+    }
+    if(act==="paid"){ await DB.col("orders").doc(o.id).update({ paid:true }); toast("Marked paid","success"); }
+    if(act==="verify-payment"){ await DB.col("orders").doc(o.id).update({ paid:true, paymentClaimed:true, paidAt: now() }); toast("Payment verified ✔","success"); }
+    if(act==="accept"){ await DB.col("orders").doc(o.id).update({ status:"confirmed", history:[...(o.history||[]),{at:now(),status:"confirmed",note:"Rider accepted"}] }); toast("Job accepted","success"); }
+    if(act==="decline"){ await DB.col("orders").doc(o.id).update({ riderId:null, riderName:null, status:"pending", history:[...(o.history||[]),{at:now(),status:"pending",note:"Rider declined"}] }); toast("Declined","success"); }
+    if(act==="pickup"){ promptOtp("Verify Pickup OTP", o.id, async () => { await DB.col("orders").doc(o.id).update({ status:"picked", history:[...(o.history||[]),{at:now(),status:"picked",note:"Picked up"}] }); toast("Pickup verified","success"); }); }
+    if(act==="transit"){ await DB.col("orders").doc(o.id).update({ status:"transit", history:[...(o.history||[]),{at:now(),status:"transit",note:"In transit"}] }); toast("In transit","success"); }
+    if(act==="deliver"){ promptOtp("Verify Delivery OTP", o.id, async () => {
+      const updatePayload = { status:"delivered", deliveredAt: now(), history:[...(o.history||[]),{at:now(),status:"delivered",note:"Delivered ✔"}] };
+      await DB.col("orders").doc(o.id).update(updatePayload);
+      const rider = state.riders.find(r=>r.id===o.riderId);
+      if(rider){ await DB.col("riders").doc(o.riderId).update({ deliveries:(rider.deliveries||0)+1, earnings:(rider.earnings||0)+Math.round((o.price||0)*0.7) }); }
+      toast("Delivered ✔","success");
+      setTimeout(()=>{ generateAndSaveReceipt(o.id); }, 500);
+    }); }
+    if(act==="fail"){ const reason = prompt("Reason for failure?"); if(!reason) return; await DB.col("orders").doc(o.id).update({ status:"failed", failReason: reason, history:[...(o.history||[]),{at:now(),status:"failed",note:reason}] }); toast("Marked failed","success"); }
+    if(act==="rate"){ const r = +prompt("Rate rider 1-5", "5"); if(!r) return; await DB.col("orders").doc(o.id).update({ rating: r }); const rider = state.riders.find(x=>x.id===o.riderId); if(rider){ const all = state.orders.filter(x=>x.riderId===o.riderId && x.rating); const avg = (all.reduce((s,x)=>s+x.rating,0)+r)/(all.length+1); await DB.col("riders").doc(o.riderId).update({ rating: avg }); } toast("Thanks for rating!","success"); }
+    if(act==="claim-paid"){ await DB.col("orders").doc(o.id).update({ paymentClaimed: true, paymentClaimedAt: now() }); toast("Marked as paid — admin will verify","info"); }
+    if(act==="report"){ const msg = prompt("Describe the issue"); if(!msg) return; await DB.col("orders").doc(o.id).update({ report: msg }); toast("Issue reported, support will reach out","success"); }
+    if(act==="track"){ closeModal("order-modal"); openTrackingMap(o.id); }
+    if(act==="receipt"){ closeModal("order-modal"); viewReceipt(o.id); }
+  }));
+}
+
+/* ============ LIVE FEED for order detail ============ */
+function attachLiveFeed(o){
+  // detach old
+  if(state.liveFeedUnsub){ try{ state.liveFeedUnsub(); }catch(e){} state.liveFeedUnsub = null; }
+  state.liveFeedLastNotify = 0;
+  state.liveFeedLastPos = null;
+  if(!o || !o.riderId) return;
+  if(o.status !== "transit") return;
+
+  const feed = document.getElementById("live-feed");
+  if(!feed) return;
+  feed.innerHTML = "";
+
+  const addItem = (text) => {
+    const el = document.createElement("div");
+    el.className = "live-feed-item";
+    el.innerHTML = `<span class="lt">${new Date().toLocaleTimeString("en-NG",{hour:"2-digit",minute:"2-digit"})}</span>${text}`;
+    feed.appendChild(el);
+    feed.scrollTop = feed.scrollHeight;
+  };
+
+  addItem("Watching for rider updates…");
+
+  const handleUpdate = (r) => {
+    if(!r.lat || !r.lng) return;
+    // Compute distance from drop zone (approx)
+    const dropCoords = {
+      "Lagos Island": [6.4550, 3.3841], "Victoria Island": [6.4281, 3.4219],
+      "Lekki": [6.4474, 3.5561], "Ajah": [6.4667, 3.5667], "Ikoyi": [6.4520, 3.4340],
+      "Yaba": [6.5095, 3.3711], "Surulere": [6.5000, 3.3500], "Ikeja": [6.6018, 3.3515],
+      "Mainland": [6.5200, 3.3700], "Apapa": [6.4489, 3.3593], "Festac": [6.4667, 3.2833],
+      "Berger": [6.6500, 3.3667]
+    };
+    const dCoord = dropCoords[o.dropZone] || [6.4550, 3.3841];
+    const km = haversineKm(r.lat, r.lng, dCoord[0], dCoord[1]);
+    const speed = r.speed ? (r.speed * 3.6).toFixed(1) : null;
+
+    // Only push a new item every ~60s OR if distance changed a lot
+    const t = Date.now();
+    let shouldPush = false;
+    let msg = "";
+    if(t - state.liveFeedLastNotify > 60000){
+      shouldPush = true;
+      msg = `Rider is ${km.toFixed(1)} km away${speed?` · ${speed} km/h`:""}`;
+      state.liveFeedLastNotify = t;
+      state.liveFeedLastPos = {lat: r.lat, lng: r.lng};
+      toast(`Delivery update · ${km.toFixed(1)} km away`, "info");
+    }
+    if(shouldPush) addItem(msg);
+  };
+
+  if(FB_READY){
+    state.liveFeedUnsub = DB.col("riders").doc(o.riderId).onSnapshot(snap => {
+      if(!snap.exists) return;
+      handleUpdate(snap.data());
+    });
+  } else {
+    state.liveFeedInterval = setInterval(() => {
+      LOCAL.col("riders").doc(o.riderId).get().then(s => {
+        if(s.exists) handleUpdate(s.data());
+      });
+    }, 5000);
+  }
+}
+
+function haversineKm(lat1, lon1, lat2, lon2){
+  const R = 6371;
+  const toRad = (d)=>d*Math.PI/180;
+  const dLat = toRad(lat2-lat1);
+  const dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+
+/* ============================================================================
+   OTP VERIFICATION
+   ============================================================================ */
+function promptOtp(title, orderId, onOk){
+  $("#otp-title").textContent = title;
+  const who = title.includes('Pickup') ? 'customer' : 'receiver';
+  $("#otp-msg").textContent = `Ask the ${who} for their 4-digit code and enter it below.`;
+  const ins = $$("#otp-modal .otp-input input");
+  ins.forEach((i,idx)=>{ i.value=""; i.oninput=()=>{ if(i.value && idx<3) ins[idx+1].focus(); }; });
+  $("#otp-confirm").onclick = async () => {
+    const code = ins.map(i=>i.value).join("");
+    if(code.length !== 4){ toast("Enter all 4 digits","error"); return; }
+    const field = title.includes("Pickup") ? "pickupOtp" : "deliveryOtp";
+    let expected = null;
+    try {
+      const snap = await DB.col("orders").doc(orderId).get();
+      if(snap.exists){
+        const data = snap.data();
+        expected = data ? data[field] : null;
+      }
+    } catch(e){ console.warn("OTP fetch failed", e); }
+    if(!expected){ toast("Could not verify OTP — try again","error"); return; }
+    if(code === String(expected)){ closeModal("otp-modal"); onOk(); }
+    else toast("Invalid OTP — ask again","error");
+  };
+  openModal("otp-modal");
+}
+
+/* ============ LIVE TRACKING MAP ============ */
+let gpsWatchId = null;
+let trackingUnsubRider = null;
+
+function startRiderGps() {
+  if (!navigator.geolocation) { toast("Geolocation not supported", "error"); return; }
+  if (gpsWatchId !== null) return;
+
+  gpsWatchId = navigator.geolocation.watchPosition(
+    async (pos) => {
+      const { latitude: lat, longitude: lng, heading, speed, accuracy } = pos.coords;
+      try {
+        await DB.col("riders").doc(state.user.uid).set({
+          lat, lng,
+          heading: heading || 0,
+          speed: speed || 0,
+          accuracy: accuracy || 0,
+          lastSeen: Date.now()
+        }, { merge: true });
+      } catch (e) { console.warn("GPS write failed", e); }
+    },
+    (err) => console.warn("GPS error", err),
+    { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 }
+  );
+}
+
+function stopRiderGps() {
+  if (gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(gpsWatchId);
+    gpsWatchId = null;
+  }
+}
+
+function openTrackingMap(orderId) {
+  state.trackingOrderId = orderId;
+  openModal("tracking-modal");
+
+  DB.col("orders").doc(orderId).get().then(async (snap) => {
+    if (!snap.exists) { toast("Order not found", "error"); return; }
+    const o = { id: snap.id, ...snap.data() };
+
+    if (state.trackingMap) { state.trackingMap.remove(); state.trackingMap = null; }
+    if (trackingUnsubRider) { trackingUnsubRider(); trackingUnsubRider = null; }
+
+    const zoneCoords = {
+      "Lagos Island": [6.4550, 3.3841], "Victoria Island": [6.4281, 3.4219],
+      "Lekki": [6.4474, 3.5561], "Ajah": [6.4667, 3.5667], "Ikoyi": [6.4520, 3.4340],
+      "Yaba": [6.5095, 3.3711], "Surulere": [6.5000, 3.3500], "Ikeja": [6.6018, 3.3515],
+      "Mainland": [6.5200, 3.3700], "Apapa": [6.4489, 3.3593], "Festac": [6.4667, 3.2833],
+      "Berger": [6.6500, 3.3667]
+    };
+    const pickupCoord = zoneCoords[o.pickupZone] || [6.4550, 3.3841];
+    const dropCoord   = zoneCoords[o.dropZone]   || [6.4550, 3.3841];
+
+    const midLat = (pickupCoord[0] + dropCoord[0]) / 2;
+    const midLng = (pickupCoord[1] + dropCoord[1]) / 2;
+    state.trackingMap = L.map("tracking-map").setView([midLat, midLng], 12);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
+    }).addTo(state.trackingMap);
+
+    L.marker(pickupCoord, { icon: L.divIcon({ className:"", iconSize:[24,24], iconAnchor:[12,12],
+      html:'<div style="background:#1e3a8a;width:24px;height:24px;border-radius:50%;border:3px solid white;display:grid;place-items:center;color:white;font-size:11px;font-weight:700">P</div>'
+    })}).addTo(state.trackingMap).bindPopup("Pickup: " + o.pickupZone);
+
+    L.marker(dropCoord, { icon: L.divIcon({ className:"", iconSize:[24,24], iconAnchor:[12,12],
+      html:'<div style="background:#f97316;width:24px;height:24px;border-radius:50%;border:3px solid white;display:grid;place-items:center;color:white;font-size:11px;font-weight:700">D</div>'
+    })}).addTo(state.trackingMap).bindPopup("Drop-off: " + o.dropZone);
+
+    fetch(`https://router.project-osrm.org/route/v1/driving/${pickupCoord[1]},${pickupCoord[0]};${dropCoord[1]},${dropCoord[0]}?overview=full&geometries=geojson`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.routes && data.routes[0]) {
+          const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+          L.polyline(coords, { color:"#3b82f6", weight:4, opacity:.7, dashArray:"6,6" }).addTo(state.trackingMap);
+          state.trackingMap.fitBounds(L.latLngBounds(coords), { padding:[40,40] });
+        }
+      })
+      .catch(() => {
+        L.polyline([pickupCoord, dropCoord], { color:"#3b82f6", weight:3, dashArray:"6,6" }).addTo(state.trackingMap);
+      });
+
+    const bikeIcon = L.divIcon({
+      className: "bike-marker", iconSize:[36,36], iconAnchor:[18,18],
+      html: `<div style="background:#f97316;width:36px;height:36px;border-radius:50%;border:3px solid white;box-shadow:0 4px 12px rgba(249,115,22,.5);display:grid;place-items:center">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/>
+          <path d="M15 6a1 1 0 0 1 1-1h2.5a1 1 0 0 1 .8 1.6L15 12l-4-6H8"/>
+          <path d="M12 12l-2 5.5"/>
+        </svg>
+      </div>`
+    });
+    state.trackingMarker = L.marker(pickupCoord, { icon: bikeIcon }).addTo(state.trackingMap);
+
+    if (!o.riderId) {
+      $("#tracking-status").innerHTML = `<div class="alert warn">No rider assigned yet. Waiting…</div>`;
+      return;
+    }
+
+    const ridersRef = DB.col("riders").doc(o.riderId);
+
+    if (FB_READY) {
+      trackingUnsubRider = ridersRef.onSnapshot(snap => {
+        if (!snap.exists) return;
+        const r = snap.data();
+        if (!r.lat || !r.lng) {
+          $("#tracking-status").innerHTML = `<div class="alert warn">Rider hasn't started sharing GPS yet.</div>`;
+          return;
+        }
+        const age = Date.now() - (r.lastSeen || 0);
+        const ageStr = age < 60000 ? `${Math.round(age/1000)}s ago`
+                     : `${Math.round(age/60000)} min ago`;
+        state.trackingMarker.setLatLng([r.lat, r.lng]);
+
+        const el = state.trackingMarker.getElement();
+        if (el && r.heading) {
+          const inner = el.querySelector("div");
+          if (inner) inner.style.transform = `rotate(${r.heading}deg)`;
+        }
+
+        $("#tracking-status").innerHTML = `
+          <div class="alert info">
+            <strong>Order ${o.id.slice(0,8)}</strong> ·
+            <span class="badge b-${o.status}">${o.status}</span> ·
+            ${o.pickupZone} → ${o.dropZone}
+            <div style="margin-top:6px;font-size:.82rem;color:var(--muted)">
+              Rider last seen <strong>${ageStr}</strong>
+              ${r.speed ? ` · Speed: ${(r.speed*3.6).toFixed(1)} km/h` : ""}
+              ${age > 60000 ? ' · <span style="color:#b45309">⚠ Signal may be stale</span>' : ""}
+            </div>
+          </div>`;
+      });
+    } else {
+      setInterval(() => {
+        const snap = LOCAL.col("riders").doc(o.riderId);
+        snap.get().then(s => {
+          if (!s.exists) return;
+          const r = s.data();
+          if (r.lat && r.lng) {
+            state.trackingMarker.setLatLng([r.lat, r.lng]);
+          }
+        });
+      }, 3000);
+    }
+  });
+}
+
+document.getElementById("tracking-modal").addEventListener("click", (e) => {
+  if (e.target.id === "tracking-modal") closeTrackingMap();
+});
+document.querySelector("#tracking-modal .x").addEventListener("click", closeTrackingMap);
+
+function closeTrackingMap() {
+  if (state.trackingMap) {
+    state.trackingMap.remove();
+    state.trackingMap = null;
+  }
+  if (trackingUnsubRider) {
+    trackingUnsubRider();
+    trackingUnsubRider = null;
+  }
+  state.trackingMarker = null;
+  closeModal("tracking-modal");
+}
+
+/* ============================================================================
+   RECEIPTS — PDF, QR, public viewer, auto-save
+   ============================================================================ */
+function buildReceiptLayout(o, rider){
+  const steps = ["pending","confirmed","assigned","picked","transit","delivered"];
+  const history = o.history || [];
+  const rows = steps.map(s=>{
+    const ev = history.find(h=>h.status===s) || history.filter(h=>h.status===s).pop();
+    const at = ev?.at;
+    return { label: s.charAt(0).toUpperCase()+s.slice(1), at };
+  });
+  if(!rows.find(r=>r.label==="Pending")?.at && o.createdAt) rows[0].at = o.createdAt;
+  if(!rows.find(r=>r.label==="Delivered")?.at && o.deliveredAt) rows[5].at = o.deliveredAt;
+
+  const withDuration = rows.map((r, i) => {
+    const prev = i>0 ? rows[i-1].at : null;
+    const dur = (prev && r.at) ? Math.round((r.at - prev)/60000) : null;
+    return { ...r, duration: dur };
+  });
+
+  return {
+    orderId: o.id,
+    issuedAt: o.receiptIssuedAt || Date.now(),
+    createdAt: o.createdAt,
+    sender: {
+      name: o.customerName || "-",
+      phone: o.customerPhone || "-",
+      email: o.customerEmail || ""
+    },
+    receiver: {
+      name: o.receiverName || "-",
+      phone: o.receiverPhone || "-",
+      address: o.dropAddr || "-",
+      receivingCode: o.receiverReceivingCode || ""
+    },
+    rider: rider ? {
+      name: rider.name || o.riderName || "-",
+      phone: rider.phone || "-",
+      photoUrl: rider.photoUrl || "",
+      vehicle: `${rider.vehicleType||""} ${rider.vehicleMake||""} ${rider.vehicleModel||""} ${rider.vehicleYear?"("+rider.vehicleYear+")":""} ${rider.vehicleColor||""}`.trim() || "-",
+      plate: rider.plateNumber || "-",
+      zone: rider.mainZone || "-",
+      rating: (rider.rating||4.8).toFixed(1)
+    } : (o.riderName ? { name:o.riderName, phone:"-", photoUrl:"", vehicle:"-", plate:"-", zone:"-", rating:"-" } : null),
+    route: {
+      pickupZone: o.pickupZone || "-",
+      dropZone: o.dropZone || "-",
+      pickupAddr: o.pickupAddr || "-",
+      dropAddr: o.dropAddr || "-",
+      distance: o.distance || 0
+    },
+    pkg: {
+      description: o.package || "-",
+      type: o.type || "regular",
+      heavy: o.heavy === "yes" ? "Yes" : "No",
+      notes: o.notes || ""
+    },
+    payment: {
+      price: o.price || 0,
+      method: o.payment || "cod",
+      paid: !!o.paid
+    },
+    timeline: withDuration,
+    trackingUrl: `${location.origin}${location.pathname}?receipt=${o.id}`
+  };
+}
+
+async function loadImageAsDataURL(url){
+  if(!url) return null;
+  try {
+    const res = await fetch(url, { mode:"cors" });
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch(e){ console.warn("Image fetch failed", e); return null; }
+}
+
+async function buildReceiptPDF(orderId){
+  const snap = await DB.col("orders").doc(orderId).get();
+  if(!snap.exists) throw new Error("Order not found");
+  const o = { id: snap.id, ...snap.data() };
+  const rider = o.riderId ? state.riders.find(r=>r.id===o.riderId) : null;
+  const L = buildReceiptLayout(o, rider);
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:"pt", format:"a4" });
+  const W = doc.internal.pageSize.getWidth();
+  const M = 40;
+  let y = 0;
+
+  doc.setFillColor(30, 58, 138);
+  doc.rect(0, 0, W, 90, "F");
+  doc.setFillColor(249, 115, 22);
+  doc.rect(0, 90, W, 5, "F");
+
+  doc.setFillColor(255,255,255);
+  doc.roundedRect(M, 24, 42, 42, 8, 8, "F");
+  doc.setFillColor(30,58,138);
+  doc.roundedRect(M+4, 28, 34, 34, 6, 6, "F");
+  doc.setTextColor(255,255,255);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(18);
+  doc.text("M", M+21, 50, { align:"center" });
+
+  doc.setFontSize(20);
+  doc.text("MIMI'S DELIVERY", M+56, 46);
+  doc.setFontSize(9);
+  doc.setFont("helvetica","normal");
+  doc.text("Fast & Reliable Delivery across Lagos", M+56, 62);
+
+  doc.setFontSize(8);
+  doc.text("hello@mimisdelivery.ng", W-M, 30, { align:"right" });
+  doc.text("+234 800 000 0000", W-M, 42, { align:"right" });
+  doc.text("mimisdelivery.ng · Lagos, Nigeria", W-M, 54, { align:"right" });
+
+  y = 130;
+
+  doc.setTextColor(10,26,43);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(22);
+  doc.text("DELIVERY RECEIPT", M, y);
+  doc.setFontSize(11);
+  doc.setFont("helvetica","normal");
+  doc.setTextColor(107,123,141);
+  doc.text("Order #" + L.orderId.slice(0,10).toUpperCase(), M, y+18);
+  doc.text("Issued: " + new Date(L.issuedAt).toLocaleString("en-NG"), W-M, y+18, { align:"right" });
+
+  y += 40;
+
+  const colW = (W - M*2 - 20) / 2;
+  const boxH = 100;
+
+  doc.setFillColor(248,250,252);
+  doc.roundedRect(M, y, colW, boxH, 8, 8, "F");
+  doc.roundedRect(M+colW+20, y, colW, boxH, 8, 8, "F");
+
+  doc.setTextColor(107,123,141);
+  doc.setFontSize(9);
+  doc.text("SENDER", M+12, y+18);
+  doc.text("RECEIVER", M+colW+32, y+18);
+
+  doc.setTextColor(10,26,43);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(11);
+  doc.text(L.sender.name, M+12, y+36);
+  doc.text(L.receiver.name, M+colW+32, y+36);
+
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(9);
+  doc.setTextColor(44,62,80);
+  doc.text(L.sender.phone, M+12, y+52);
+  doc.text(L.receiver.phone, M+colW+32, y+52);
+  if(L.sender.email) doc.text(L.sender.email, M+12, y+66);
+  doc.text(doc.splitTextToSize(L.receiver.address, colW-24), M+colW+32, y+66);
+  if(L.receiver.receivingCode){
+    doc.setTextColor(194,65,12);
+    doc.setFont("helvetica","bold");
+    doc.text("Code: " + L.receiver.receivingCode, M+colW+32, y+86);
+  }
+
+  y += boxH + 20;
+
+  if(L.rider){
+    const rBoxH = 100;
+    doc.setFillColor(255,243,230);
+    doc.roundedRect(M, y, W-M*2, rBoxH, 8, 8, "F");
+
+    let photoData = L.rider.photoUrl ? await loadImageAsDataURL(L.rider.photoUrl) : null;
+    if(photoData){
+      try {
+        doc.saveGraphicsState();
+        doc.circle(M+50, y+50, 30, null);
+        doc.clip();
+        doc.discardPath();
+        doc.addImage(photoData, "JPEG", M+20, y+20, 60, 60);
+        doc.restoreGraphicsState();
+      } catch(e){ console.warn("Photo draw failed", e); }
+      doc.setDrawColor(255,255,255);
+      doc.setLineWidth(2);
+      doc.circle(M+50, y+50, 30);
+    } else {
+      doc.setFillColor(226,232,240);
+      doc.circle(M+50, y+50, 30, "F");
+      doc.setTextColor(107,123,141);
+      doc.setFontSize(20);
+      doc.setFont("helvetica","bold");
+      doc.text((L.rider.name||"R")[0].toUpperCase(), M+50, y+57, { align:"center" });
+    }
+
+    doc.setTextColor(194,65,12);
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(9);
+    doc.text("YOUR RIDER", M+100, y+22);
+
+    doc.setTextColor(10,26,43);
+    doc.setFontSize(13);
+    doc.text(L.rider.name, M+100, y+42);
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(9);
+    doc.setTextColor(44,62,80);
+    doc.text(`Phone: ${L.rider.phone}`, M+100, y+58);
+    doc.text(`Vehicle: ${L.rider.vehicle}`, M+100, y+72);
+    doc.text(`Plate: ${L.rider.plate}  ·  Zone: ${L.rider.zone}`, M+100, y+86);
+
+    doc.text(`Rating: ${L.rider.rating} ★`, W-M-12, y+86, { align:"right" });
+
+    y += rBoxH + 20;
+  }
+
+  doc.setFillColor(248,250,252);
+  doc.roundedRect(M, y, W-M*2, 80, 8, 8, "F");
+  doc.setTextColor(107,123,141);
+  doc.setFontSize(9);
+  doc.setFont("helvetica","bold");
+  doc.text("ROUTE", M+12, y+18);
+
+  doc.setTextColor(10,26,43);
+  doc.setFontSize(11);
+  doc.text(`${L.route.pickupZone}  →  ${L.route.dropZone}`, M+12, y+36);
+
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(9);
+  doc.setTextColor(44,62,80);
+  doc.text(doc.splitTextToSize(`From: ${L.route.pickupAddr}`, (W-M*2)/2 - 20), M+12, y+52);
+  doc.text(doc.splitTextToSize(`To: ${L.route.dropAddr}`, (W-M*2)/2 - 20), M+12+(W-M*2)/2, y+52);
+  doc.text(`Approx distance: ~${L.route.distance} km`, M+12, y+74);
+
+  y += 100;
+
+  const halfW = (W - M*2 - 20) / 2;
+  doc.setFillColor(248,250,252);
+  doc.roundedRect(M, y, halfW, 90, 8, 8, "F");
+  doc.roundedRect(M+halfW+20, y, halfW, 90, 8, 8, "F");
+
+  doc.setTextColor(107,123,141);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(9);
+  doc.text("PACKAGE", M+12, y+18);
+  doc.text("PAYMENT", M+halfW+32, y+18);
+
+  doc.setTextColor(10,26,43);
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(10);
+  doc.text(doc.splitTextToSize(L.pkg.description, halfW-24), M+12, y+36);
+  doc.setFontSize(9);
+  doc.setTextColor(44,62,80);
+  doc.text(`Type: ${L.pkg.type}  ·  Heavy: ${L.pkg.heavy}`, M+12, y+62);
+  if(L.pkg.notes) doc.text(doc.splitTextToSize("Notes: " + L.pkg.notes, halfW-24), M+12, y+76);
+
+  doc.setTextColor(10,26,43);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(14);
+  doc.text("TOTAL: " + "N" + L.payment.price.toLocaleString(), M+halfW+32, y+40);
+  doc.setFont("helvetica","normal");
+  doc.setFontSize(9);
+  doc.setTextColor(44,62,80);
+  doc.text(`Method: ${L.payment.method.toUpperCase()}`, M+halfW+32, y+58);
+  doc.setTextColor(L.payment.paid ? 16 : 153, L.payment.paid ? 185 : 27, L.payment.paid ? 129 : 27);
+  doc.text(L.payment.paid ? "PAID" : "UNPAID", M+halfW+32, y+74);
+
+  y += 110;
+
+  doc.setTextColor(10,26,43);
+  doc.setFont("helvetica","bold");
+  doc.setFontSize(11);
+  doc.text("DELIVERY TIMELINE", M, y);
+  y += 14;
+
+  doc.setDrawColor(226,232,240);
+  doc.line(M, y, W-M, y);
+  y += 12;
+
+  doc.setFontSize(9);
+  L.timeline.forEach((row, i) => {
+    doc.setFont("helvetica","bold");
+    doc.setTextColor(30,58,138);
+    doc.text(`${i+1}.`, M, y+10);
+    doc.setTextColor(10,26,43);
+    doc.text(row.label, M+20, y+10);
+
+    doc.setFont("helvetica","normal");
+    doc.setTextColor(44,62,80);
+    if(row.at){
+      doc.text(new Date(row.at).toLocaleString("en-NG"), W-M-100, y+10, { align:"right" });
+    } else {
+      doc.setTextColor(148,163,184);
+      doc.text("—", W-M-100, y+10, { align:"right" });
+    }
+    if(row.duration != null){
+      doc.setTextColor(107,123,141);
+      doc.text(`+${row.duration} min`, W-M, y+10, { align:"right" });
+    }
+    y += 16;
+  });
+
+  y += 10;
+
+  const qrUrl = L.trackingUrl;
+  let qrDataUrl = "";
+  try {
+    qrDataUrl = await generateQRDataURL(qrUrl);
+  } catch(e){ console.warn("QR failed", e); }
+
+  if(qrDataUrl){
+    doc.addImage(qrDataUrl, "PNG", W-M-100, y, 90, 90);
+    doc.setFontSize(7);
+    doc.setTextColor(107,123,141);
+    doc.text("Scan to view receipt online", W-M-55, y+100, { align:"center" });
+  }
+
+  doc.setFontSize(8);
+  doc.setTextColor(107,123,141);
+  const footerX = M;
+  const footerY = y + 20;
+  doc.text("Electronically generated receipt.", footerX, footerY);
+  doc.text("Pickup and delivery verified via one-time codes.", footerX, footerY+12);
+  doc.text("No signature required.", footerX, footerY+24);
+  doc.text("Ref: " + L.orderId.toUpperCase().slice(0,14) + "-" + L.createdAt, footerX, footerY+42);
+
+  const bottomY = doc.internal.pageSize.getHeight() - 26;
+  doc.setDrawColor(226,232,240);
+  doc.line(M, bottomY-10, W-M, bottomY-10);
+  doc.setFontSize(8);
+  doc.setTextColor(107,123,141);
+  doc.text(`© ${new Date().getFullYear()} Mimi's Delivery · Lagos, Nigeria`, M, bottomY);
+  doc.text(`Order ${L.orderId}`, W-M, bottomY, { align:"right" });
+
+  return doc;
+}
+
+function generateQRDataURL(text){
+  return new Promise((resolve, reject)=>{
+    try {
+      const tmp = document.createElement("div");
+      tmp.style.position = "absolute";
+      tmp.style.left = "-9999px";
+      document.body.appendChild(tmp);
+      new QRCode(tmp, { text, width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
+      setTimeout(()=>{
+        try {
+          const canvas = tmp.querySelector("canvas");
+          const img = tmp.querySelector("img");
+          if(canvas){ const d = canvas.toDataURL("image/png"); tmp.remove(); resolve(d); }
+          else if(img && img.src){ const s = img.src; tmp.remove(); resolve(s); }
+          else { tmp.remove(); reject("no QR element"); }
+        } catch(e){ tmp.remove(); reject(e); }
+      }, 60);
+    } catch(e){ reject(e); }
+  });
+}
+
+async function generateAndSaveReceipt(orderId){
+  try {
+    const doc = await buildReceiptPDF(orderId);
+    const blob = doc.output("blob");
+    let url = "";
+    if(FB_READY && storage){
+      try {
+        const ref = storage.ref().child("receipts/"+orderId+".pdf");
+        await ref.put(blob);
+        url = await ref.getDownloadURL();
+      } catch(e){ console.warn("Receipt upload failed", e); }
+    }
+    await DB.col("orders").doc(orderId).set({ receiptUrl:url, receiptIssuedAt: now() }, { merge:true });
+    console.log("[Receipt] saved for", orderId, url || "(local only)");
+  } catch(e){ console.warn("Receipt generation failed", e); }
+}
+
+async function downloadReceiptPDF(orderId){
+  try {
+    const doc = await buildReceiptPDF(orderId);
+    doc.save("MimiReceipt_" + orderId.slice(0,8) + ".pdf");
+    toast("Receipt downloaded ✔","success");
+  } catch(e){ console.warn(e); toast("Could not generate receipt","error"); }
+}
+
+async function viewReceipt(orderId){
+  openModal("receipt-modal");
+  const body = $("#receipt-content");
+  body.innerHTML = '<div class="empty">Loading receipt…</div>';
+  try {
+    const snap = await DB.col("orders").doc(orderId).get();
+    if(!snap.exists){ body.innerHTML = '<div class="alert warn">Order not found.</div>'; return; }
+    const o = { id: snap.id, ...snap.data() };
+    const rider = o.riderId ? state.riders.find(r=>r.id===o.riderId) : null;
+    const L = buildReceiptLayout(o, rider);
+
+    body.innerHTML = `
+      <div class="receipt-shell">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--accent);padding-bottom:14px;margin-bottom:16px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="brand-mark" style="width:44px;height:44px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7h13v10H3z"/></svg></div>
+            <div>
+              <div style="font-family:var(--font-head);font-weight:800;font-size:1.15rem">MIMI'S DELIVERY</div>
+              <div style="font-size:.78rem;color:var(--muted)">Fast & Reliable Delivery across Lagos</div>
+            </div>
+          </div>
+          <div style="text-align:right;font-size:.78rem;color:var(--muted)">
+            hello@mimisdelivery.ng<br>+234 800 000 0000<br>mimisdelivery.ng
+          </div>
+        </div>
+        <h2 style="margin:0 0 4px">DELIVERY RECEIPT</h2>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:14px">
+          Order <strong>#${L.orderId.slice(0,10).toUpperCase()}</strong> · Issued ${new Date(L.issuedAt).toLocaleString("en-NG")}
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em">SENDER</div>
+            <div style="font-weight:700;margin-top:4px">${L.sender.name}</div>
+            <div style="font-size:.85rem">${L.sender.phone}</div>
+            <div style="font-size:.8rem;color:var(--muted)">${L.sender.email||""}</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em">RECEIVER</div>
+            <div style="font-weight:700;margin-top:4px">${L.receiver.name}</div>
+            <div style="font-size:.85rem">${L.receiver.phone}</div>
+            <div style="font-size:.8rem;color:var(--muted)">${L.receiver.address}</div>
+            ${L.receiver.receivingCode?`<div style="font-size:.78rem;color:#c2410c;font-weight:700;margin-top:4px">Code: ${L.receiver.receivingCode}</div>`:""}
+          </div>
+        </div>
+
+        ${L.rider ? `
+        <div style="background:var(--brand-soft);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;gap:14px;align-items:center">
+          ${L.rider.photoUrl ? `<img src="${L.rider.photoUrl}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #fff">` : `<div class="avatar" style="width:56px;height:56px;display:grid;place-items:center;font-size:1.1rem">${(L.rider.name||"R")[0].toUpperCase()}</div>`}
+          <div style="flex:1">
+            <div style="font-size:.72rem;color:#c2410c;font-weight:700;letter-spacing:.06em">YOUR RIDER</div>
+            <div style="font-weight:700">${L.rider.name}</div>
+            <div style="font-size:.85rem">${L.rider.vehicle} ${L.rider.plate && L.rider.plate!=='-'?'· '+L.rider.plate:''}</div>
+            <div style="font-size:.82rem;color:var(--muted)">${L.rider.phone} · ${L.rider.zone} · ${L.rider.rating}★</div>
+          </div>
+        </div>` : ""}
+
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:14px">
+          <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em">ROUTE</div>
+          <div style="font-weight:700;margin:4px 0">${L.route.pickupZone} → ${L.route.dropZone}</div>
+          <div style="font-size:.85rem">${L.route.pickupAddr} → ${L.route.dropAddr}</div>
+          <div style="font-size:.82rem;color:var(--muted)">Approx distance: ~${L.route.distance} km</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em">PACKAGE</div>
+            <div style="margin-top:4px">${L.pkg.description}</div>
+            <div style="font-size:.82rem;color:var(--muted)">Type: ${L.pkg.type} · Heavy: ${L.pkg.heavy}</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em">PAYMENT</div>
+            <div style="font-family:var(--font-head);font-weight:800;font-size:1.3rem;margin-top:4px">₦${L.payment.price.toLocaleString()}</div>
+            <div style="font-size:.82rem;color:var(--muted)">Method: ${L.payment.method.toUpperCase()} · ${L.payment.paid?'PAID':'UNPAID'}</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.06em;margin-bottom:6px">DELIVERY TIMELINE</div>
+          <div style="font-size:.85rem">
+            ${L.timeline.map((row,i)=>`
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0">
+                <span>${i+1}. ${row.label}</span>
+                <span style="color:var(--muted)">${row.at?new Date(row.at).toLocaleString("en-NG"):"—"}${row.duration!=null?` · +${row.duration}m`:""}</span>
+              </div>`).join("")}
+          </div>
+        </div>
+
+        <div style="display:flex;gap:16px;align-items:center;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)">
+          <div id="receipt-qr" style="flex-shrink:0"></div>
+          <div style="font-size:.78rem;color:var(--muted)">
+            <div>Electronically generated receipt.</div>
+            <div>Pickup and delivery verified via one-time codes.</div>
+            <div style="margin-top:6px">Ref: <code>${L.orderId.toUpperCase().slice(0,14)}-${L.createdAt}</code></div>
+            <div style="margin-top:6px"><a href="${L.trackingUrl}" target="_blank" style="color:var(--brand)">${L.trackingUrl}</a></div>
+          </div>
+        </div>
+        <div style="margin-top:18px;font-size:.78rem;color:var(--muted);text-align:center;border-top:1px solid var(--line);padding-top:10px">
+          © ${new Date().getFullYear()} Mimi's Delivery · Lagos, Nigeria · Order ${L.orderId}
+        </div>
+      </div>`;
+
+    const qrBox = document.getElementById("receipt-qr");
+    if(qrBox){
+      new QRCode(qrBox, { text: L.trackingUrl, width: 90, height: 90, correctLevel: QRCode.CorrectLevel.M });
+    }
+
+    $("#receipt-download").onclick = () => downloadReceiptPDF(orderId);
+  } catch(e){
+    console.warn(e);
+    body.innerHTML = '<div class="alert warn">Could not load receipt.</div>';
+  }
+}
+
+async function openPublicReceipt(orderId){
+  $("#public-site").style.display = "block";
+  $("#app-shell").classList.remove("active");
+  const root = $("#page-root");
+  root.innerHTML = `<section><div class="container" style="max-width:820px">
+    <div class="section-head"><span class="eyebrow">Receipt</span><h2>Delivery Receipt</h2></div>
+    <div id="public-receipt-body"><div class="empty">Loading receipt…</div></div>
+  </div></section>`;
+  await viewReceiptPublic(orderId, "#public-receipt-body");
+}
+
+async function viewReceiptPublic(orderId, container){
+  try {
+    const snap = await DB.col("orders").doc(orderId).get();
+    if(!snap.exists){ document.querySelector(container).innerHTML = '<div class="alert warn">No receipt found for this order.</div>'; return; }
+    const o = { id: snap.id, ...snap.data() };
+    let rider = null;
+    if(o.riderId){
+      try { const rs = await DB.col("riders").doc(o.riderId).get(); if(rs.exists) rider = { id:o.riderId, ...rs.data() }; } catch(e){}
+    }
+    const L = buildReceiptLayout(o, rider);
+    const el = document.querySelector(container);
+    el.innerHTML = `
+      <div class="receipt-shell">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid var(--accent);padding-bottom:14px;margin-bottom:16px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="brand-mark" style="width:44px;height:44px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7h13v10H3z"/></svg></div>
+            <div>
+              <div style="font-family:var(--font-head);font-weight:800;font-size:1.15rem">MIMI'S DELIVERY</div>
+              <div style="font-size:.78rem;color:var(--muted)">Fast & Reliable Delivery across Lagos</div>
+            </div>
+          </div>
+          <div style="text-align:right;font-size:.78rem;color:var(--muted)">hello@mimisdelivery.ng<br>+234 800 000 0000</div>
+        </div>
+        <h2 style="margin:0 0 4px">DELIVERY RECEIPT</h2>
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:14px">Order <strong>#${L.orderId.slice(0,10).toUpperCase()}</strong> · Issued ${new Date(L.issuedAt).toLocaleString("en-NG")}</div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700">SENDER</div>
+            <div style="font-weight:700;margin-top:4px">${L.sender.name}</div>
+            <div style="font-size:.85rem">${L.sender.phone}</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:8px;padding:12px">
+            <div style="font-size:.72rem;color:var(--muted);font-weight:700">RECEIVER</div>
+            <div style="font-weight:700;margin-top:4px">${L.receiver.name}</div>
+            <div style="font-size:.85rem">${L.receiver.phone}</div>
+            <div style="font-size:.8rem;color:var(--muted)">${L.receiver.address}</div>
+          </div>
+        </div>
+
+        ${L.rider ? `
+        <div style="background:var(--brand-soft);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;gap:14px;align-items:center">
+          ${L.rider.photoUrl ? `<img src="${L.rider.photoUrl}" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #fff">` : `<div class="avatar" style="width:56px;height:56px;display:grid;place-items:center">${(L.rider.name||"R")[0].toUpperCase()}</div>`}
+          <div>
+            <div style="font-size:.72rem;color:#c2410c;font-weight:700">YOUR RIDER</div>
+            <div style="font-weight:700">${L.rider.name}</div>
+            <div style="font-size:.85rem">${L.rider.vehicle} ${L.rider.plate&&L.rider.plate!=='-'?'· '+L.rider.plate:''}</div>
+          </div>
+        </div>` : ""}
+
+        <div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:14px">
+          <div style="font-size:.72rem;color:var(--muted);font-weight:700">ROUTE</div>
+          <div style="font-weight:700;margin:4px 0">${L.route.pickupZone} → ${L.route.dropZone}</div>
+          <div style="font-size:.85rem">${L.route.pickupAddr} → ${L.route.dropAddr}</div>
+        </div>
+
+        <div style="margin-bottom:14px">
+          <div style="font-size:.72rem;color:var(--muted);font-weight:700;margin-bottom:6px">DELIVERY TIMELINE</div>
+          ${L.timeline.map((row,i)=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0;font-size:.85rem">
+            <span>${i+1}. ${row.label}</span>
+            <span style="color:var(--muted)">${row.at?new Date(row.at).toLocaleString("en-NG"):"—"}</span>
+          </div>`).join("")}
+        </div>
+
+        <div style="text-align:center;padding-top:14px;border-top:1px solid var(--line)">
+          <button class="btn btn-primary" onclick="downloadReceiptPDF('${L.orderId}')">📄 Download PDF</button>
+        </div>
+
+        <div style="margin-top:18px;font-size:.78rem;color:var(--muted);text-align:center">
+          © ${new Date().getFullYear()} Mimi's Delivery · Lagos, Nigeria · Order ${L.orderId}
+        </div>
+      </div>`;
+  } catch(e){
+    console.warn(e);
+    document.querySelector(container).innerHTML = '<div class="alert warn">Could not load receipt.</div>';
+  }
+}
+
+/* ============ BOOT ============ */
+$("#yr").textContent = new Date().getFullYear();
+
+(async function boot(){
+  const params = new URLSearchParams(location.search);
+  const toId = params.get("to");
+  const receiptId = params.get("receipt");
+  const trackId = params.get("track");
+
+  if(receiptId){ openPublicReceipt(receiptId); return; }
+
+  if(toId){
+    const curUser = DB.auth.currentUser;
+    if(!curUser){
+      state.pendingInviteReceiverId = toId;
+      route("home");
+      setTimeout(()=>{
+        DB.col("users").doc(toId).get().then(s=>{
+          if(s.exists){
+            const rp = s.data();
+            const banner = document.createElement("div");
+            banner.className = "container";
+            banner.innerHTML = `<div class="alert info" style="margin-top:16px">
+              You're about to send a delivery to <strong>${rp.name||"a Mimi's customer"}</strong>${rp.receivingCode?` (code <code>${rp.receivingCode}</code>)`:""}.
+              <a style="color:var(--brand);font-weight:700;cursor:pointer" onclick="openAuth('login')">Log in</a> or
+              <a style="color:var(--brand);font-weight:700;cursor:pointer" onclick="openAuth('register')">sign up</a> to continue.
+            </div>`;
+            const root = $("#page-root");
+            root.insertBefore(banner, root.firstChild);
+          }
+        }).catch(()=>{});
+      }, 300);
+    } else {
+      state.pendingInviteReceiverId = toId;
+      route("home");
+    }
+    return;
+  }
+
+  if(trackId){
+    route("track");
+    setTimeout(()=>{ $("#tk-id").value = trackId; }, 200);
+    return;
+  }
+
+  route("home");
+})();
+
+if (!FB_READY) {
+  setTimeout(() => toast("Demo mode: using local storage. Add your Firebase config to enable cloud sync.", "info"), 800);
+}
+</script>
+</body>
+</html>>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
