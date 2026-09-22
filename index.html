@@ -872,6 +872,10 @@ function calcPrice({pickup, drop, type, heavy}, s = state.settings){
 }
 
 function route(p){
+  if(state.user && state.role && document.body.classList.contains("dashboard-mode")){
+    console.warn("[route] blocked while dashboard active:", p);
+    return;
+  }
   state.page = p;
   $("#public-site").style.display="block";
   $("#app-shell").classList.remove("active");
@@ -4301,6 +4305,10 @@ function calcPrice({pickup, drop, type, heavy}, s = state.settings){
 }
 
 function route(p){
+  if(state.user && state.role && document.body.classList.contains("dashboard-mode")){
+    console.warn("[route] blocked while dashboard active:", p);
+    return;
+  }
   state.page = p;
   $("#public-site").style.display="block";
   $("#app-shell").classList.remove("active");
