@@ -134,8 +134,15 @@
   .admin-reveal{text-align:center;font-size:.72rem;color:var(--muted);margin-top:14px;letter-spacing:.06em;text-transform:uppercase}
   .admin-reveal span{cursor:pointer;user-select:none}
 
-  .app-shell{display:none;min-height:100vh;background:var(--bg)}
-  .app-shell.active{display:grid;grid-template-columns:240px 1fr}
+.app-shell{display:none;min-height:100vh;background:var(--bg)}
+.app-shell.active{display:grid;grid-template-columns:240px 1fr}
+
+/* When dashboard is active, hard-hide the public site and everything inside it */
+body.dashboard-mode #public-site{display:none !important;visibility:hidden !important;pointer-events:none !important}
+body.dashboard-mode .nav{display:none !important}
+body.dashboard-mode footer{display:none !important}
+body.dashboard-mode .brand{ /* public brand only */ }
+body.dashboard-mode #public-site *{visibility:hidden}
   .sidebar{background:#0b1a2e;color:#cbd5e1;padding:22px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;overflow-y:auto;z-index:60}
   .sidebar .brand{color:#fff;padding:0 8px 18px;border-bottom:1px solid #1e293b;margin-bottom:14px}
   .nav-item{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:8px;color:#94a3b8;cursor:pointer;font-size:.92rem;font-weight:500;border:0;background:transparent;width:100%;text-align:left;transition:all .15s}
