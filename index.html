@@ -1394,14 +1394,15 @@ $("#auth-form").addEventListener("submit", async (e) => {
       const cred = await DB.auth.createUserWithEmailAndPassword(email, pw);
       const uid = cred.user.uid;
 
-      // Send Firebase verification email (Firebase path only — LOCAL is a no-op)
-      try {
-        if(FB_READY && cred.user && typeof cred.user.sendEmailVerification === "function"){
-          await cred.user.sendEmailVerification();
-          toast("Verification email sent — check your inbox ✔", "info");
-        }
-      } catch(err){ console.warn("sendEmailVerification failed:", err); }
-
+      // Send verification email to CUSTOMERS and RIDERS (skip admins only)
+      if(role === "customer" || role === "rider"){
+        try {
+          if(FB_READY && cred.user && typeof cred.user.sendEmailVerification === "function"){
+            await cred.user.sendEmailVerification();
+            toast("Verification email sent — check your inbox ✔", "info");
+          }
+        } catch(err){ console.warn("sendEmailVerification failed:", err); }
+      }
       await DB.col("users").doc(uid).set({ name: name||email.split("@")[0], email, phone, role, createdAt: now(), receivingCode: genReceivingCode() });
 
       if(role==="rider"){
