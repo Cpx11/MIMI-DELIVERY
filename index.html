@@ -1335,6 +1335,21 @@ function openForgotPassword(){
   closeModal("auth-modal");
   openModal("forgot-modal");
 }
+async function resendVerification(){
+  const email = $("#auth-email").value.trim();
+  const pw = $("#auth-password").value;
+  if(!email || !pw){ toast("Enter your email and password first", "error"); return; }
+  try {
+    const cred = await auth.signInWithEmailAndPassword(email, pw);
+    if(cred.user && typeof cred.user.sendEmailVerification === "function"){
+      await cred.user.sendEmailVerification();
+      toast("Verification email resent ✔ — check your inbox", "success");
+    }
+    await auth.signOut();
+  } catch(err){
+    toast(err.message || "Could not resend — check your email/password", "error");
+  }
+}
 $("#forgot-form") && $("#forgot-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = $("#fp-email").value.trim();
