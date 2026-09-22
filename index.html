@@ -1458,11 +1458,25 @@ $("#auth-form").addEventListener("submit", async (e) => {
       // Sign out until verified
       try { await DB.auth.signOut(); } catch(e){}
     } else {
-      // Login path — check email verification (Firebase only)
+      // Login path
       await DB.auth.signInWithEmailAndPassword(email, pw);
       const u = DB.auth.currentUser;
       if(FB_READY && u && u.reload){ try { await u.reload(); } catch(e){} }
-      if(FB_READY && u && u.emailVerified === false){
+
+      // Look up role so we know whether to enforce email verification
+      let roleAtLogin = "customer";
+      try {
+        if(u){
+          const userDoc = await DB.col("users").doc(u.uid).get();
+          if(userDoc.exists){
+            const prof = userDoc.data();
+            roleAtLogin = prof.role || "customer";
+          }
+        }
+      } catch(e){ console.warn("Could not read user role:", e); }
+
+      // Enforce email verification for CUSTOMER and RIDER only — admins bypass
+      if(FB_READY && u && u.emailVerified === false && (roleAtLogin === "customer" || roleAtLogin === "rider")){
         toast("Please verify your email — check your inbox for the link", "error");
         await DB.auth.signOut();
         return;
