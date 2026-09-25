@@ -2348,6 +2348,28 @@ $("#book-form").addEventListener("submit", async (e) => {
     }
   }
   toast("Order placed ✔  ID: "+ref.id.slice(0,8), "success");
+
+  // Reset the booking form so the next booking starts fresh
+  try {
+    $("#book-form").reset();
+    $("#b-paddr").value = "";
+    $("#b-daddr").value = "";
+    $("#b-rname").value = "";
+    $("#b-rphone").value = "";
+    $("#b-pkg").value = "";
+    $("#b-notes").value = "";
+    $("#b-sched").value = "";
+    $("#b-heavy").value = "no";
+    $("#b-type").value = "regular";
+    $("#b-pay").value = "transfer";
+    $("#b-drop").value = ZONES[2];
+    $("#b-bank-block").style.display = "none";
+    $("#b-bank-block").innerHTML = "";
+    $("#b-receiver-uid-note").style.display = "none";
+    $("#b-receiver-uid-note").innerHTML = "";
+    $("#b-save-recv").checked = false;
+  } catch(e){ console.warn("Booking form reset failed:", e); }
+
   closeModal("book-modal");
   state.prefillReceiver = null;
   state.dashTab="orders"; renderDashboard();
